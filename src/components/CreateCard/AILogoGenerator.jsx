@@ -160,17 +160,7 @@ export default function AILogoGenerator({ onGenerate, currentImage }) {
         </div>
       </div>
 
-      <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-2.5">
-        <p className="text-xs text-green-800 flex items-center gap-1">
-          <Star className="w-4 h-4" />
-          <span>
-            <span className="font-semibold">
-              Powered by Nano Banana (Google Gemini)
-            </span>{" "}
-            - AI-powered logo generation
-          </span>
-        </p>
-      </div>
+     
     </div>
   );
 }

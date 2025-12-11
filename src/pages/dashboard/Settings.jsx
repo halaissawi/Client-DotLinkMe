@@ -3,7 +3,6 @@ import { Settings as SettingsIcon } from "lucide-react";
 import ProfileSettings from "../../components/Dashboard/Profile/ProfileSettings";
 import PasswordSettings from "../../components/Dashboard/Profile/PasswordSettings";
 
-
 export default function Settings() {
   return (
     <div className="space-y-6 max-w-5xl mx-auto">

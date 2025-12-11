@@ -1,9 +1,9 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import BasicInfoSection from "./BasicInfoSection";
 import TemplateSelector from "./TemplateSelector";
 import DesignModeSection from "./DesignModeSection";
 import SocialLinksSection from "./SocialLinksSection";
-import CardDesignUploader from "./CardDesignUploader"; // ✅ Import added
+import CardDesignUploader from "./CardDesignUploader";
 import {
   User,
   Briefcase,
@@ -11,7 +11,7 @@ import {
   Rocket,
   Plus,
   Loader2,
-  UploadCloud,
+  AlertCircle,
 } from "lucide-react";
 
 export default function ProfileForm({
@@ -27,7 +27,8 @@ export default function ProfileForm({
   onSwitchProfile,
   loading,
 }) {
-  const API_URL = import.meta.env.VITE_API_URL; // ✅ Add this line
+  const API_URL = import.meta.env.VITE_API_URL;
+  const [uploadError, setUploadError] = useState(null);
 
   useEffect(() => {
     const fetchProfile = async () => {
@@ -49,8 +50,14 @@ export default function ProfileForm({
             Authorization: `Bearer ${token}`,
           },
         });
+
+        if (!response.ok) {
+          throw new Error("Failed to fetch user data");
+        }
+
         const data = await response.json();
 
+        // Only update if fields are empty
         if (!currentProfile.name) {
           const fullName = [data.firstName, data.secondName, data.lastName]
             .filter(Boolean)
@@ -77,15 +84,24 @@ export default function ProfileForm({
 
     fetchProfile();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [API_URL]);
 
-  // 🆕 ADD THESE TWO FUNCTIONS HERE (AFTER useEffect, BEFORE handleSubmit)
   const handleCustomDesignUpload = async (file) => {
+    setUploadError(null);
+
     try {
       const token = localStorage.getItem("token");
       if (!token) {
-        alert("Please login to upload custom designs");
-        return;
+        throw new Error("Please login to upload custom designs");
+      }
+
+      // Validate file before upload
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Please select a valid image file");
+      }
+
+      if (file.size > 5 * 1024 * 1024) {
+        throw new Error("Image size must be less than 5MB");
       }
 
       const formData = new FormData();
@@ -100,10 +116,15 @@ export default function ProfileForm({
       });
 
       if (!response.ok) {
-        throw new Error("Upload failed");
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || "Upload failed");
       }
 
       const data = await response.json();
+
+      if (!data.url) {
+        throw new Error("No URL returned from server");
+      }
 
       updateProfile({
         customDesignUrl: data.url,
@@ -111,20 +132,45 @@ export default function ProfileForm({
       });
     } catch (error) {
       console.error("Error uploading custom design:", error);
+      setUploadError(error.message);
       throw error;
     }
   };
 
   const handleCustomDesignRemove = () => {
+    setUploadError(null);
     updateProfile({
       customDesignUrl: null,
       customDesignFile: null,
     });
   };
 
+  const handleBackgroundUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file
+    if (!file.type.startsWith("image/")) {
+      alert("Please select a valid image file");
+      e.target.value = "";
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image size must be less than 5MB");
+      e.target.value = "";
+      return;
+    }
+
+    const url = URL.createObjectURL(file);
+    updateProfile({ customBackground: { file, preview: url } });
+    e.target.value = ""; // Reset input
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
+    // Build social links payload
     const payloadSocialLinks = Object.entries(socialLinks)
       .filter(
         ([key, value]) =>
@@ -157,25 +203,27 @@ export default function ProfileForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="card-glass p-6 md:p-8 space-y-6 lg:flex-[1.35] min-w-0"
+      className="card-glass p-4 sm:p-6 md:p-8 space-y-6 lg:flex-[1.35] min-w-0"
       data-aos="fade-right"
     >
       {/* Header */}
       <div className="flex items-center justify-between gap-3 flex-wrap">
-        <h2 className="text-xl md:text-2xl font-bold text-brand-dark flex items-center gap-2">
-          <span>
+        <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-brand-dark flex items-center gap-2">
+          <span className="flex-shrink-0">
             {profileType === "personal" ? (
               <User className="w-5 h-5" />
             ) : (
               <Briefcase className="w-5 h-5" />
             )}
           </span>
-          {profileType === "personal"
-            ? "Personal Information"
-            : "Business Information"}
+          <span className="break-words">
+            {profileType === "personal"
+              ? "Personal Information"
+              : "Business Information"}
+          </span>
         </h2>
-        <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-primary/10 to-purple-500/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1">
-          <Zap className="w-3 h-3" /> Live preview →
+        <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-primary/10 to-purple-500/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1 whitespace-nowrap">
+          <Zap className="w-3 h-3 flex-shrink-0" /> Live preview →
         </span>
       </div>
 
@@ -186,22 +234,28 @@ export default function ProfileForm({
         updateProfile={updateProfile}
       />
 
-      {/* 🆕 ADD THIS SECTION: Custom Card Design Uploader */}
+      {/* Custom Card Design Uploader */}
       <div className="rounded-xl p-4 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200">
         <CardDesignUploader
           currentDesignUrl={currentProfile.customDesignUrl}
           onUpload={handleCustomDesignUpload}
           onRemove={handleCustomDesignRemove}
         />
+        {uploadError && (
+          <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+            <p className="text-xs text-red-800">{uploadError}</p>
+          </div>
+        )}
       </div>
 
-      {/* Rest of your existing code... */}
-      <div className="rounded-xl p-3 bg-white shadow-sm space-y-3">
+      {/* Card Design Settings */}
+      <div className="rounded-xl p-3 sm:p-4 bg-white shadow-sm space-y-3">
         <h3 className="text-sm font-semibold text-gray-700 mb-1">
           Card Design Settings
         </h3>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
           <div className="lg:col-span-7">
             <TemplateSelector
               templates={templates}
@@ -225,71 +279,44 @@ export default function ProfileForm({
             accept="image/*"
             id="custom-bg"
             className="hidden"
-            onChange={(e) => {
-              const file = e.target.files?.[0];
-              if (file) {
-                const url = URL.createObjectURL(file);
-                updateProfile({ customBackground: { file, preview: url } });
-              }
-            }}
+            onChange={handleBackgroundUpload}
+            aria-label="Upload custom background"
           />
-          <label
-            htmlFor="custom-bg"
-            className="flex items-center gap-3 p-2 rounded-lg border border-dashed border-gray-300 hover:border-brand-primary hover:bg-blue-50/30 cursor-pointer transition-colors group"
-          >
-            <div className="w-10 h-10 rounded-md bg-gray-100 flex items-center justify-center group-hover:bg-white transition-colors">
-              {currentProfile.customBackground?.preview ? (
-                <img
-                  src={currentProfile.customBackground.preview}
-                  className="w-full h-full object-cover rounded-md"
-                  alt="Background preview"
-                />
-              ) : (
-                <UploadCloud className="w-5 h-5 text-gray-400" />
-              )}
-            </div>
-            <div className="flex-1 text-left">
-              <p className="text-xs font-semibold text-gray-700">
-                Upload Background Image
-              </p>
-              <p className="text-[10px] text-gray-500">Recommended 1080×1920</p>
-            </div>
-          </label>
         </div>
       </div>
 
+      {/* Social Links */}
       <SocialLinksSection
         socialLinks={socialLinks}
         onSocialLinksChange={onSocialLinksChange}
       />
 
-      {/* Submit buttons */}
+      {/* Submit Buttons */}
       <div className="pt-4 space-y-3">
         <button
           type="submit"
           disabled={loading}
-          className="btn-primary-clean w-full py-3.5 text-base disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl transition-all"
+          className="btn-primary-clean w-full py-3 sm:py-3.5 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl transition-all"
+          aria-label={`Generate ${profileType} card`}
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
-              <Loader2 className="animate-spin h-5 w-5" />
-              Creating Your Card...
+              <Loader2 className="animate-spin h-5 w-5 flex-shrink-0" />
+              <span className="hidden sm:inline">Creating Your Card...</span>
+              <span className="sm:hidden">Creating...</span>
             </span>
           ) : (
-            <span className="flex items-center gap-1 justify-center">
-              <Rocket className="w-4 h-4" /> Generate my{" "}
-              {profileType === "personal" ? "Personal" : "Business"} Card
+            <span className="flex items-center gap-1 sm:gap-2 justify-center">
+              <Rocket className="w-4 h-4 flex-shrink-0" />
+              <span className="hidden sm:inline">
+                Generate my{" "}
+                {profileType === "personal" ? "Personal" : "Business"} Card
+              </span>
+              <span className="sm:hidden">
+                Generate {profileType === "personal" ? "Personal" : "Business"}
+              </span>
             </span>
           )}
-        </button>
-        <button
-          type="button"
-          onClick={onSwitchProfile}
-          disabled={loading}
-          className="btn-ghost-clean w-full py-3 text-base disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1 justify-center"
-        >
-          <Plus className="w-4 h-4" /> Also create{" "}
-          {profileType === "personal" ? "Business" : "Personal"} profile
         </button>
       </div>
     </form>

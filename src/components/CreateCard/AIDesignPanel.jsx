@@ -147,19 +147,6 @@ export default function AIDesignPanel({
           ))}
         </div>
       </div>
-
-      {/* Powered By */}
-      <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-2.5">
-        <p className="text-xs text-purple-800 flex items-center gap-1">
-          <Star className="w-4 h-4" />
-          <span>
-            <span className="font-semibold">
-              Powered by Nano Banana (Google Gemini)
-            </span>{" "}
-            - AI-powered generation
-          </span>
-        </p>
-      </div>
     </div>
   );
 }

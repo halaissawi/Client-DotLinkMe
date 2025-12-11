@@ -1,0 +1,517 @@
+/* ========================================
+   LINKME DASHBOARD - MOBILE RESPONSIVE STYLES
+   - Only targets mobile devices (max-width: 768px)
+   - Zero changes to desktop/tablet views
+   - Zero changes to functionality/logic
+   ======================================== */
+
+/* ========================================
+   DASHBOARD HEADER - Mobile Optimizations
+   ======================================== */
+@media (max-width: 640px) {
+  /* Welcome message - Better text wrapping on mobile */
+  .text-2xl.sm\:text-3xl,
+  .text-3xl.sm\:text-3xl {
+    font-size: 1.75rem !important;
+    line-height: 1.2 !important;
+  }
+
+  /* Adjust padding on mobile */
+  .px-4 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+
+  /* Wave hand emoji - smaller on very small screens */
+  .animate-wave {
+    width: 1.75rem !important;
+    height: 1.75rem !important;
+  }
+
+  /* Subtitle - Better readability */
+  .text-sm.sm\:text-base {
+    font-size: 0.9rem !important;
+    line-height: 1.5 !important;
+  }
+}
+
+/* ========================================
+   STATS GRID - Mobile Layout
+   ======================================== */
+@media (max-width: 640px) {
+  /* Make stats cards full width on mobile for better readability */
+  .grid.grid-cols-1.sm\:grid-cols-2 {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 0.75rem !important;
+  }
+
+  /* Compact stat cards on mobile */
+  .grid.grid-cols-1.sm\:grid-cols-2 > div > div {
+    padding: 1rem !important;
+  }
+
+  /* Smaller icons in stat cards */
+  .grid.grid-cols-1.sm\:grid-cols-2 .w-14.h-14 {
+    width: 3rem !important;
+    height: 3rem !important;
+  }
+
+  /* Smaller value text for better fit */
+  .grid.grid-cols-1.sm\:grid-cols-2 .text-3xl {
+    font-size: 1.875rem !important;
+  }
+
+  /* Adjust label text */
+  .grid.grid-cols-1.sm\:grid-cols-2 .text-sm.text-gray-600 {
+    font-size: 0.8rem !important;
+  }
+}
+
+/* ========================================
+   PROFILE CARD - Mobile Optimizations
+   ======================================== */
+@media (max-width: 640px) {
+  /* Profile card - Better proportions on mobile */
+  .h-48 {
+    height: 11rem !important;
+  }
+
+  /* Reduce padding inside cards */
+  .px-5.py-4 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  /* Avatar/Logo - Slightly smaller on mobile */
+  .w-12.h-12 {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+
+  /* Profile name - Better sizing */
+  .text-lg.font-bold {
+    font-size: 1rem !important;
+  }
+
+  /* Bio text - Smaller for mobile */
+  .text-\[11px\] {
+    font-size: 0.65rem !important;
+    line-height: 1.3 !important;
+  }
+
+  /* Tags - Smaller on mobile */
+  .text-\[10px\] {
+    font-size: 0.6rem !important;
+  }
+
+  .px-2.py-1 {
+    padding: 0.25rem 0.5rem !important;
+  }
+}
+
+/* ========================================
+   PROFILES SECTION - Mobile Layout
+   ======================================== */
+@media (max-width: 768px) {
+  /* Force single column on mobile */
+  .grid.grid-cols-1.md\:grid-cols-2 {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Adjust section padding */
+  .card-glass.p-6.md\:p-8 {
+    padding: 1.25rem !important;
+  }
+
+  /* Header text sizing */
+  .text-2xl.font-bold {
+    font-size: 1.5rem !important;
+  }
+
+  /* Empty state - Compact on mobile */
+  .text-center.py-16 {
+    padding-top: 3rem !important;
+    padding-bottom: 3rem !important;
+  }
+
+  .w-24.h-24 {
+    width: 4rem !important;
+    height: 4rem !important;
+  }
+
+  .w-12.h-12 {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+  }
+
+  .text-2xl.font-bold.text-brand-dark.mb-3 {
+    font-size: 1.5rem !important;
+  }
+}
+
+/* ========================================
+   RECENT ACTIVITY - Mobile Layout
+   ======================================== */
+@media (max-width: 640px) {
+  /* Activity cards - More compact */
+  .card-glass.p-6.h-full {
+    padding: 1.25rem !important;
+  }
+
+  /* Activity items - Better spacing */
+  .flex.items-start.gap-3.p-3 {
+    gap: 0.75rem !important;
+    padding: 0.75rem !important;
+  }
+
+  /* Activity icon - Smaller on mobile */
+  .w-10.h-10.rounded-lg {
+    width: 2.25rem !important;
+    height: 2.25rem !important;
+  }
+
+  /* Activity text - Better sizing */
+  .text-sm.font-medium {
+    font-size: 0.85rem !important;
+  }
+
+  .text-xs {
+    font-size: 0.7rem !important;
+  }
+
+  /* Header icon */
+  .w-6.h-6.text-brand-primary {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  .text-xl.font-bold {
+    font-size: 1.25rem !important;
+  }
+}
+
+/* ========================================
+   PROFILE PERFORMANCE - Mobile Layout
+   ======================================== */
+@media (max-width: 640px) {
+  /* Performance section padding */
+  .card-glass.p-6.md\:p-8 {
+    padding: 1.25rem !important;
+  }
+
+  /* Rank badge - Smaller on mobile */
+  .w-12.h-12.rounded-xl {
+    width: 2.5rem !important;
+    height: 2.5rem !important;
+    font-size: 1.25rem !important;
+  }
+
+  /* Profile performance items - Stack better on mobile */
+  .flex.items-center.justify-between.p-4 {
+    padding: 0.875rem !important;
+    gap: 0.5rem !important;
+  }
+
+  /* Type icon - Smaller */
+  .w-6.h-6 {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  /* Profile name in performance */
+  .font-bold.text-brand-dark {
+    font-size: 0.9rem !important;
+  }
+
+  /* Views number */
+  .text-2xl.font-bold.bg-gradient-to-r {
+    font-size: 1.5rem !important;
+  }
+
+  /* Views label */
+  .text-xs.text-gray-500 {
+    font-size: 0.65rem !important;
+  }
+}
+
+/* ========================================
+   QUICK ACTIONS - Mobile Layout
+   ======================================== */
+@media (max-width: 768px) {
+  /* Stack quick actions vertically on mobile */
+  .grid.grid-cols-1.md\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+    gap: 0.875rem !important;
+  }
+
+  /* Quick action cards - More compact */
+  .card-glass.p-6 {
+    padding: 1rem !important;
+  }
+
+  /* Quick action icon */
+  .w-12.h-12.rounded-xl {
+    width: 2.75rem !important;
+    height: 2.75rem !important;
+  }
+
+  .w-6.h-6 {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+  }
+
+  /* Quick action text */
+  .font-semibold.text-brand-dark {
+    font-size: 0.95rem !important;
+  }
+}
+
+/* ========================================
+   GENERAL MOBILE IMPROVEMENTS
+   ======================================== */
+@media (max-width: 640px) {
+  /* Container spacing */
+  .space-y-8 {
+    gap: 1.5rem !important;
+  }
+
+  /* Bottom padding for main container */
+  .pb-8 {
+    padding-bottom: 2rem !important;
+  }
+
+  /* Grid gaps - More compact on mobile */
+  .gap-6 {
+    gap: 1rem !important;
+  }
+
+  .gap-4 {
+    gap: 0.75rem !important;
+  }
+
+  /* Border radius - Slightly smaller on mobile for better space usage */
+  .rounded-\[24px\] {
+    border-radius: 1.25rem !important;
+  }
+
+  .rounded-2xl {
+    border-radius: 1rem !important;
+  }
+
+  .rounded-xl {
+    border-radius: 0.75rem !important;
+  }
+
+  /* Shadow adjustments - Less dramatic on mobile */
+  .shadow-2xl {
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1),
+      0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+  }
+
+  .shadow-lg {
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+      0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+  }
+
+  /* Button padding - Better touch targets */
+  .btn-primary-clean {
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.95rem !important;
+  }
+
+  /* Icon sizes in buttons */
+  .w-5.h-5 {
+    width: 1.125rem !important;
+    height: 1.125rem !important;
+  }
+}
+
+/* ========================================
+   TOUCH IMPROVEMENTS
+   ======================================== */
+@media (max-width: 640px) {
+  /* Better touch targets for interactive elements */
+  a,
+  button,
+  [role="button"] {
+    min-height: 44px !important;
+  }
+
+  /* Hover states should work on touch */
+  .hover\:shadow-lg:active {
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
+      0 4px 6px -2px rgba(0, 0, 0, 0.05) !important;
+  }
+
+  .hover\:scale-\[1\.02\]:active {
+    transform: scale(1.02) !important;
+  }
+
+  .group-hover\:scale-110:active {
+    transform: scale(1.1) !important;
+  }
+
+  /* Remove hover effects that don't work well on touch */
+  .hover\:-translate-y-1 {
+    transform: none !important;
+  }
+}
+
+/* ========================================
+   VERY SMALL SCREENS (< 375px)
+   ======================================== */
+@media (max-width: 374px) {
+  /* Extra compact for very small phones */
+  .text-2xl {
+    font-size: 1.375rem !important;
+  }
+
+  .text-xl {
+    font-size: 1.125rem !important;
+  }
+
+  .text-lg {
+    font-size: 0.95rem !important;
+  }
+
+  /* Tighter padding */
+  .p-6,
+  .px-6,
+  .py-6 {
+    padding: 1rem !important;
+  }
+
+  .p-4,
+  .px-4,
+  .py-4 {
+    padding: 0.75rem !important;
+  }
+
+  /* Smaller gaps */
+  .gap-6 {
+    gap: 0.75rem !important;
+  }
+
+  .gap-4 {
+    gap: 0.5rem !important;
+  }
+
+  .gap-3 {
+    gap: 0.375rem !important;
+  }
+}
+
+/* ========================================
+   LANDSCAPE MODE ON MOBILE
+   ======================================== */
+@media (max-width: 768px) and (orientation: landscape) {
+  /* Reduce vertical padding in landscape */
+  .py-8 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+
+  .py-6 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+
+  /* Make profile cards shorter in landscape */
+  .h-48 {
+    height: 9rem !important;
+  }
+}
+
+/* ========================================
+   ANIMATION PERFORMANCE ON MOBILE
+   ======================================== */
+@media (max-width: 640px) {
+  /* Reduce motion for better performance on mobile */
+  @media (prefers-reduced-motion: no-preference) {
+    .transition-all {
+      transition-duration: 200ms !important;
+    }
+
+    .transition-transform,
+    .transition-colors,
+    .transition-shadow {
+      transition-duration: 200ms !important;
+    }
+  }
+
+  /* Disable complex animations on mobile if user prefers reduced motion */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+  }
+}
+
+/* ========================================
+   SAFE AREA INSETS (iPhone notch, etc.)
+   ======================================== */
+@media (max-width: 640px) {
+  /* Add safe area padding for devices with notches */
+  .space-y-8 {
+    padding-left: max(1rem, env(safe-area-inset-left)) !important;
+    padding-right: max(1rem, env(safe-area-inset-right)) !important;
+  }
+}
+
+/* ========================================
+   TEXT SELECTION ON MOBILE
+   ======================================== */
+@media (max-width: 640px) {
+  /* Better text selection colors on mobile */
+  ::selection {
+    background-color: rgba(0, 102, 255, 0.2);
+    color: inherit;
+  }
+
+  ::-moz-selection {
+    background-color: rgba(0, 102, 255, 0.2);
+    color: inherit;
+  }
+}
+
+/* ========================================
+   SCROLLBAR STYLING ON MOBILE
+   ======================================== */
+@media (max-width: 640px) {
+  /* Hide scrollbar on mobile for cleaner look */
+  .overflow-auto,
+  .overflow-scroll,
+  .overflow-y-auto,
+  .overflow-x-auto {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .overflow-auto::-webkit-scrollbar,
+  .overflow-scroll::-webkit-scrollbar,
+  .overflow-y-auto::-webkit-scrollbar,
+  .overflow-x-auto::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* ========================================
+   LOADING SPINNER - Mobile Optimizations
+   ======================================== */
+@media (max-width: 640px) {
+  /* Make loading spinner more visible on mobile */
+  .animate-spin {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+}
+
+/* ========================================
+   END OF MOBILE RESPONSIVE STYLES
+   ======================================== */
