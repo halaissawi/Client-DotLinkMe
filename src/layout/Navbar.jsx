@@ -71,10 +71,9 @@ const Navbar = () => {
       <nav
         className={`
           fixed top-0 left-0 w-full z-[1000] transition-all duration-300
-          ${
-            scrolled
-              ? "bg-white/90 backdrop-blur-xl shadow-sm"
-              : "bg-transparent"
+          ${scrolled
+            ? "bg-white/90 backdrop-blur-xl shadow-sm"
+            : "bg-transparent"
           }
         `}
       >
@@ -82,10 +81,12 @@ const Navbar = () => {
           {/* LOGO */}
           <NavLink
             to="/"
-            className="text-[22px] font-extrabold tracking-tight flex items-center gap-1 relative z-[1001]"
-          >
-            <span className="text-brand-accent">Dot</span>
-            <span className="text-brand-primary">LinkMe</span>
+            className="text-[22px] font-extrabold tracking-tight flex items-center gap-1 relative z-[1001]"> 
+            <span className="font-bold text-brand-primary whitespace-nowrap">
+              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
+              LinkMe
+            </span>
+
           </NavLink>
 
           {/* DESKTOP NAV */}
@@ -154,10 +155,9 @@ const Navbar = () => {
       <div
         className={`
           lg:hidden fixed inset-0 z-[999] transition-all duration-300
-          ${
-            isMenuOpen
-              ? "visible opacity-100"
-              : "invisible opacity-0 pointer-events-none"
+          ${isMenuOpen
+            ? "visible opacity-100"
+            : "invisible opacity-0 pointer-events-none"
           }
         `}
       >
@@ -213,17 +213,15 @@ const Navbar = () => {
                     to={item.to}
                     className={`
                       flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-200
-                      ${
-                        isActive
-                          ? "bg-gradient-to-r from-brand-primary/10 to-brand-accent/10 text-brand-primary font-semibold"
-                          : "text-gray-700 hover:bg-gray-50"
+                      ${isActive
+                        ? "bg-gradient-to-r from-brand-primary/10 to-brand-accent/10 text-brand-primary font-semibold"
+                        : "text-gray-700 hover:bg-gray-50"
                       }
                     `}
                   >
                     <Icon
-                      className={`w-5 h-5 ${
-                        isActive ? "text-brand-primary" : "text-gray-400"
-                      }`}
+                      className={`w-5 h-5 ${isActive ? "text-brand-primary" : "text-gray-400"
+                        }`}
                     />
                     <span>{item.label}</span>
                     {isActive && (

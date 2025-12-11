@@ -12,23 +12,25 @@ const WhatIs = () => {
         <div className="space-y-6 order-2 md:order-1 px-4 md:px-0">
           <h2 className="text-3xl md:text-4xl font-semibold leading-snug">
             What is{" "}
-            <span className="text-brand-primary font-bold">
-              <span style={{ color: "#f2a91d", fontWeight: "900" }}>Dot</span>{" "}
+            <span className="font-bold text-brand-primary whitespace-nowrap">
+              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
               LinkMe?
             </span>
+
           </h2>
 
           <p className="text-gray-600 text-base md:text-lg leading-relaxed">
-            Dot LinkMe is a next-generation NFC-powered identity solution that
-            transforms how you share your digital presence. With a single tap,
-            your profile, links, and branding become instantly accessible,
-            making networking seamless, intelligent, and beautifully simple.
+            LinkMe is a modern digital identity platform that lets you share your entire profile—links,
+            contact details, and personal branding—instantly through smart links, QR codes,
+            and optional NFC cards. With a clean, dynamic interface, LinkMe makes networking faster,
+            smarter, and more professional.
+
           </p>
 
           <p className="text-gray-600 text-base md:text-lg leading-relaxed">
-            Our platform adapts to your lifestyle—giving you full control over
-            updates, analytics, and your professional identity through a smart,
-            dynamic interface.
+            The platform gives you full control over your identity,
+            allowing you to update your profile anytime and view basic analytics
+            that help you understand how people interact with your digital presence.
           </p>
         </div>
 
@@ -45,10 +47,10 @@ const WhatIs = () => {
             />
             <div>
               <h3 className="text-lg md:text-xl font-semibold">
-                One Tap Identity
+                One-Tap Sharing
               </h3>
               <p className="text-gray-600 text-sm md:text-base">
-                Share all your contact info instantly using NFC or QR.
+                Share your info instantly via NFC, QR, or smart link.
               </p>
             </div>
           </div>
@@ -65,11 +67,10 @@ const WhatIs = () => {
             />
             <div>
               <h3 className="text-lg md:text-xl font-semibold">
-                Personal Profile Page
+                Profile Page
               </h3>
               <p className="text-gray-600 text-sm md:text-base">
-                A personalized digital profile with your bio, links, and
-                branding.
+                Your bio, links, and contact details in one place.
               </p>
             </div>
           </div>
@@ -86,11 +87,10 @@ const WhatIs = () => {
             />
             <div>
               <h3 className="text-lg md:text-xl font-semibold">
-                Smart Analytics
+                Analytics
               </h3>
               <p className="text-gray-600 text-sm md:text-base">
-                Track visits, clicks, and views in real-time from your
-                dashboard.
+                See visits and clicks in real time.
               </p>
             </div>
           </div>

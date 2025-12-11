@@ -18,8 +18,10 @@ export default function Footer() {
         {/* Brand */}
         <div className="space-y-4">
           <h3 className="text-3xl font-extrabold text-white">
-            <span style={{ color: "#f2a91d", fontWeight: "900" }}>Dot</span>
-            LinkMe
+            <span className="font-bold text-brand-primary whitespace-nowrap">
+              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
+              LinkMe
+            </span>
           </h3>
 
           <p className="text-sm text-[#9ea0b5] leading-relaxed max-w-xs">
