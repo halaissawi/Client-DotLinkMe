@@ -5,23 +5,23 @@ const WhyChoose = () => {
   const features = [
     {
       icon: <Zap size={30} className="text-brand-primary" />,
-      title: "Fast & Instant Sharing",
-      text: "Share your digital identity instantly through NFC, QR, or smart links.",
+      title: "Professional Digital Presence",
+      text: "Show your information clearly and professionally.",
     },
     {
       icon: <Brush size={30} className="text-brand-primary" />,
-      title: "Fully Customizable",
-      text: "Control your image, bio, links, and style to reflect who you truly are.",
+      title: "Always Updated",
+      text: "Update your details anytime—no printing needed.",
     },
     {
       icon: <ShieldCheck size={30} className="text-brand-primary" />,
-      title: "Secure Identity",
-      text: "Your data stays protected with enterprise-grade security protocols.",
+      title: "No App Required",
+      text: "Anyone can view your profile instantly without an app.",
     },
     {
       icon: <BarChart3 size={30} className="text-brand-primary" />,
-      title: "Smart Analytics",
-      text: "Track visits, clicks, and interactions in real-time.",
+      title: "Eco-Friendly Alternative",
+      text: "Replace paper cards with a greener digital option.",
     },
   ];
 
@@ -36,15 +36,14 @@ const WhyChoose = () => {
         >
           <h2 className="text-3xl md:text-4xl font-semibold leading-tight">
             Why Choose{" "}
-            <span className="text-brand-primary font-bold">
-              <span style={{ color: "#f2a91d", fontWeight: "900" }}>Dot</span>{" "}
+            <span className="font-bold text-brand-primary whitespace-nowrap">
+              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
               LinkMe?
             </span>
           </h2>
 
           <p className="text-gray-600 text-base md:text-lg max-w-md">
-            A modern, smart, and secure way to share your digital identity.
-            Designed to elevate your presence and put you ahead of the game.
+            A smart, simple, and professional way to share your identity—built for today’s digital world.
           </p>
 
           {/* Feature Boxes */}

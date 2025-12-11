@@ -6,17 +6,17 @@ const HowItWorks = () => {
     {
       icon: <Smartphone size={36} className="text-brand-primary" />,
       title: "Choose Your Card",
-      text: "Pick your NFC card design and activate your Dot LinkMe account.",
+      text: "Choose your NFC card design and activate your Dot LinkMe account.",
     },
     {
       icon: <UserPlus size={36} className="text-brand-primary" />,
       title: "Create Your Profile",
-      text: "Add your name, bio, photo, and all your social links in minutes.",
+      text: "Add your name, bio, photo, and all your social media links in minutes.",
     },
     {
       icon: <Share2 size={36} className="text-brand-primary" />,
       title: "Tap & Share",
-      text: "Share your identity instantly using NFC, QR, or your smart link.",
+      text: "Share your identity instantly using NFC, a QR code, or your smart link.",
     },
   ];
 
@@ -45,8 +45,8 @@ const HowItWorks = () => {
         <div data-aos="fade-left" className="space-y-2 text-center md:text-left">
           <h2 className="text-3xl sm:text-4xl font-semibold leading-snug">
             How{" "}
-            <span className="text-brand-primary font-bold">
-              <span style={{ color: "#f2a91d", fontWeight: "900" }}>Dot</span>{" "}
+            <span className="font-bold text-brand-primary whitespace-nowrap">
+              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
               LinkMe
             </span>{" "}
             Works
