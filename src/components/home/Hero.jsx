@@ -1,4 +1,5 @@
 import React from "react";
+import heroImg from "../../assets/ChatGPTImage.png";
 import { Link } from "react-router-dom";
 import {
   Zap,
@@ -28,16 +29,11 @@ const Hero = () => {
         {/* RIGHT IMAGE - Shows first on mobile, second on desktop */}
         <div className="flex-1 flex justify-center items-center relative w-full order-1 md:order-2">
           <div className="relative w-full max-w-[300px] sm:max-w-[400px] md:max-w-[480px] lg:max-w-[550px]">
-            {/* Main Image */}
-            <div className="relative animate-slideInRight">
-              <img
-                src="/images/hand-nfc.png"
-                alt="Smart Card Mockup"
-                className="w-full h-auto relative md:-bottom-16 lg:-bottom-24 drop-shadow-2xl"
-              />
 
-              {/* Enhanced Glow Effect */}
-              <div className="absolute -z-10 blur-3xl opacity-60 bg-gradient-to-br from-brand-accent via-brand-primary to-blue-500 w-full h-full rounded-full bottom-0 left-1/2 -translate-x-1/2 animate-pulse"></div>
+            {/* Main Image */}
+
+            <div className="w-[280px] sm:w-[360px] md:w-[460px] lg:w-[560px] xl:w-[650px] ml-auto">
+              <img src={heroImg} alt="Smart Card Mockup" className="w-full h-auto drop-shadow-2xl" />
             </div>
 
             {/* Floating Stats Cards */}

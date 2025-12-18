@@ -1,5 +1,8 @@
 import React from "react";
 import { Smartphone, UserPlus, Share2 } from "lucide-react";
+import phoneImg from "../../assets/pagee.png";
+
+
 
 const HowItWorks = () => {
   const steps = [
@@ -24,7 +27,7 @@ const HowItWorks = () => {
     <section className="relative py-20 md:py-24 overflow-hidden bg-gradient-to-b from-white to-[#f4f6ff]">
 
       {/* Faded Background Title */}
-      <h1 className="absolute top-2 md:top-6 left-1/2 -translate-x-1/2 text-[40px] sm:text-[65px] md:text-[90px] font-extrabold text-[#f2a91d]/20 tracking-widest select-none whitespace-nowrap">
+      <h1 className="absolute top-[-20px] md:top-[-10px] left-1/2 -translate-x-1/2 text-[40px] sm:text-[65px] md:text-[90px] font-extrabold text-[#f2a91d]/20 tracking-widest select-none whitespace-nowrap">
         HOW IT WORKS
       </h1>
 
@@ -32,12 +35,14 @@ const HowItWorks = () => {
 
         {/* Left: Phone Mockup */}
         <div data-aos="fade-right" className="flex justify-center">
-          <div className="relative w-[260px] sm:w-[320px] md:w-[380px] lg:w-[420px]">
+          <div className="relative w-[200px] sm:w-[260px] md:w-[300px] lg:w-[340px]">
             <img
-              src="images/phone.png"
+              src={phoneImg}
               alt="Phone mockup"
-              className="w-full h-auto object-contain drop-shadow-xl"
+              className="w-full h-auto object-contain rounded-xl drop-shadow-xl"
             />
+
+
           </div>
         </div>
 

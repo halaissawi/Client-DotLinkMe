@@ -10,33 +10,33 @@ import {
 const STEPS = [
   {
     number: 1,
-    title: "Choose profile type",
-    description: "Personal or business – or both.",
+    title: "Select your card type.",
+    /* description: "Personal or business – or both.", */
   },
   {
     number: 2,
-    title: "Add your details",
-    description: "Name, title, links & branding.",
+    title: "Customize your details.",
+    /* description: "Name, title, links & branding.", */
   },
   {
     number: 3,
-    title: "Generate card & QR",
-    description: "Share it, or print on NFC card.",
+    title: "Generate your digital card.",
+    /* description: "Share it, or print on NFC card.", */
   },
 ];
 
 const FEATURES = [
   {
     icon: <LinkIcon size={18} className="text-[#0066ff]" />,
-    text: "Unique smart link (for your NFC & QR)",
+    text: "A unique smart link",
   },
   {
     icon: <CreditCard size={18} className="text-[#0066ff]" />,
-    text: "Digital profile page that matches LinkMe brand",
+    text: "A branded LinkMe profile",
   },
   {
     icon: <QrCode size={18} className="text-[#0066ff]" />,
-    text: "QR code ready for printing or sharing",
+    text: "A QR code ready for sharing",
   },
 ];
 
@@ -74,9 +74,8 @@ export default function CreateCardHero() {
 
           {/* Description */}
           <p className="text-gray-600 text-base md:text-lg max-w-2xl leading-relaxed">
-            Design a personal or business NFC card, add your links, and get your
-            unique smart link & QR code instantly. Perfect for events,
-            networking, and everyday sharing.
+            Create your personal or business identity card in a few simple steps.
+            Choose your card type,customize your details, and generate your smart link and QR instantly.
           </p>
 
           {/* Steps */}
@@ -122,10 +121,11 @@ export default function CreateCardHero() {
             </div>
             <div>
               <h3 className="text-lg sm:text-xl font-bold text-[#0b0f19] mb-1">
-                One Link. One Tap. One Identity.
+                What Your Card Gives You
+ 
               </h3>
               <p className="text-xs sm:text-sm text-gray-600">
-                Your card will generate:
+                A quick look at what’s generated automatically:
               </p>
             </div>
           </div>
