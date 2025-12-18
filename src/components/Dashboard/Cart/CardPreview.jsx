@@ -5,7 +5,7 @@ export default function CardPreview({ profile, currentDesign }) {
   const templateStyles = getTemplateStyles(currentDesign.template, {
     ...profile,
     color: currentDesign.color,
-    designMode: currentDesign.designMode,
+    designMode: currentDesign.designMode, // لازم تكون "template"
     aiBackground: currentDesign.aiBackground,
     uploadedImage: currentDesign.uploadedImage,
   });

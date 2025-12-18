@@ -260,7 +260,11 @@ export default function ProfileForm({
             <TemplateSelector
               templates={templates}
               selectedTemplate={selectedTemplate}
-              onTemplateChange={onTemplateChange}
+              onTemplateChange={(templateId) => {
+                onTemplateChange(templateId);
+                // When template is selected, switch to template mode
+                updateProfile({ designMode: "template" });
+              }}
             />
           </div>
 
@@ -268,6 +272,13 @@ export default function ProfileForm({
             <DesignModeSection
               currentProfile={currentProfile}
               updateProfile={updateProfile}
+              onModeChange={(mode) => {
+                updateProfile({ designMode: mode });
+                // When Manual or AI is selected, clear template selection
+                if (mode !== "template") {
+                  onTemplateChange(null);
+                }
+              }}
             />
           </div>
         </div>

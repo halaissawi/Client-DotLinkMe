@@ -26,6 +26,7 @@ const ResetPassword = () => {
     setShowPassword((prev) => !prev);
   };
 
+  // Simplified validation - only 8+ characters required
   const hasMinLength = newPassword.length >= 8;
   const hasUppercase = /[A-Z]/.test(newPassword);
   const hasLowercase = /[a-z]/.test(newPassword);
@@ -34,6 +35,28 @@ const ResetPassword = () => {
     newPassword
   );
   const passwordsMatch = newPassword === confirmPassword && newPassword !== "";
+
+  // Calculate password strength for indicator
+  const calculatePasswordStrength = () => {
+    if (newPassword.length === 0) return { label: "", color: "", width: "" };
+
+    let score = 0;
+    if (hasMinLength) score++;
+    if (hasUppercase) score++;
+    if (hasLowercase) score++;
+    if (hasNumber) score++;
+    if (hasSpecialChar) score++;
+
+    if (score <= 2)
+      return { label: "Weak", color: "bg-red-500", width: "w-1/3" };
+    if (score <= 3)
+      return { label: "Fair", color: "bg-yellow-500", width: "w-1/2" };
+    if (score <= 4)
+      return { label: "Good", color: "bg-blue-500", width: "w-3/4" };
+    return { label: "Strong", color: "bg-green-500", width: "w-full" };
+  };
+
+  const passwordStrength = calculatePasswordStrength();
 
   useEffect(() => {
     if (redirecting && countdown > 0) {
@@ -51,6 +74,11 @@ const ResetPassword = () => {
 
     if (newPassword !== confirmPassword) {
       setError("Passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 8) {
+      setError("Password must be at least 8 characters");
       return;
     }
 
@@ -172,111 +200,81 @@ const ResetPassword = () => {
               </div>
             </div>
 
+            {/* Password Strength Indicator & Requirements */}
             {newPassword.length > 0 && (
-              <div className="space-y-2 pt-2">
-                <p className="text-sm font-medium text-gray-700">
-                  Password must contain:
-                </p>
-                <ul className="text-sm space-y-1.5">
-                  <li
-                    className={`flex items-center ${
-                      hasMinLength ? "text-green-600" : "text-gray-500"
-                    }`}
-                  >
-                    <span
-                      className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full ${
-                        hasMinLength ? "bg-green-100" : "bg-gray-100"
-                      }`}
-                    >
-                      {hasMinLength && (
-                        <Check size={14} className="text-green-600" />
-                      )}
+              <div className="space-y-3 pt-2">
+                {/* Strength Bar */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="text-xs font-medium text-gray-600">
+                      Password Strength
                     </span>
-                    At least 8 characters
-                  </li>
-                  <li
-                    className={`flex items-center ${
-                      hasUppercase ? "text-green-600" : "text-gray-500"
-                    }`}
-                  >
-                    <span
-                      className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full ${
-                        hasUppercase ? "bg-green-100" : "bg-gray-100"
-                      }`}
-                    >
-                      {hasUppercase && (
-                        <Check size={14} className="text-green-600" />
-                      )}
-                    </span>
-                    At least one uppercase letter
-                  </li>
-                  <li
-                    className={`flex items-center ${
-                      hasLowercase ? "text-green-600" : "text-gray-500"
-                    }`}
-                  >
-                    <span
-                      className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full ${
-                        hasLowercase ? "bg-green-100" : "bg-gray-100"
-                      }`}
-                    >
-                      {hasLowercase && (
-                        <Check size={14} className="text-green-600" />
-                      )}
-                    </span>
-                    At least one lowercase letter
-                  </li>
-                  <li
-                    className={`flex items-center ${
-                      hasNumber ? "text-green-600" : "text-gray-500"
-                    }`}
-                  >
-                    <span
-                      className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full ${
-                        hasNumber ? "bg-green-100" : "bg-gray-100"
-                      }`}
-                    >
-                      {hasNumber && (
-                        <Check size={14} className="text-green-600" />
-                      )}
-                    </span>
-                    At least one number
-                  </li>
-                  <li
-                    className={`flex items-center ${
-                      hasSpecialChar ? "text-green-600" : "text-gray-500"
-                    }`}
-                  >
-                    <span
-                      className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full ${
-                        hasSpecialChar ? "bg-green-100" : "bg-gray-100"
-                      }`}
-                    >
-                      {hasSpecialChar && (
-                        <Check size={14} className="text-green-600" />
-                      )}
-                    </span>
-                    At least one special character
-                  </li>
-                  {confirmPassword.length > 0 && (
+                    {passwordStrength.label && (
+                      <span
+                        className={`text-xs font-medium ${
+                          passwordStrength.label === "Weak"
+                            ? "text-red-600"
+                            : passwordStrength.label === "Fair"
+                            ? "text-yellow-600"
+                            : passwordStrength.label === "Good"
+                            ? "text-blue-600"
+                            : "text-green-600"
+                        }`}
+                      >
+                        {passwordStrength.label}
+                      </span>
+                    )}
+                  </div>
+                  <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${passwordStrength.color} ${passwordStrength.width} transition-all duration-300`}
+                    ></div>
+                  </div>
+                </div>
+
+                {/* Simple Requirements */}
+                <div className="space-y-2">
+                  <ul className="text-sm space-y-1.5">
                     <li
                       className={`flex items-center ${
-                        passwordsMatch ? "text-green-600" : "text-red-600"
+                        hasMinLength ? "text-green-600" : "text-gray-500"
                       }`}
                     >
                       <span
                         className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full ${
-                          passwordsMatch ? "bg-green-100" : "bg-red-100"
+                          hasMinLength ? "bg-green-100" : "bg-gray-100"
                         }`}
                       >
-                        {passwordsMatch && (
+                        {hasMinLength && (
                           <Check size={14} className="text-green-600" />
                         )}
                       </span>
-                      Passwords match
+                      At least 8 characters
                     </li>
-                  )}
-                </ul>
+                    {confirmPassword.length > 0 && (
+                      <li
+                        className={`flex items-center ${
+                          passwordsMatch ? "text-green-600" : "text-red-600"
+                        }`}
+                      >
+                        <span
+                          className={`inline-flex items-center justify-center w-5 h-5 mr-2 rounded-full ${
+                            passwordsMatch ? "bg-green-100" : "bg-red-100"
+                          }`}
+                        >
+                          {passwordsMatch && (
+                            <Check size={14} className="text-green-600" />
+                          )}
+                        </span>
+                        Passwords match
+                      </li>
+                    )}
+                  </ul>
+                  <p className="text-xs text-gray-500 mt-2">
+                    💡 Tip: Use uppercase, lowercase, numbers, and symbols for a
+                    stronger password
+                  </p>
+                </div>
               </div>
             )}
 

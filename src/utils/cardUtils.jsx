@@ -1,4 +1,6 @@
 // AI Generation utility
+import { CARD_TEMPLATES } from "../constants/cardTemplates";
+
 export const generateAIImage = async (prompt) => {
   const encodedPrompt = encodeURIComponent(prompt);
   const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=450&nologo=true&enhance=true`;
@@ -71,74 +73,30 @@ export function getTemplateStyles(selectedTemplate, currentProfile) {
   }
 
   // PRIORITY 4: Manual mode with templates
-  if (currentProfile.designMode === "manual") {
-    const color = currentProfile.color || "#2563eb";
+  if (currentProfile.designMode === "template" && selectedTemplate) {
+    const templateData = CARD_TEMPLATES[selectedTemplate];
 
-    switch (selectedTemplate) {
-      case "gradient":
-        return {
-          style: {
-            background: `linear-gradient(135deg, ${color} 0%, ${adjustColorBrightness(
-              color,
-              -30
-            )} 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-black/10 to-transparent",
-        };
-      case "glass":
-        return {
-          style: {
-            background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-            backdropFilter: "blur(20px)",
-          },
-          className: "border-2 backdrop-blur-xl",
-          textColor: "text-gray-800",
-          borderColor: color + "40",
-          overlay: null,
-        };
-      case "dark":
-        return {
-          style: {
-            background: `linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, ${color}20 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-transparent via-black/20 to-transparent",
-        };
-      case "neon":
-        return {
-          style: {
-            background: `linear-gradient(135deg, #000000 0%, #1a1a2e 100%)`,
-            boxShadow: `0 0 30px ${color}40`,
-          },
-          className: `border-2`,
-          textColor: "text-white",
-          borderColor: color,
-          overlay: null,
-          glow: color,
-        };
-      case "elegant":
-        return {
-          style: {
-            background: `linear-gradient(to bottom right, ${color} 0%, ${adjustColorBrightness(
-              color,
-              -20
-            )} 50%, ${adjustColorBrightness(color, 10)} 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-white/5 to-transparent",
-        };
-      default:
-        return {
-          style: { backgroundColor: color },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-black/5 to-transparent",
-        };
+    if (templateData?.fullImage) {
+      return {
+        style: {
+          backgroundImage: `url(${templateData.fullImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        },
+        className: "",
+        textColor: "text-white",
+        overlay: "from-black/30 to-transparent",
+      };
     }
+  }
+  // PRIORITY 5: Manual color fallback
+  if (currentProfile.designMode === "manual" && currentProfile.color) {
+    return {
+      style: { backgroundColor: currentProfile.color },
+      className: "",
+      textColor: "text-white",
+      overlay: "from-black/5 to-transparent",
+    };
   }
 
   // Default fallback

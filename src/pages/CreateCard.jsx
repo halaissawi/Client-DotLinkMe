@@ -2,7 +2,15 @@ import React, { useState, useEffect } from "react";
 import AOS from "aos";
 import "aos/dist/aos.css";
 import { useNavigate } from "react-router-dom";
-import { Sparkle, Palette, Box, Moon, Zap, Crown } from "lucide-react";
+import {
+  Sparkle,
+  Palette,
+  Box,
+  Moon,
+  Zap,
+  Crown,
+  Briefcase,
+} from "lucide-react";
 
 import CreateCardHero from "../components/CreateCard/CreateCardHero";
 import ProfileTypeSwitch from "../components/CreateCard/ProfileTypeSwitch";
@@ -17,7 +25,7 @@ const INITIAL_PERSONAL_DATA = {
   bio: "",
   color: "#0066FF",
   image: null,
-  designMode: "manual",
+  designMode: "template",
   aiPrompt: "",
   aiBackground: null,
   customDesignUrl: null, // 🆕 NEW
@@ -30,7 +38,7 @@ const INITIAL_BUSINESS_DATA = {
   bio: "",
   color: "#16213E",
   logo: null,
-  designMode: "manual",
+  designMode: "template",
   aiPrompt: "",
   aiBackground: null,
   customDesignUrl: null, // 🆕 NEW
@@ -50,46 +58,52 @@ const INITIAL_SOCIAL_LINKS = {
 
 export const TEMPLATES = [
   {
-    id: "modern",
-    name: "Modern",
-    preview: "Clean & professional",
-    description: "A clean, professional design perfect for business cards",
-    icon: <Sparkle className="w-5 h-5" />,
+    id: "template1",
+    name: "template1",
+    description: "Bold and sophisticated for professionals",
+    icon: <Briefcase className="w-5 h-5" />,
+    previewImage: "/templates/previews/template1.webp",
+    fullImage: "/templates/full/template1.webp",
   },
   {
-    id: "gradient",
-    name: "Gradient",
-    preview: "Soft gradient flow",
-    description: "Smooth gradient background with modern aesthetics",
-    icon: <Palette className="w-5 h-5" />,
-  },
-  {
-    id: "glass",
-    name: "Glassmorphism",
-    preview: "Frosted glass effect",
-    description: "Trendy frosted glass effect with transparency",
-    icon: <Box className="w-5 h-5" />,
-  },
-  {
-    id: "dark",
-    name: "Dark Mode",
-    preview: "Bold & mysterious",
-    description: "Sleek dark theme for a bold statement",
-    icon: <Moon className="w-5 h-5" />,
-  },
-  {
-    id: "neon",
-    name: "Neon",
-    preview: "Vibrant & electric",
-    description: "Eye-catching neon glow effects",
+    id: "template2",
+    name: "template2",
+    description: "Modern gradient for tech professionals",
     icon: <Zap className="w-5 h-5" />,
+    previewImage: "/templates/previews/template2.webp",
+    fullImage: "/templates/full/template2.webp",
   },
   {
-    id: "elegant",
-    name: "Elegant",
-    preview: "Sophisticated luxury",
-    description: "Premium design with elegant touches",
-    icon: <Crown className="w-5 h-5" />,
+    id: "template3",
+    name: "template3",
+    description: "Vibrant colors for creative minds",
+    icon: <Palette className="w-5 h-5" />,
+    previewImage: "/templates/previews/template3.webp",
+    fullImage: "/templates/full/template3.webp",
+  },
+  {
+    id: "template4",
+    name: "template4",
+    description: "Clean and simple elegance",
+    icon: <Sparkle className="w-5 h-5" />,
+    previewImage: "/templates/previews/template4.webp",
+    fullImage: "/templates/full/template4.webp",
+  },
+  {
+    id: "template5",
+    name: "template5",
+    description: "Organic and eco-friendly",
+    icon: <Crown className="w-5 h-5" />, // Change icon as needed
+    previewImage: "/templates/previews/template5.webp",
+    fullImage: "/templates/full/template5.webp",
+  },
+  {
+    id: "template6",
+    name: "template6",
+    description: "Professional healthcare design",
+    icon: <Moon className="w-5 h-5" />, // Change icon as needed
+    previewImage: "/templates/previews/template6.webp",
+    fullImage: "/templates/full/template6.webp",
   },
 ];
 
@@ -419,6 +433,7 @@ export default function CreateCard() {
             profileType={profileType}
             currentProfile={currentProfile}
             selectedTemplate={selectedTemplate}
+            templates={TEMPLATES} // ← ADD THIS LINE!
           />
         </div>
       </section>

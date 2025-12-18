@@ -1,3 +1,5 @@
+import { CARD_TEMPLATES } from "../../../constants/cardTemplates";
+
 export function generateProfileUrl(name) {
   if (!name || !name.trim()) {
     return "https://linkme.io/your-smart-identity";
@@ -13,7 +15,7 @@ export function generateProfileUrl(name) {
 }
 
 export function getTemplateStyles(template, profile) {
-  // 🆕 PRIORITY 1: Custom Design (HIGHEST PRIORITY)
+  // PRIORITY 1: Custom Design (HIGHEST PRIORITY)
   if (profile?.customDesignUrl) {
     return {
       style: {
@@ -27,7 +29,7 @@ export function getTemplateStyles(template, profile) {
     };
   }
 
-  // PRIORITY 2: If AI mode and has AI background, use it
+  // PRIORITY 2: AI Background
   if (profile?.designMode === "ai" && profile?.aiBackground) {
     return {
       style: {
@@ -41,87 +43,39 @@ export function getTemplateStyles(template, profile) {
     };
   }
 
-  // PRIORITY 3: Manual mode - use the selected color
-  if (profile?.designMode === "manual" && profile?.color) {
-    const color = profile.color;
+  // PRIORITY 3: Template mode
+  if (profile?.designMode === "template" && template) {
+    const templateData = CARD_TEMPLATES[template];
 
-    switch (template) {
-      case "gradient":
-        return {
-          style: {
-            background: `linear-gradient(135deg, ${color} 0%, ${adjustColorBrightness(
-              color,
-              -30
-            )} 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-black/10 to-transparent",
-        };
-
-      case "glass":
-        return {
-          style: {
-            background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-          },
-          className: "border-2 backdrop-blur-xl",
-          textColor: "text-gray-800",
-          borderColor: color + "40",
-          overlay: null,
-        };
-
-      case "dark":
-        return {
-          style: {
-            background: `linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, ${color}20 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-transparent via-black/20 to-transparent",
-        };
-
-      case "neon":
-        return {
-          style: {
-            background: `linear-gradient(135deg, #000000 0%, #1a1a2e 100%)`,
-            boxShadow: `0 0 30px ${color}40, inset 0 0 50px ${color}10`,
-          },
-          className: `border-2`,
-          textColor: "text-white",
-          borderColor: color,
-          overlay: null,
-          glow: color,
-        };
-
-      case "elegant":
-        return {
-          style: {
-            background: `linear-gradient(to bottom right, ${color} 0%, ${adjustColorBrightness(
-              color,
-              -20
-            )} 50%, ${adjustColorBrightness(color, 10)} 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-white/5 to-transparent",
-        };
-
-      case "modern":
-      default:
-        return {
-          style: {
-            backgroundColor: color,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-black/5 to-transparent",
-        };
+    if (templateData?.fullImage) {
+      return {
+        style: {
+          backgroundImage: `url(${templateData.fullImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        },
+        className: "",
+        textColor: "text-white",
+        overlay: "from-black/30 to-transparent",
+      };
     }
   }
 
-  // Default fallback
+  // PRIORITY 4: Manual mode
+  if (profile?.designMode === "manual" && profile?.color) {
+    const color = profile.color;
+
+    return {
+      style: {
+        background: `linear-gradient(135deg, ${color} 0%, ${color} 100%)`,
+      },
+      className: "",
+      textColor: "text-white",
+      overlay: "from-black/10 to-transparent",
+    };
+  }
+
+  // Fallback
   return {
     style: {},
     className:

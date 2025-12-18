@@ -7,6 +7,11 @@ export default function TemplateSelector({
   onTemplateChange,
 }) {
   const [hoveredTemplate, setHoveredTemplate] = useState(null);
+  const [imageErrors, setImageErrors] = useState({});
+
+  const handleImageError = (templateId) => {
+    setImageErrors((prev) => ({ ...prev, [templateId]: true }));
+  };
 
   return (
     <div className="space-y-3 pt-4">
@@ -20,16 +25,18 @@ export default function TemplateSelector({
 
       {/* MOBILE — Horizontal Scroll */}
       <div
-        className="flex sm:hidden gap-2 overflow-x-auto pb-2 px-1 snap-x snap-mandatory"
+        className="flex sm:hidden gap-3 overflow-x-auto pb-3 px-1 snap-x snap-mandatory"
         role="radiogroup"
         aria-label="Card template selection"
         style={{
           scrollbarWidth: "thin",
           scrollbarColor: "rgba(139, 92, 246, 0.3) transparent",
+          WebkitOverflowScrolling: "touch",
         }}
       >
         {templates.map((template) => {
           const isSelected = selectedTemplate === template.id;
+          const hasError = imageErrors[template.id];
 
           return (
             <button
@@ -40,52 +47,68 @@ export default function TemplateSelector({
               aria-checked={isSelected}
               aria-label={`${template.name} template`}
               className={`
-                flex-shrink-0 w-20 h-20 rounded-xl border-2 p-2
-                flex flex-col items-center justify-center gap-1 text-[10px]
-                transition-all snap-start
+                flex-shrink-0 w-32 rounded-xl border-2 overflow-hidden
+                transition-all snap-center
                 ${
                   isSelected
-                    ? "border-brand-primary bg-brand-primary/10 shadow-md scale-105"
-                    : "border-gray-200 bg-white hover:border-brand-primary/50 active:scale-95"
+                    ? "border-brand-primary shadow-lg scale-105"
+                    : "border-gray-200 hover:border-brand-primary/50 active:scale-95"
                 }
               `}
             >
-              <div
-                className={`
-                  w-8 h-8 rounded-md flex items-center justify-center text-xl
-                  ${isSelected ? "bg-brand-primary/20" : "bg-gray-100"}
-                `}
-              >
-                {template.icon}
+              {/* Template Preview Image */}
+              <div className="relative w-full h-20 bg-gray-100">
+                {!hasError && template.previewImage ? (
+                  <img
+                    src={template.previewImage}
+                    alt={template.name}
+                    onError={() => handleImageError(template.id)}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-3xl bg-gradient-to-br from-gray-100 to-gray-200">
+                    {template.icon}
+                  </div>
+                )}
+
+                {/* Selection Indicator */}
+                {isSelected && (
+                  <div className="absolute top-1 right-1 w-5 h-5 bg-brand-primary rounded-full flex items-center justify-center shadow-lg">
+                    <Check className="w-3 h-3 text-white" />
+                  </div>
+                )}
               </div>
 
-              {isSelected && (
-                <div className="w-4 h-4 bg-brand-primary rounded-full flex items-center justify-center">
-                  <Check className="w-3 h-3 text-white" />
-                </div>
-              )}
-
-              <span
-                className={`font-medium truncate w-full text-center ${
-                  isSelected ? "text-brand-primary" : "text-gray-600"
+              {/* Template Name */}
+              <div
+                className={`px-2 py-2 text-center ${
+                  isSelected ? "bg-brand-primary/10" : "bg-white"
                 }`}
               >
-                {template.name}
-              </span>
+                <span
+                  className={`text-xs font-medium truncate block ${
+                    isSelected ? "text-brand-primary" : "text-gray-700"
+                  }`}
+                >
+                  {template.name}
+                </span>
+              </div>
             </button>
           );
         })}
       </div>
 
-      {/* DESKTOP — Original Grid */}
+      {/* DESKTOP — Grid with Large Previews */}
       <div
-        className="hidden sm:grid grid-cols-2 md:grid-cols-3 gap-3"
+        className="hidden sm:grid grid-cols-2 md:grid-cols-3 gap-4"
         role="radiogroup"
         aria-label="Card template selection"
       >
         {templates.map((template) => {
           const isSelected = selectedTemplate === template.id;
           const isHovered = hoveredTemplate === template.id;
+          const hasError = imageErrors[template.id];
 
           return (
             <button
@@ -98,38 +121,62 @@ export default function TemplateSelector({
               aria-checked={isSelected}
               aria-label={`${template.name} template - ${template.description}`}
               className={`
-                relative group border-2 rounded-xl p-3 text-left transition-all duration-300
+                relative group border-2 rounded-xl overflow-hidden text-left 
+                transition-all duration-300
                 ${
                   isSelected
-                    ? "border-brand-primary bg-brand-primary/10 shadow-lg scale-[1.02]"
-                    : "border-gray-200 hover:border-brand-primary/50 hover:shadow-md"
+                    ? "border-brand-primary shadow-xl scale-[1.02]"
+                    : "border-gray-200 hover:border-brand-primary/50 hover:shadow-lg"
                 }
                 ${isHovered && !isSelected ? "scale-[1.01]" : ""}
               `}
             >
+              {/* Selection Check Badge */}
               {isSelected && (
-                <div className="absolute -top-2 -right-2 w-6 h-6 bg-brand-primary rounded-full flex items-center justify-center shadow-lg z-10">
+                <div className="absolute -top-2 -right-2 w-7 h-7 bg-brand-primary rounded-full flex items-center justify-center shadow-lg z-20">
                   <Check className="w-4 h-4 text-white" />
                 </div>
               )}
 
+              {/* Template Preview Image */}
               <div
-                className={`
-                  w-full h-10 rounded-lg mb-2 flex items-center justify-center text-2xl font-medium
-                  transition-colors
-                  ${
-                    isSelected
-                      ? "bg-brand-primary/20"
-                      : "bg-gray-100 group-hover:bg-brand-primary/10"
-                  }
-                `}
+                className="relative w-full bg-gray-100 overflow-hidden"
+                style={{ aspectRatio: "1.586 / 1" }}
               >
-                {template.icon}
+                {!hasError && template.previewImage ? (
+                  <img
+                    src={template.previewImage}
+                    alt={template.name}
+                    onError={() => handleImageError(template.id)}
+                    className={`
+                      w-full h-full object-cover
+                      transition-transform duration-300
+                      ${isHovered ? "scale-110" : "scale-100"}
+                    `}
+                    loading="lazy"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center text-5xl bg-gradient-to-br from-gray-100 to-gray-200">
+                    {template.icon}
+                  </div>
+                )}
+
+                {/* Hover Overlay */}
+                {isHovered && !isSelected && (
+                  <div className="absolute inset-0 bg-brand-primary/10 backdrop-blur-[1px] transition-opacity" />
+                )}
               </div>
 
-              <div className="space-y-1">
+              {/* Template Info */}
+              <div
+                className={`p-3 transition-colors ${
+                  isSelected
+                    ? "bg-brand-primary/10"
+                    : "bg-white group-hover:bg-gray-50"
+                }`}
+              >
                 <p
-                  className={`font-semibold text-sm transition-colors ${
+                  className={`font-semibold text-sm mb-1 transition-colors ${
                     isSelected
                       ? "text-brand-primary"
                       : "text-brand-dark group-hover:text-brand-primary"
@@ -141,29 +188,42 @@ export default function TemplateSelector({
                   {template.description}
                 </p>
               </div>
-
-              {!isSelected && isHovered && (
-                <div className="absolute inset-0 rounded-xl border-2 border-brand-primary/30 pointer-events-none transition-opacity"></div>
-              )}
             </button>
           );
         })}
       </div>
 
       {/* Scroll indicator for mobile */}
-      <div className="sm:hidden flex justify-center gap-1 pt-1">
-        {templates.map((template, index) => (
+      <div className="sm:hidden flex justify-center gap-1.5 pt-2">
+        {templates.map((template) => (
           <div
             key={template.id}
-            className={`h-1 rounded-full transition-all ${
+            className={`h-1.5 rounded-full transition-all ${
               selectedTemplate === template.id
-                ? "w-4 bg-brand-primary"
+                ? "w-6 bg-brand-primary"
                 : "w-1.5 bg-gray-300"
             }`}
             aria-hidden="true"
           />
         ))}
       </div>
+
+      {/* WebKit scrollbar styles */}
+      <style jsx>{`
+        div::-webkit-scrollbar {
+          height: 6px;
+        }
+        div::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        div::-webkit-scrollbar-thumb {
+          background: rgba(139, 92, 246, 0.3);
+          border-radius: 3px;
+        }
+        div::-webkit-scrollbar-thumb:hover {
+          background: rgba(139, 92, 246, 0.5);
+        }
+      `}</style>
     </div>
   );
 }
