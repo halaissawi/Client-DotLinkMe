@@ -4,7 +4,7 @@ import {
   Instagram,
   Linkedin,
   Globe,
-  Twitter,
+  X,
   Phone,
   Mail,
   MapPin,
@@ -30,47 +30,72 @@ export default function Footer() {
 
           {/* Social Icons */}
           <div className="flex gap-4 pt-2">
-            <a className="hover:text-brand-primary transition" href="#">
+            <a
+              className="hover:text-brand-primary transition"
+              href="#"
+              aria-label="Visit our website"
+            >
               <Globe size={18} />
             </a>
-            <a className="hover:text-brand-primary transition" href="#">
+            <a
+              className="hover:text-brand-primary transition"
+              href="#"
+              aria-label="Follow us on Instagram"
+            >
               <Instagram size={18} />
             </a>
-            <a className="hover:text-brand-primary transition" href="#">
-              <Twitter size={18} />
+            <a
+              className="hover:text-brand-primary transition"
+              href="#"
+              aria-label="Follow us on X"
+            >
+              <X size={18} />
             </a>
-            <a className="hover:text-brand-primary transition" href="#">
+            <a
+              className="hover:text-brand-primary transition"
+              href="#"
+              aria-label="Connect on LinkedIn"
+            >
               <Linkedin size={18} />
             </a>
           </div>
         </div>
 
         {/* Navigation */}
-        <div className="">
+        <div>
           <h4 className="text-white font-semibold mb-3">Navigation</h4>
           <ul className="space-y-2 text-sm text-[#a1a3b8]">
             <li>
-              <Link to="/" className="hover:text-brand-primary">
+              <Link to="/" className="hover:text-brand-primary transition">
                 Home
               </Link>
             </li>
             <li>
-              <Link to="/create-card" className="hover:text-brand-primary">
+              <Link
+                to="/create-card"
+                className="hover:text-brand-primary transition"
+              >
                 Create Card
               </Link>
             </li>
             <li>
-              <Link to="/how-it-works" className="hover:text-brand-primary">
+              <Link
+                to="/how-it-works"
+                className="hover:text-brand-primary transition"
+              >
                 How It Works
               </Link>
             </li>
             <li>
-              <Link to="/about" className="hover:text-brand-primary">
+              <Link to="/about" className="hover:text-brand-primary transition">
                 About
               </Link>
             </li>
             <li>
-              <Link to="/contact" className="hover:text-brand-primary">
+              <Link
+                to="/contact"
+                className="hover:text-brand-primary transition"
+              >
                 Contact
               </Link>
             </li>
@@ -78,15 +103,26 @@ export default function Footer() {
         </div>
 
         {/* Contact */}
-        <div className="">
+        <div>
           <h4 className="text-white font-semibold mb-3">Contact</h4>
           <ul className="space-y-2 text-sm text-[#a1a3b8]">
             <li className="flex items-center gap-2">
-              <Phone size={16} className="text-brand-primary" /> +962789924535
+              <Phone size={16} className="text-brand-primary flex-shrink-0" />
+              <a
+                href="tel:+962789924535"
+                className="hover:text-brand-primary transition"
+              >
+                +962789924535
+              </a>
             </li>
             <li className="flex items-center gap-2">
-              <Mail size={16} className="text-brand-primary" />{" "}
-              info@dotmediajo.net
+              <Mail size={16} className="text-brand-primary flex-shrink-0" />
+              <a
+                href="mailto:info@dotmediajo.net"
+                className="hover:text-brand-primary transition"
+              >
+                info@dotmediajo.net
+              </a>
             </li>
             <li className="flex items-center gap-2">
               <MapPin size={16} className="text-brand-primary" /> Wasfi Al-Tal Street, Amman, Jordan

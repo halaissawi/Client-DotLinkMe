@@ -1,8 +1,9 @@
 import React from "react";
 import { QRCodeCanvas } from "qrcode.react";
 import { Eye, User, Building } from "lucide-react";
+import { CARD_TEMPLATES } from "../../../constants/cardTemplates";
 
-// ==================== UTILITY FUNCTIONS ====================
+/* ==================== UTILS ==================== */
 export function generateProfileUrl(slug) {
   if (!slug) {
     return "https://linkme.io/your-smart-identity";
@@ -11,7 +12,7 @@ export function generateProfileUrl(slug) {
 }
 
 export function getTemplateStyles(template, profile) {
-  // 🆕 PRIORITY 1: Custom Design (HIGHEST PRIORITY)
+  // PRIORITY 1: Custom uploaded design
   if (profile?.customDesignUrl) {
     return {
       style: {
@@ -19,13 +20,12 @@ export function getTemplateStyles(template, profile) {
         backgroundSize: "cover",
         backgroundPosition: "center",
       },
-      className: "",
       textColor: "text-white",
       overlay: "from-black/60 to-black/30",
     };
   }
 
-  // PRIORITY 2: If AI mode and has AI background, use it
+  // PRIORITY 2: AI background
   if (profile?.designMode === "ai" && profile?.aiBackground) {
     return {
       style: {
@@ -33,124 +33,50 @@ export function getTemplateStyles(template, profile) {
         backgroundSize: "cover",
         backgroundPosition: "center",
       },
-      className: "",
       textColor: "text-white",
       overlay: "from-black/40 to-black/20",
     };
   }
 
-  // PRIORITY 3: Manual mode - use the selected color
-  if (profile?.designMode === "manual" && profile?.color) {
-    const color = profile.color;
+  // PRIORITY 3: NEW CARD TEMPLATES (THE ONLY TEMPLATES)
+  if (profile?.designMode === "template" && template) {
+    const templateData = CARD_TEMPLATES[template];
 
-    switch (template) {
-      case "gradient":
-        return {
-          style: {
-            background: `linear-gradient(135deg, ${color} 0%, ${adjustColorBrightness(
-              color,
-              -30
-            )} 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-black/10 to-transparent",
-        };
-
-      case "glass":
-        return {
-          style: {
-            background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-          },
-          className: "border-2 backdrop-blur-xl",
-          textColor: "text-gray-800",
-          borderColor: color + "40",
-          overlay: null,
-        };
-
-      case "dark":
-        return {
-          style: {
-            background: `linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, ${color}20 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-transparent via-black/20 to-transparent",
-        };
-
-      case "neon":
-        return {
-          style: {
-            background: `linear-gradient(135deg, #000000 0%, #1a1a2e 100%)`,
-            boxShadow: `0 0 30px ${color}40, inset 0 0 50px ${color}10`,
-          },
-          className: `border-2`,
-          textColor: "text-white",
-          borderColor: color,
-          overlay: null,
-          glow: color,
-        };
-
-      case "elegant":
-        return {
-          style: {
-            background: `linear-gradient(to bottom right, ${color} 0%, ${adjustColorBrightness(
-              color,
-              -20
-            )} 50%, ${adjustColorBrightness(color, 10)} 100%)`,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-white/5 to-transparent",
-        };
-
-      case "modern":
-      default:
-        return {
-          style: {
-            backgroundColor: color,
-          },
-          className: "",
-          textColor: "text-white",
-          overlay: "from-black/5 to-transparent",
-        };
+    if (templateData?.fullImage) {
+      return {
+        style: {
+          backgroundImage: `url(${templateData.fullImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        },
+        textColor: "text-white",
+        overlay: "from-black/30 to-transparent",
+      };
     }
   }
 
-  // Default fallback
+  // PRIORITY 4: Manual color fallback
+  if (profile?.designMode === "manual" && profile?.color) {
+    return {
+      style: {
+        backgroundColor: profile.color,
+      },
+      textColor: "text-white",
+      overlay: "from-black/10 to-transparent",
+    };
+  }
+
+  // FINAL fallback
   return {
-    style: {},
-    className:
-      "bg-gradient-to-br from-brand-primary/90 via-[#0B0F19] to-[#16203A]",
+    style: {
+      background: "linear-gradient(to bottom right, #2563eb, #0f172a, #1e293b)",
+    },
     textColor: "text-white",
     overlay: "from-black/10 to-transparent",
   };
 }
 
-// Helper function to adjust color brightness
-export function adjustColorBrightness(color, percent) {
-  const num = parseInt(color.replace("#", ""), 16);
-  const amt = Math.round(2.55 * percent);
-  const R = (num >> 16) + amt;
-  const G = ((num >> 8) & 0x00ff) + amt;
-  const B = (num & 0x0000ff) + amt;
-
-  return (
-    "#" +
-    (
-      0x1000000 +
-      (R < 255 ? (R < 1 ? 0 : R) : 255) * 0x10000 +
-      (G < 255 ? (G < 1 ? 0 : G) : 255) * 0x100 +
-      (B < 255 ? (B < 1 ? 0 : B) : 255)
-    )
-      .toString(16)
-      .slice(1)
-  );
-}
-
-// ==================== PROFILE CARD COMPONENT ====================
+/* ==================== COMPONENT ==================== */
 export default function ProfileCardPreview({
   profile,
   onShare,
@@ -158,57 +84,27 @@ export default function ProfileCardPreview({
   showQR,
 }) {
   const isPersonal = profile.profileType === "personal";
-  const template = profile.template || "modern";
+  const template = profile.template;
   const templateStyles = getTemplateStyles(template, profile);
-  const isGlassTemplate = template === "glass";
-  const isNeonTemplate = template === "neon";
-  const isDarkTemplate = template === "dark";
   const profileUrl = generateProfileUrl(profile.slug);
 
   return (
     <div className="space-y-3">
-      {/* Card Preview */}
+      {/* Card */}
       <div
-        className={`relative w-full h-48 rounded-[24px] shadow-2xl overflow-hidden transition-all duration-300 ${templateStyles.className}`}
-        style={{
-          ...templateStyles.style,
-          ...(templateStyles.borderColor && {
-            borderColor: templateStyles.borderColor,
-          }),
-        }}
+        className="relative w-full h-48 rounded-[24px] shadow-2xl overflow-hidden"
+        style={templateStyles.style}
       >
-        {/* Background overlay */}
         {templateStyles.overlay && (
           <div
             className={`absolute inset-0 bg-gradient-to-br ${templateStyles.overlay}`}
           />
         )}
 
-        {/* Neon glow effect */}
-        {isNeonTemplate && templateStyles.glow && (
-          <>
-            <div
-              className="absolute top-0 left-0 w-full h-1"
-              style={{
-                background: `linear-gradient(90deg, transparent, ${templateStyles.glow}, transparent)`,
-                boxShadow: `0 0 20px ${templateStyles.glow}`,
-              }}
-            />
-            <div
-              className="absolute bottom-0 left-0 w-full h-1"
-              style={{
-                background: `linear-gradient(90deg, transparent, ${templateStyles.glow}, transparent)`,
-                boxShadow: `0 0 20px ${templateStyles.glow}`,
-              }}
-            />
-          </>
-        )}
-
-        {/* Content */}
         <div
           className={`relative z-10 h-full flex flex-col justify-between px-5 py-4 ${templateStyles.textColor}`}
         >
-          {/* Header with logo/avatar */}
+          {/* Header */}
           <div className="flex items-center gap-3">
             {profile.avatarUrl ? (
               <img
@@ -216,23 +112,11 @@ export default function ProfileCardPreview({
                 alt="avatar"
                 className={`w-12 h-12 ${
                   isPersonal ? "rounded-full" : "rounded-lg"
-                } border-2 ${
-                  isGlassTemplate
-                    ? "border-gray-300"
-                    : isNeonTemplate
-                    ? `border-white shadow-[0_0_15px_${templateStyles.glow}]`
-                    : "border-white/80"
-                } object-cover shadow-lg`}
+                } border-2 border-white/80 object-cover shadow-lg`}
               />
             ) : (
               <div
-                className={`w-12 h-12 flex items-center justify-center text-xl ${
-                  isGlassTemplate
-                    ? "bg-gray-100 border-gray-300 text-gray-600"
-                    : isNeonTemplate
-                    ? `bg-white/10 border-white text-white shadow-[0_0_15px_${templateStyles.glow}]`
-                    : "bg-white/20 border-white/40 text-white"
-                } border-2 ${
+                className={`w-12 h-12 flex items-center justify-center bg-white/20 border-2 border-white/40 text-white ${
                   isPersonal ? "rounded-full" : "rounded-lg"
                 } shadow-lg backdrop-blur-sm`}
               >
@@ -240,104 +124,37 @@ export default function ProfileCardPreview({
                   <User className="w-5 h-5" />
                 ) : (
                   <Building className="w-5 h-5" />
-                )}{" "}
+                )}
               </div>
             )}
 
             <div>
-              <p
-                className={`text-sm font-semibold ${
-                  isGlassTemplate
-                    ? "text-gray-700"
-                    : isNeonTemplate || isDarkTemplate
-                    ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                    : "opacity-90"
-                }`}
-              >
-                Dot LinkMe
-              </p>
-              <p
-                className={`text-xs ${
-                  isGlassTemplate
-                    ? "text-gray-500"
-                    : isNeonTemplate || isDarkTemplate
-                    ? "text-gray-300"
-                    : "opacity-70"
-                }`}
-              >
-                Smart NFC Digital Identity
-              </p>
+              <p className="text-sm font-semibold opacity-90">Dot LinkMe</p>
+              <p className="text-xs opacity-70">Smart NFC Digital Identity</p>
             </div>
           </div>
 
-          {/* Main content */}
-          <div className="space-y-0.5">
-            <h3
-              className={`text-lg font-bold tracking-tight ${
-                isGlassTemplate
-                  ? "text-gray-900"
-                  : isNeonTemplate
-                  ? `drop-shadow-[0_0_10px_${templateStyles.glow}]`
-                  : isDarkTemplate
-                  ? "drop-shadow-lg"
-                  : ""
-              }`}
-            >
+          {/* Content */}
+          <div>
+            <h3 className="text-lg font-bold">
               {profile.name || (isPersonal ? "Your Name" : "Company Name")}
             </h3>
-            <p
-              className={`text-xs ${
-                isGlassTemplate
-                  ? "text-gray-600"
-                  : isNeonTemplate || isDarkTemplate
-                  ? "text-gray-200"
-                  : "opacity-85"
-              }`}
-            >
+            <p className="text-xs opacity-85">
               {profile.title ||
                 (isPersonal ? "Your role or title" : "Your industry")}
             </p>
-            <p
-              className={`text-[11px] mt-1 line-clamp-2 ${
-                isGlassTemplate
-                  ? "text-gray-500"
-                  : isNeonTemplate || isDarkTemplate
-                  ? "text-gray-300"
-                  : "opacity-75"
-              }`}
-            >
-              {profile.bio ||
-                "This is a preview of your smart identity card. Add a short bio or description here."}
+            <p className="text-[11px] opacity-75 line-clamp-2 mt-1">
+              {profile.bio || "This is a preview of your smart identity card."}
             </p>
           </div>
 
-          {/* Footer with tags and QR */}
-          <div className="flex items-center justify-between mt-2">
-            <div className="flex items-center gap-2 text-[10px]">
-              <span
-                className={`px-2 py-1 rounded-full ${
-                  isGlassTemplate
-                    ? "bg-gray-200 text-gray-700"
-                    : isNeonTemplate
-                    ? `bg-white/10 text-white border border-white/30 backdrop-blur-sm shadow-[0_0_10px_${templateStyles.glow}]`
-                    : isDarkTemplate
-                    ? "bg-white/10 text-white backdrop-blur-sm"
-                    : "bg-black/15 text-white opacity-80"
-                }`}
-              >
+          {/* Footer */}
+          <div className="flex items-center justify-between">
+            <div className="flex gap-2 text-[10px]">
+              <span className="px-2 py-1 rounded-full bg-black/20">
                 {isPersonal ? "Personal" : "Business"}
               </span>
-              <span
-                className={`px-2 py-1 rounded-full flex items-center gap-1 ${
-                  isGlassTemplate
-                    ? "bg-gray-200 text-gray-700"
-                    : isNeonTemplate
-                    ? `bg-white/10 text-white border border-white/30 backdrop-blur-sm shadow-[0_0_10px_${templateStyles.glow}]`
-                    : isDarkTemplate
-                    ? "bg-white/10 text-white backdrop-blur-sm"
-                    : "bg-black/15 text-white opacity-80"
-                }`}
-              >
+              <span className="px-2 py-1 rounded-full bg-black/20 flex items-center gap-1">
                 <Eye className="w-3 h-3" />
                 {profile.viewCount || 0}
               </span>
@@ -345,9 +162,7 @@ export default function ProfileCardPreview({
 
             <button
               onClick={() => onToggleQR(profile.id)}
-              className={`bg-white rounded-md p-1 shadow-lg cursor-pointer hover:scale-110 transition-transform ${
-                isNeonTemplate ? `shadow-[0_0_20px_${templateStyles.glow}]` : ""
-              }`}
+              className="bg-white rounded-md p-1 shadow-lg hover:scale-110 transition-transform"
             >
               <QRCodeCanvas value={profileUrl} size={40} />
             </button>
@@ -355,22 +170,17 @@ export default function ProfileCardPreview({
         </div>
       </div>
 
-      {/* QR Code Popup */}
+      {/* QR Popup */}
       {showQR === profile.id && (
         <div className="p-4 border-2 border-gray-200 rounded-xl bg-white">
           <div className="flex flex-col items-center gap-3">
-            <QRCodeCanvas
-              value={profileUrl}
-              size={200}
-              level="H"
-              includeMargin
-            />
-            <p className="text-xs text-gray-600 font-mono text-center break-all">
+            <QRCodeCanvas value={profileUrl} size={200} includeMargin />
+            <p className="text-xs text-gray-600 break-all text-center">
               {profileUrl}
             </p>
             <button
               onClick={() => onShare(profile)}
-              className="text-sm text-brand-primary hover:underline font-medium"
+              className="text-sm text-brand-primary font-medium hover:underline"
             >
               Copy Profile Link
             </button>

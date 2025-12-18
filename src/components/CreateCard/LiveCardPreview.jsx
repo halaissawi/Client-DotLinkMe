@@ -7,6 +7,7 @@ import {
   Sparkles,
   Loader2,
 } from "lucide-react";
+import { CARD_TEMPLATES } from "../../constants/cardTemplates";
 
 function generateProfileUrl(name) {
   if (!name || !name.trim()) return "https://linkme.io/your-smart-identity";
@@ -36,26 +37,9 @@ function adjustColorBrightness(color, percent) {
       .slice(1)
   );
 }
-
 function getTemplateStyles(selectedTemplate, currentProfile) {
-  console.log("🔍 [PREVIEW] getTemplateStyles called");
-  console.log("🔍 [PREVIEW] selectedTemplate:", selectedTemplate);
-  console.log(
-    "🔍 [PREVIEW] currentProfile.designMode:",
-    currentProfile.designMode
-  );
-  console.log(
-    "🔍 [PREVIEW] currentProfile.aiBackground:",
-    currentProfile.aiBackground
-  );
-  console.log(
-    "🔍 [PREVIEW] currentProfile.customDesignUrl:",
-    currentProfile.customDesignUrl
-  );
-
-  // PRIORITY 1: Custom Design (highest priority)
+  // PRIORITY 1: Custom Design
   if (currentProfile.customDesignUrl) {
-    console.log("✅ [PREVIEW] Using custom design URL");
     return {
       style: {
         backgroundImage: `url(${currentProfile.customDesignUrl})`,
@@ -69,10 +53,6 @@ function getTemplateStyles(selectedTemplate, currentProfile) {
 
   // PRIORITY 2: AI Background
   if (currentProfile.designMode === "ai" && currentProfile.aiBackground) {
-    console.log(
-      "✅ [PREVIEW] Using AI background:",
-      currentProfile.aiBackground
-    );
     return {
       style: {
         backgroundImage: `url(${currentProfile.aiBackground})`,
@@ -84,80 +64,38 @@ function getTemplateStyles(selectedTemplate, currentProfile) {
     };
   }
 
-  // PRIORITY 3: Manual mode with templates
-  if (currentProfile.designMode === "manual") {
-    console.log("✅ [PREVIEW] Using manual template:", selectedTemplate);
-    const color = currentProfile.color || "#2563eb";
+  // PRIORITY 3: Template
+  if (currentProfile.designMode === "template" && selectedTemplate) {
+    const template = CARD_TEMPLATES[selectedTemplate];
 
-    switch (selectedTemplate) {
-      case "gradient":
-        return {
-          style: {
-            background: `linear-gradient(135deg, ${color} 0%, ${adjustColorBrightness(
-              color,
-              -30
-            )} 100%)`,
-          },
-          textColor: "text-white",
-          overlay: "from-black/10 to-transparent",
-        };
-
-      case "glass":
-        return {
-          style: {
-            background: `linear-gradient(135deg, ${color}15 0%, ${color}05 100%)`,
-            backdropFilter: "blur(20px)",
-          },
-          className: "border-2 backdrop-blur-xl",
-          textColor: "text-gray-800",
-          borderColor: color + "40",
-        };
-
-      case "dark":
-        return {
-          style: {
-            background: `linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, ${color}20 100%)`,
-          },
-          textColor: "text-white",
-          overlay: "from-transparent via-black/20 to-transparent",
-        };
-
-      case "neon":
-        return {
-          style: {
-            background: `linear-gradient(135deg, #000000 0%, #1a1a2e 100%)`,
-            boxShadow: `0 0 30px ${color}40, inset 0 0 50px ${color}10`,
-          },
-          className: "border-2",
-          textColor: "text-white",
-          borderColor: color,
-          glow: color,
-        };
-
-      case "elegant":
-        return {
-          style: {
-            background: `linear-gradient(to bottom right, ${color} 0%, ${adjustColorBrightness(
-              color,
-              -20
-            )} 50%, ${adjustColorBrightness(color, 10)} 100%)`,
-          },
-          textColor: "text-white",
-          overlay: "from-white/5 to-transparent",
-        };
-
-      default:
-        // "modern" template
-        return {
-          style: { backgroundColor: color },
-          textColor: "text-white",
-          overlay: "from-black/5 to-transparent",
-        };
+    if (template?.fullImage) {
+      return {
+        style: {
+          backgroundImage: `url(${template.fullImage})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        },
+        textColor: "text-white",
+        overlay: "from-black/30 to-transparent",
+      };
     }
   }
 
-  console.log("⚠️ [PREVIEW] Using fallback default gradient");
-  // FALLBACK: Default gradient if nothing matches
+  // PRIORITY 4: Manual
+  if (currentProfile.designMode === "manual") {
+    const color = currentProfile.color || "#2563eb";
+    return {
+      style: {
+        background: `linear-gradient(135deg, ${color} 0%, ${adjustColorBrightness(
+          color,
+          -30
+        )} 100%)`,
+      },
+      textColor: "text-white",
+      overlay: "from-black/10 to-transparent",
+    };
+  }
+
   return {
     style: {},
     className:
@@ -178,13 +116,18 @@ function CardPreview({ profileType, currentProfile, selectedTemplate }) {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  // Check if we're using an AI or custom background
+  // Check if we're using an image-based background (AI, custom, or template)
   const hasBackgroundImage =
     (currentProfile.designMode === "ai" && currentProfile.aiBackground) ||
-    currentProfile.customDesignUrl;
+    currentProfile.customDesignUrl ||
+    (currentProfile.designMode === "template" && selectedTemplate);
 
   const backgroundUrl =
-    currentProfile.customDesignUrl || currentProfile.aiBackground;
+    currentProfile.customDesignUrl ||
+    currentProfile.aiBackground ||
+    (currentProfile.designMode === "template" && selectedTemplate
+      ? CARD_TEMPLATES[selectedTemplate]?.fullImage
+      : null);
 
   // Reset loading states when background URL changes
   useEffect(() => {
@@ -193,34 +136,24 @@ function CardPreview({ profileType, currentProfile, selectedTemplate }) {
       setImageLoaded(false);
       setImageError(false);
 
-      console.log(
-        "🔄 [LOADING] Starting to load background image:",
-        backgroundUrl
-      );
-
       const img = new Image();
 
       img.onload = () => {
-        console.log("✅ [LOADED] Background image loaded successfully");
         setImageLoading(false);
         setImageLoaded(true);
         setImageError(false);
       };
 
       img.onerror = () => {
-        console.error("❌ [ERROR] Failed to load background image");
         setImageLoading(false);
         setImageLoaded(false);
         setImageError(true);
       };
 
-      // Start loading
       img.src = backgroundUrl;
 
-      // Timeout after 30 seconds
       const timeout = setTimeout(() => {
         if (!imageLoaded) {
-          console.warn("⏱️ [TIMEOUT] Image loading timeout");
           setImageLoading(false);
           setImageError(true);
         }
@@ -246,6 +179,7 @@ function CardPreview({ profileType, currentProfile, selectedTemplate }) {
         ...(templateStyles.borderColor && {
           borderColor: templateStyles.borderColor,
         }),
+        aspectRatio: "1.586 / 1",
       }}
     >
       {/* Loading Overlay */}
@@ -253,9 +187,7 @@ function CardPreview({ profileType, currentProfile, selectedTemplate }) {
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/90 to-blue-900/90 backdrop-blur-sm flex items-center justify-center z-20">
           <div className="text-center">
             <Loader2 className="w-8 h-8 text-white animate-spin mx-auto mb-2" />
-            <p className="text-white text-xs font-medium">
-              Loading AI Background...
-            </p>
+            <p className="text-white text-xs font-medium">Loading Design...</p>
             <p className="text-white/70 text-[10px] mt-1">
               This may take a few moments
             </p>
@@ -268,11 +200,9 @@ function CardPreview({ profileType, currentProfile, selectedTemplate }) {
         <div className="absolute inset-0 bg-gradient-to-br from-red-900/90 to-orange-900/90 backdrop-blur-sm flex items-center justify-center z-20">
           <div className="text-center px-4">
             <p className="text-white text-xs font-medium">
-              Failed to load background
+              Failed to load design
             </p>
-            <p className="text-white/70 text-[10px] mt-1">
-              Using fallback design
-            </p>
+            <p className="text-white/70 text-[10px] mt-1">Using fallback</p>
           </div>
         </div>
       )}
@@ -346,7 +276,6 @@ export default function LiveCardPreview({
   currentProfile,
   selectedTemplate,
 }) {
-  const profileUrl = generateProfileUrl(currentProfile.name);
   const [showMobilePreview, setShowMobilePreview] = useState(false);
 
   return (
@@ -370,15 +299,14 @@ export default function LiveCardPreview({
       <button
         onClick={() => setShowMobilePreview(true)}
         className="
-    lg:hidden fixed bottom-6 left-6 z-50
-    group transition-all duration-300 hover:scale-110
-  "
+          lg:hidden fixed bottom-6 left-6 z-50
+          group transition-all duration-300 hover:scale-110
+        "
       >
         <div className="relative">
           <div className="absolute inset-0 bg-[#0066ff]/20 rounded-full blur-xl animate-blob"></div>
-
-          <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-[#0066ff] to-[#0052cc] rounded-full shadow-lg hover:shadow-xl flex items-center justify-center">
-            <span className="text-white text-[10px] sm:text-xs font-semibold group-hover:-translate-y-1 transition-transform duration-300">
+          <div className="relative w-12 h-12 sm:w-14 sm:h-14 bg-gradient-to-r from-[#0066ff] to-[#0052cc] rounded-full shadow-lg flex items-center justify-center">
+            <span className="text-white text-[10px] sm:text-xs font-semibold">
               Preview
             </span>
           </div>
@@ -392,11 +320,9 @@ export default function LiveCardPreview({
           onClick={() => setShowMobilePreview(false)}
         >
           <div
-            className="bg-white rounded-2xl
-            shadow-2xl  w-full max-w-sm p-4 relative "
+            className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Actual Card Preview */}
             <CardPreview
               profileType={profileType}
               currentProfile={currentProfile}
@@ -412,7 +338,11 @@ export default function LiveCardPreview({
 /* ============================================================
    Desktop Layout component
 ============================================================ */
+
 function DesktopPreview({ profileType, currentProfile, selectedTemplate }) {
+  const currentTemplate = CARD_TEMPLATES[selectedTemplate];
+  const templateName = currentTemplate?.name || selectedTemplate;
+
   return (
     <>
       <div className="card-glass p-6 border-2 border-gray-100">
@@ -433,11 +363,17 @@ function DesktopPreview({ profileType, currentProfile, selectedTemplate }) {
           </span>
         </div>
 
+        {/* Show current design mode */}
         <div className="mb-4 flex items-center justify-center">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-gray-50 border border-gray-200 shadow-sm">
             <span className="text-xs font-medium text-gray-700">
-              Template:{" "}
-              <span className="font-bold capitalize">{selectedTemplate}</span>
+              {currentProfile.customDesignUrl
+                ? "Custom Design"
+                : currentProfile.designMode === "ai"
+                ? "AI Generated"
+                : currentProfile.designMode === "template"
+                ? `Template: ${templateName}`
+                : "Manual Color"}
             </span>
           </div>
         </div>
@@ -449,62 +385,14 @@ function DesktopPreview({ profileType, currentProfile, selectedTemplate }) {
             selectedTemplate={selectedTemplate}
           />
         </div>
-
-        {/* Show AI background notice */}
-        {currentProfile.designMode === "ai" && currentProfile.aiBackground && (
-          <div className="mt-3 p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-purple-600" />
-              <div>
-                <p className="text-xs font-semibold text-purple-900">
-                  AI-Generated Background
-                </p>
-                {currentProfile.aiPrompt && (
-                  <p className="text-xs text-gray-600">
-                    "{currentProfile.aiPrompt}"
-                  </p>
-                )}
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Show custom design notice */}
-        {currentProfile.customDesignUrl && (
-          <div className="mt-3 p-3 rounded-lg bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200">
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-blue-600" />
-              <div>
-                <p className="text-xs font-semibold text-blue-900">
-                  Custom Design Active
-                </p>
-                <p className="text-xs text-gray-600">
-                  Your uploaded design is being used
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       <div className="card-glass p-4 text-xs text-gray-600 border-2 border-gray-100">
         <ul className="space-y-1 pl-1">
-          <li className="flex items-start gap-1">
-            <span>•</span>
-            <span>Changes update in real-time on the preview</span>
-          </li>
-          <li className="flex items-start gap-1">
-            <span>•</span>
-            <span>Upload custom design for unique card appearance</span>
-          </li>
-          <li className="flex items-start gap-1">
-            <span>•</span>
-            <span>Use AI design for auto-generated backgrounds</span>
-          </li>
-          <li className="flex items-start gap-1">
-            <span>•</span>
-            <span>Experiment with templates to find your perfect match</span>
-          </li>
+          <li>• Changes update in real-time on the preview</li>
+          <li>• Choose from ready templates for quick setup</li>
+          <li>• Upload custom design for unique appearance</li>
+          <li>• Use AI design for auto-generated backgrounds</li>
         </ul>
       </div>
     </>
