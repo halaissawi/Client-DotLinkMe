@@ -124,12 +124,8 @@ export default function Footer() {
                 info@dotmediajo.net
               </a>
             </li>
-            <li className="flex items-start gap-2">
-              <MapPin
-                size={16}
-                className="text-brand-primary flex-shrink-0 mt-0.5"
-              />
-              <span>Jordan-Amman Wasfi Al Tal Street</span>
+            <li className="flex items-center gap-2">
+              <MapPin size={16} className="text-brand-primary" /> Wasfi Al-Tal Street, Amman, Jordan
             </li>
           </ul>
         </div>

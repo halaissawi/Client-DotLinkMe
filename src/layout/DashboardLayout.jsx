@@ -125,8 +125,10 @@ export default function DashboardLayout() {
           to="/"
           className="text-xl sm:text-[22px] font-extrabold tracking-tight flex items-center gap-1"
         >
-          <span className="text-brand-accent">Dot</span>
-          <span className="text-brand-primary">LinkMe</span>
+          <span className="font-bold text-brand-primary whitespace-nowrap">
+              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
+              LinkMe
+            </span>
         </Link>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -154,8 +156,10 @@ export default function DashboardLayout() {
               <Link to="/" className="flex items-center gap-3 group">
                 <div>
                   <div className="text-[22px] font-extrabold tracking-tight flex items-center gap-1">
-                    <span className="text-brand-accent">Dot</span>
-                    <span className="text-brand-primary">LinkMe</span>
+                    <span className="font-bold text-brand-primary whitespace-nowrap">
+              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
+              LinkMe
+            </span>
                   </div>
                   <p className="text-xs text-gray-500">Smart NFC Platform</p>
                 </div>

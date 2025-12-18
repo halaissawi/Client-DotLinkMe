@@ -138,21 +138,21 @@ const HowItWorks = () => {
             </h2>
 
             <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
-              With just one tap, your profile opens instantly—no apps, no login.
+              With a single tap, your profile opens instantly — no apps, no login required.
             </p>
 
             <ul className="space-y-3 sm:space-y-4 text-gray-700 text-sm sm:text-base">
               <li className="flex items-center gap-2 sm:gap-3 justify-center md:justify-start">
                 <Zap className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" />
-                Happens instantly on any phone.
+                Works instantly on any smartphone.
               </li>
               <li className="flex items-center gap-2 sm:gap-3 justify-center md:justify-start">
                 <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5 text-green-400" />
-                Always up-to-date profile.
+                Your profile updates in real time.
               </li>
               <li className="flex items-center gap-2 sm:gap-3 justify-center md:justify-start">
                 <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400" />
-                Track every view and tap.
+                Track every view, tap, and interaction.
               </li>
             </ul>
 

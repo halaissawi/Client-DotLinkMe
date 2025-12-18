@@ -145,7 +145,8 @@ const ContactUs = () => {
                       href="mailto:hello@smartcard.com"
                       className="font-semibold hover:underline"
                     >
-                      hello@smartcard.com
+                      info@dotmediajo.net
+
                     </a>
                   </div>
                 </div>
@@ -160,7 +161,7 @@ const ContactUs = () => {
                       href="tel:+1234567890"
                       className="font-semibold hover:underline"
                     >
-                      +1 (234) 567-890
+                      +962789924535
                     </a>
                   </div>
                 </div>
@@ -172,7 +173,8 @@ const ContactUs = () => {
                   <div>
                     <p className="text-blue-100 text-sm mb-1">Visit Us</p>
                     <p className="font-semibold">
-                      123 Innovation Street <br /> San Francisco, CA 94105
+                      Wasfi Al-Tal Street, Amman, Jordan
+                      <br /> 
                     </p>
                   </div>
                 </div>
@@ -196,7 +198,7 @@ const ContactUs = () => {
 
               <div className="space-y-3 text-gray-700 text-sm">
                 <div className="flex justify-between py-2 border-b border-gray-100">
-                  <span className="font-medium">Monday - Friday</span>
+                  <span className="font-medium">Sunday to Thursday</span>
                   <span className="text-brand-accent font-semibold">
                     9:00 AM - 6:00 PM
                   </span>
@@ -210,7 +212,7 @@ const ContactUs = () => {
                 </div>
 
                 <div className="flex justify-between py-2">
-                  <span className="font-medium">Sunday</span>
+                  <span className="font-medium">Friday</span>
                   <span className="text-gray-400 font-semibold">Closed</span>
                 </div>
               </div>
@@ -222,11 +224,10 @@ const ContactUs = () => {
             <div className="rounded-3xl p-8 md:p-10 shadow-lg bg-white border border-gray-200/70">
               <div className="mb-8">
                 <h2 className="text-3xl font-bold text-brand-primary mb-3">
-                  Send Us a Message
+                  We're Here to Help
                 </h2>
                 <p className="text-gray-600">
-                  Fill out the form below and we’ll get back to you within 24
-                  hours.
+                  Send us a message and we’ll get back to you within 24 hours.
                 </p>
               </div>
 

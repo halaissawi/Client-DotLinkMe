@@ -194,7 +194,7 @@ export default function ProfileCardDesktop({
               <p className="text-xs text-gray-400 mt-5">
                 Powered by{" "}
                 <Link to="/" className="font-semibold">
-                  <span className="text-brand-accent">Dot</span>LinkMe
+                  <span className="text-brand-accent"></span>LinkMe
                 </Link>
               </p>
             </div>

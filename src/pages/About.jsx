@@ -34,8 +34,8 @@ const AboutUs = () => {
             </h1>
 
             <p className="text-lg text-gray-600  max-w-xl">
-              LinkMe is a smart NFC card and digital profile platform that helps
-              you share who you are in one tap – no apps, no friction.
+              LinkMe transforms a standard NFC card into a dynamic digital identity — allowing you to share 
+              who you are in a single tap, with no apps and no friction.
             </p>
 
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
