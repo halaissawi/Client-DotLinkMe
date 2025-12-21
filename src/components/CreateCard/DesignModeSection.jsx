@@ -8,6 +8,34 @@ export default function DesignModeSection({
   updateProfile,
   onModeChange,
 }) {
+  // Handle mode change with proper cleanup
+  const handleModeChange = (newMode) => {
+    console.log("🔄 Switching design mode to:", newMode);
+
+    // Clear conflicting design data based on new mode
+    const updates = {
+      designMode: newMode,
+    };
+
+    if (newMode === "manual") {
+      // Manual mode: Keep color, clear everything else
+      updates.aiBackground = null;
+      updates.aiPrompt = "";
+      updates.customDesignUrl = null;
+      updates.template = null;
+      console.log("✅ Cleared: AI, custom upload, template");
+    } else if (newMode === "ai") {
+      // AI mode: Keep AI settings, clear everything else
+      updates.customDesignUrl = null;
+      updates.template = null;
+      updates.color = currentProfile.color || "#2563eb"; // Keep color as fallback
+      console.log("✅ Cleared: custom upload, template");
+    }
+
+    updateProfile(updates);
+    if (onModeChange) onModeChange(newMode);
+  };
+
   return (
     <div className="space-y-4 pt-4 bg-gray-50/50 p-4 rounded-xl border border-gray-100">
       <div className="flex items-center justify-between">
@@ -21,10 +49,7 @@ export default function DesignModeSection({
       <div className="grid grid-cols-2 gap-3">
         <button
           type="button"
-          onClick={() => {
-            updateProfile({ designMode: "manual" });
-            if (onModeChange) onModeChange("manual");
-          }}
+          onClick={() => handleModeChange("manual")}
           className={`
             relative p-3 rounded-xl border-2 transition-all duration-200
             flex flex-col items-center justify-center text-center gap-2
@@ -42,7 +67,7 @@ export default function DesignModeSection({
                 : "text-gray-400"
             }`}
           />
-          <span className="text-sm font-semibold">Manual</span>
+          <span className="text-sm font-semibold">Manual Color</span>
           {currentProfile.designMode === "manual" && (
             <div className="absolute top-2 right-2 w-2 h-2 bg-brand-primary rounded-full" />
           )}
@@ -50,10 +75,7 @@ export default function DesignModeSection({
 
         <button
           type="button"
-          onClick={() => {
-            updateProfile({ designMode: "ai" });
-            if (onModeChange) onModeChange("ai");
-          }}
+          onClick={() => handleModeChange("ai")}
           className={`
             relative p-3 rounded-xl border-2 transition-all duration-200
             flex flex-col items-center justify-center text-center gap-2

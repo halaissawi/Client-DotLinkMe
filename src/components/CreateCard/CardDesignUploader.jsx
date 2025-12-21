@@ -43,18 +43,15 @@ export default function CardDesignUploader({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Clear previous errors
     setError(null);
 
-    // Validate file
     const validationError = validateFile(file);
     if (validationError) {
       setError(validationError);
-      e.target.value = ""; // Reset file input
+      e.target.value = "";
       return;
     }
 
-    // Show preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setPreview(e.target.result);
@@ -64,9 +61,9 @@ export default function CardDesignUploader({
     };
     reader.readAsDataURL(file);
 
-    // Call parent upload handler
     setUploading(true);
     try {
+      console.log("📸 Custom design uploaded");
       await onUpload(file);
       setError(null);
     } catch (error) {
@@ -75,7 +72,7 @@ export default function CardDesignUploader({
       setPreview(currentDesignUrl || null);
     } finally {
       setUploading(false);
-      e.target.value = ""; // Reset file input
+      e.target.value = "";
     }
   };
 

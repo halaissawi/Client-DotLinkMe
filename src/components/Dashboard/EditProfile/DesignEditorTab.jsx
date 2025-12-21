@@ -12,6 +12,7 @@ import {
   Save,
 } from "lucide-react";
 import { generateAIImage } from "../../CreateCard/Aiutils";
+import { CARD_TEMPLATES } from "../../../constants/cardTemplates";
 
 export default function DesignEditorTab({
   profile,
@@ -27,14 +28,8 @@ export default function DesignEditorTab({
 
   const API_URL = import.meta.env.VITE_API_URL;
 
-  const templates = [
-    { id: "modern", name: "Modern", preview: "Solid color" },
-    { id: "gradient", name: "Gradient", preview: "Smooth gradient" },
-    { id: "glass", name: "Glass", preview: "Glassmorphism" },
-    { id: "dark", name: "Dark", preview: "Dark theme" },
-    { id: "neon", name: "Neon", preview: "Neon glow" },
-    { id: "elegant", name: "Elegant", preview: "Elegant gradient" },
-  ];
+  // ✅ UPDATED: Use real templates from cardTemplates.js
+  const templates = Object.values(CARD_TEMPLATES);
 
   const colorPresets = [
     "#0066FF", // Brand Blue
@@ -48,7 +43,6 @@ export default function DesignEditorTab({
   ];
 
   // Handle AI Background Generation
-
   const handleGenerateAI = async () => {
     if (!profile.aiPrompt?.trim()) {
       alert("Please enter a prompt for AI generation");
@@ -58,19 +52,26 @@ export default function DesignEditorTab({
     setGeneratingAI(true);
 
     try {
+      console.log("🎨 Generating AI background");
       const imageUrl = await generateAIImage(profile.aiPrompt);
 
+      // ✅ FIXED: Clear conflicting designs when AI is generated
       setProfile({
         ...profile,
         designMode: "ai",
         aiBackground: imageUrl,
         customDesignUrl: null,
+        template: null,
       });
 
       setDesignMode("ai");
+      console.log(
+        "✅ AI background generated, cleared: custom upload, template"
+      );
 
       alert("AI background generated!");
     } catch (error) {
+      console.error("❌ AI generation failed:", error);
       alert("Failed to generate AI background");
     } finally {
       setGeneratingAI(false);
@@ -78,6 +79,7 @@ export default function DesignEditorTab({
   };
 
   // Handle Custom Design Upload
+
   const handleCustomDesignUpload = async (e) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -99,7 +101,12 @@ export default function DesignEditorTab({
       const formData = new FormData();
       formData.append("avatar", file);
 
-      // Upload to Cloudinary
+      console.log(
+        "📸 [FRONTEND] Uploading to:",
+        `${API_URL}/api/profiles/upload-temp`
+      );
+      console.log("📸 [FRONTEND] Token exists:", !!token);
+
       const response = await fetch(`${API_URL}/api/profiles/upload-temp`, {
         method: "POST",
         headers: {
@@ -108,27 +115,42 @@ export default function DesignEditorTab({
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Upload failed");
+      console.log("📡 [FRONTEND] Response status:", response.status);
+      console.log("📡 [FRONTEND] Response headers:", response.headers);
+
+      // Check content type
+      const contentType = response.headers.get("content-type");
+      if (!contentType?.includes("application/json")) {
+        const text = await response.text();
+        console.error("❌ [FRONTEND] Non-JSON response:", text);
+        throw new Error("Server returned HTML instead of JSON");
       }
 
       const data = await response.json();
+      console.log("📡 [FRONTEND] Response data:", data);
 
-      // Update local state (not saved until user clicks Save Changes)
+      if (!response.ok) {
+        throw new Error(data.message || "Upload failed");
+      }
+
+      console.log("✅ [FRONTEND] Upload successful:", data.url);
+
+      // Update profile state
       setProfile({
         ...profile,
         customDesignUrl: data.url,
-        customDesignFile: file,
         designMode: "custom",
         aiBackground: null,
+        aiPrompt: "",
+        template: null,
       });
 
       setDesignMode("custom");
 
       alert("Custom design uploaded! Click 'Save Changes' to apply.");
     } catch (error) {
-      console.error("Error uploading custom design:", error);
-      alert("Failed to upload custom design. Please try again.");
+      console.error("❌ [FRONTEND] Upload error:", error);
+      alert(`Failed to upload: ${error.message}`);
     } finally {
       setUploadingCustom(false);
     }
@@ -136,6 +158,7 @@ export default function DesignEditorTab({
 
   // Handle Remove Custom Design
   const handleRemoveCustomDesign = () => {
+    console.log("🗑️ Removing custom design");
     setProfile({
       ...profile,
       customDesignUrl: null,
@@ -145,28 +168,34 @@ export default function DesignEditorTab({
     setDesignMode("manual");
   };
 
-  // ✅ FIXED: Handle Template Change - NOW clears custom design
+  // ✅ FIXED: Handle Template Change - Clears custom design and AI
   const handleTemplateChange = (templateId) => {
+    console.log("📋 Template selected:", templateId);
     setProfile({
       ...profile,
       template: templateId,
-      designMode: "manual",
-      customDesignUrl: null, // Clear custom design when selecting template
+      designMode: "template",
+      customDesignUrl: null,
       aiBackground: null,
+      aiPrompt: "",
     });
     setDesignMode("manual");
+    console.log("✅ Template applied, cleared: custom upload, AI");
   };
 
-  // ✅ FIXED: Handle Color Change - NOW clears custom design
+  // ✅ FIXED: Handle Color Change - Clears custom design and AI
   const handleColorChange = (color) => {
+    console.log("🎨 Color changed:", color);
     setProfile({
       ...profile,
       color: color,
       designMode: "manual",
-      customDesignUrl: null, // Clear custom design when selecting color
+      customDesignUrl: null,
       aiBackground: null,
+      aiPrompt: "",
     });
     setDesignMode("manual");
+    console.log("✅ Color applied, cleared: custom upload, AI");
   };
 
   return (
@@ -200,10 +229,7 @@ export default function DesignEditorTab({
           {/* Manual Mode */}
           <button
             type="button"
-            onClick={() => {
-              setDesignMode("manual");
-              // ✅ FIXED: Don't clear custom design, just switch to manual view
-            }}
+            onClick={() => setDesignMode("manual")}
             className={`p-4 rounded-xl border-2 transition-all ${
               designMode === "manual"
                 ? "border-blue-500 bg-blue-50"
@@ -258,24 +284,38 @@ export default function DesignEditorTab({
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {templates.map((template) => (
                 <button
-                  key={template.id}
+                  key={template.name}
                   type="button"
-                  onClick={() => handleTemplateChange(template.id)}
-                  className={`p-4 rounded-xl border-2 transition-all ${
-                    profile.template === template.id
-                      ? "border-blue-500 bg-blue-50"
+                  onClick={() => handleTemplateChange(template.name)}
+                  className={`relative overflow-hidden rounded-xl border-2 transition-all ${
+                    profile.template === template.name
+                      ? "border-blue-500 bg-blue-50 shadow-lg"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <div className="text-center">
-                    <p className="text-sm font-semibold">{template.name}</p>
-                    <p className="text-xs text-gray-500">{template.preview}</p>
+                  {/* Template Preview Image */}
+                  <div className="relative w-full h-24 bg-gray-100">
+                    <img
+                      src={template.fullImage}
+                      alt={template.name}
+                      className="w-full h-full object-cover"
+                      loading="lazy"
+                    />
+                    {profile.template === template.name && (
+                      <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
+                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
+                          <Check className="w-5 h-5 text-white" />
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  {profile.template === template.id && (
-                    <div className="mt-2 flex justify-center">
-                      <Check className="w-4 h-4 text-blue-600" />
-                    </div>
-                  )}
+
+                  {/* Template Name */}
+                  <div className="p-2 text-center">
+                    <p className="text-sm font-semibold text-gray-700">
+                      {template.name}
+                    </p>
+                  </div>
                 </button>
               ))}
             </div>
@@ -467,10 +507,12 @@ export default function DesignEditorTab({
           <span className="text-gray-600">Active Design:</span>
           <span className="px-3 py-1 rounded-full bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 font-semibold">
             {profile.customDesignUrl
-              ? "Custom Upload"
+              ? "📸 Custom Upload"
               : profile.aiBackground
-              ? "AI Generated"
-              : `${profile.template || "modern"} Template`}
+              ? "🎨 AI Generated"
+              : profile.template
+              ? `📋 ${profile.template}`
+              : "🎨 Manual Color"}
           </span>
         </div>
 

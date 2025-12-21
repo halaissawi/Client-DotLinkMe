@@ -27,14 +27,17 @@ export default function AIDesignPanel({
     setError(null);
 
     try {
-      console.log("Starting AI generation with prompt:", aiPrompt);
+      console.log("🎨 Starting AI generation with prompt:", aiPrompt);
       const imageUrl = await generateAIImage(aiPrompt);
-      console.log("Successfully generated image:", imageUrl);
+      console.log("✅ Successfully generated image:", imageUrl);
 
-      // Pass the generated URL to parent
-      onGenerate(imageUrl);
+      // Pass the generated URL to parent AND clear conflicts
+      onGenerate(imageUrl, {
+        customDesignUrl: null,
+        template: null,
+      });
     } catch (err) {
-      console.error("Generation error:", err);
+      console.error("❌ Generation error:", err);
       setError(
         err.message ||
           "Failed to generate AI design. Please try again with a different description."
