@@ -30,7 +30,7 @@ export default function CardPreview({ profile, currentDesign }) {
         className={`relative z-10 h-full flex flex-col justify-between px-4 py-3 ${templateStyles.textColor}`}
       >
         <div>
-          <p className="text-xs font-semibold opacity-90">Dot LinkMe</p>
+          <p className="text-xs font-semibold opacity-90">.LinkMe</p>     
           <p className="text-[10px] opacity-70">Smart NFC Digital Identity</p>
         </div>
       </div>

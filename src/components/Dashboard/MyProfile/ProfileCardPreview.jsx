@@ -129,7 +129,7 @@ export default function ProfileCardPreview({
             )}
 
             <div>
-              <p className="text-sm font-semibold opacity-90">Dot LinkMe</p>
+              <p className="text-sm font-semibold opacity-90">.LinkMe</p>
               <p className="text-xs opacity-70">Smart NFC Digital Identity</p>
             </div>
           </div>

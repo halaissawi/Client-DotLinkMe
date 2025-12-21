@@ -330,8 +330,28 @@ function LiveCardPreview({ profile }) {
             )}
 
             <div>
-              <p className="text-sm font-semibold opacity-90">Dot LinkMe</p>
-              <p className="text-xs opacity-70">Smart NFC Digital Identity</p>
+              <p
+                className={`text-sm font-semibold ${
+                  isGlassTemplate
+                    ? "text-gray-700"
+                    : isNeonTemplate || isDarkTemplate
+                    ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
+                    : "opacity-90"
+                }`}      
+              >
+                .LinkMe       
+              </p>
+              <p
+                className={`text-xs ${
+                  isGlassTemplate
+                    ? "text-gray-500"
+                    : isNeonTemplate || isDarkTemplate
+                    ? "text-gray-300"
+                    : "opacity-70"
+                }`}
+              >
+                Smart NFC Digital Identity
+              </p>
             </div>
           </div>
 

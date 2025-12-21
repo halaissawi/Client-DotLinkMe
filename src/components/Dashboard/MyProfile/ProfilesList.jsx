@@ -46,11 +46,10 @@ export default function ProfilesList({
                     <img
                       src={profile.avatarUrl}
                       alt={profile.name}
-                      className={`w-16 h-16 object-cover ring-2 ring-gray-100 group-hover:ring-[#0066ff]/50 transition-all ${
-                        profile.profileType === "personal"
-                          ? "rounded-full"
-                          : "rounded-xl"
-                      }`}
+                      className={`w-16 h-16 object-cover ring-2 ring-gray-100 group-hover:ring-[#0066ff]/50 transition-all ${profile.profileType === "personal"
+                        ? "rounded-full"
+                        : "rounded-xl"
+                        }`}
                     />
                     {profile.isActive && (
                       <div className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
@@ -58,11 +57,10 @@ export default function ProfilesList({
                   </div>
                 ) : (
                   <div
-                    className={`w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-3xl group-hover:from-[#0066ff]/10 group-hover:to-blue-100 transition-all relative ${
-                      profile.profileType === "personal"
-                        ? "rounded-full"
-                        : "rounded-xl"
-                    }`}
+                    className={`w-16 h-16 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-3xl group-hover:from-[#0066ff]/10 group-hover:to-blue-100 transition-all relative ${profile.profileType === "personal"
+                      ? "rounded-full"
+                      : "rounded-xl"
+                      }`}
                   >
                     {profile.profileType === "personal" ? (
                       <User className="w-8 h-8 text-gray-500" />
@@ -130,22 +128,58 @@ export default function ProfilesList({
               </button>
 
               <button
-                onClick={() =>
-                  setShowQR(profile.id === showQR ? null : profile.id)
-                }
-                className="group/btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 hover:scale-105 transition-all font-semibold text-sm"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowQR(prev => (prev === profile.id ? null : profile.id));
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all font-semibold text-sm"
               >
-                <QrCode className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+                <QrCode className="w-4 h-4" />
                 QR
               </button>
 
+              {showQR === profile.id && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                >
+                  <div className="bg-white rounded-2xl p-8 shadow-2xl max-w-sm w-full">
+                    <div className="flex flex-col items-center gap-4">
+                      <h3 className="text-xl font-bold text-gray-800">
+                        Scan the QR code                      </h3>
+                      <div className="bg-white p-4 rounded-xl border-2 border-gray-200">
+                        <QRCodeCanvas
+                          value={`${window.location.origin}/u/${profile.slug}`}
+                          size={200}
+                        />
+                      </div>
+                      <p className="text-sm text-gray-600 text-center">
+                        Scan the code to view the card                      </p>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowQR(null);
+                        }}
+                        className="mt-2 px-6 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all"
+                      >
+                        closing
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+
+
               <button
                 onClick={() => onToggleStatus(profile.id, profile.isActive)}
-                className={`group/btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all font-semibold text-sm hover:scale-105 ${
-                  profile.isActive
-                    ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
-                    : "bg-green-50 text-green-600 hover:bg-green-100"
-                }`}
+                className={`group/btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all font-semibold text-sm hover:scale-105 ${profile.isActive
+                  ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
+                  : "bg-green-50 text-green-600 hover:bg-green-100"
+                  }`}
               >
                 {profile.isActive ? (
                   <>
@@ -172,11 +206,10 @@ export default function ProfilesList({
                   <img
                     src={profile.avatarUrl}
                     alt={profile.name}
-                    className={`w-14 h-14 sm:w-16 sm:h-16 object-cover ring-2 ring-gray-100 group-hover:ring-[#0066ff]/50 transition-all ${
-                      profile.profileType === "personal"
-                        ? "rounded-full"
-                        : "rounded-xl"
-                    }`}
+                    className={`w-14 h-14 sm:w-16 sm:h-16 object-cover ring-2 ring-gray-100 group-hover:ring-[#0066ff]/50 transition-all ${profile.profileType === "personal"
+                      ? "rounded-full"
+                      : "rounded-xl"
+                      }`}
                   />
                   {profile.isActive && (
                     <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white animate-pulse"></div>
@@ -184,11 +217,10 @@ export default function ProfilesList({
                 </div>
               ) : (
                 <div
-                  className={`flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center group-hover:from-[#0066ff]/10 group-hover:to-blue-100 transition-all relative ${
-                    profile.profileType === "personal"
-                      ? "rounded-full"
-                      : "rounded-xl"
-                  }`}
+                  className={`flex-shrink-0 w-14 h-14 sm:w-16 sm:h-16 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center group-hover:from-[#0066ff]/10 group-hover:to-blue-100 transition-all relative ${profile.profileType === "personal"
+                    ? "rounded-full"
+                    : "rounded-xl"
+                    }`}
                 >
                   {profile.profileType === "personal" ? (
                     <User className="w-7 h-7 text-gray-500" />
@@ -261,23 +293,70 @@ export default function ProfilesList({
                 Share
               </button>
 
+              {/* QR Button */}
+
               <button
-                onClick={() =>
-                  setShowQR(profile.id === showQR ? null : profile.id)
-                }
-                className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all font-semibold text-sm"
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowQR(prev => (prev === profile.id ? null : profile.id));
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all font-semibold text-sm"
               >
                 <QrCode className="w-4 h-4" />
                 QR
               </button>
 
+              {/* QR Preview - Mobile */}
+              {showQR === profile.id && (
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-end sm:items-center justify-center"
+                >
+                  <div
+                    className="bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-sm sm:mx-4 p-6 pb-8 shadow-2xl animate-slide-up"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="flex flex-col items-center gap-4">
+                      {/* Handle bar للموبايل */}
+                      <div className="w-12 h-1 bg-gray-300 rounded-full sm:hidden" />
+
+                      <h3 className="text-lg font-bold text-gray-800">
+                        Scan the QR code                      </h3>
+
+                      <div className="bg-white p-4 rounded-xl border-2 border-gray-200">
+                        <QRCodeCanvas
+                          value={`${window.location.origin}/u/${profile.slug}`}
+                          size={180}
+                        />
+                      </div>
+
+                      <p className="text-sm text-gray-600 text-center">
+                        Scan the code to view the card                      </p>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowQR(null);
+                        }}
+                        className="w-full mt-2 px-6 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-semibold transition-all"
+                      >
+                        closing
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+
+
               <button
                 onClick={() => onToggleStatus(profile.id, profile.isActive)}
-                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-all font-semibold text-sm col-span-2 sm:col-span-1 ${
-                  profile.isActive
-                    ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
-                    : "bg-green-50 text-green-600 hover:bg-green-100"
-                }`}
+                className={`flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl transition-all font-semibold text-sm col-span-2 sm:col-span-1 ${profile.isActive
+                  ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
+                  : "bg-green-50 text-green-600 hover:bg-green-100"
+                  }`}
               >
                 {profile.isActive ? (
                   <>

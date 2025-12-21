@@ -53,7 +53,7 @@ export default function BasicInfoSection({
         label={isPersonal ? "Full Name" : "Company Name"}
         value={currentProfile.name}
         onChange={(value) => updateProfile({ name: value })}
-        placeholder={isPersonal ? "Full Name" : "Dot LinkMe Solutions"}
+        placeholder={isPersonal ? "Full Name" : ".LinkMe Solutions"}         
       />
 
       <FormField

@@ -9,8 +9,8 @@ const HowItWorks = () => {
     {
       icon: <Smartphone size={36} className="text-brand-primary" />,
       title: "Choose Your Card",
-      text: "Choose your NFC card design and activate your Dot LinkMe account.",
-    },
+      text: "Choose your NFC card design and activate your .LinkMe account.",
+    },     
     {
       icon: <UserPlus size={36} className="text-brand-primary" />,
       title: "Create Your Profile",

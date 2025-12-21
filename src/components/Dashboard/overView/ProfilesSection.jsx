@@ -4,7 +4,7 @@ import ProfileCard from "./ProfileCard";
 import { Users, ArrowRight, Plus } from "lucide-react";
 
 export default function ProfilesSection({ profiles }) {
-  return (
+   return (
     <div className="lg:col-span-2">
       <div className="card-glass p-6 md:p-8 h-full">
         <div className="flex items-center justify-between mb-6">

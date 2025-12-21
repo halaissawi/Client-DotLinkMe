@@ -133,9 +133,8 @@ export default function MyOrders() {
                           Order #{order.orderNumber}
                         </h3>
                         <span
-                          className={`inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold border w-fit ${
-                            statusColors[order.orderStatus]
-                          }`}
+                          className={`inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold border w-fit ${statusColors[order.orderStatus]
+                            }`}
                         >
                           {statusIcons[order.orderStatus]} {order.orderStatus}
                         </span>
@@ -215,8 +214,7 @@ export default function MyOrders() {
                   {/* Desktop Timeline */}
                   <div className="hidden sm:flex items-center gap-2 text-xs">
                     <div
-                      className={`flex items-center gap-1 ${
-                        [
+                      className={`flex items-center gap-1 ${[
                           "pending",
                           "confirmed",
                           "processing",
@@ -225,15 +223,14 @@ export default function MyOrders() {
                         ].includes(order.orderStatus)
                           ? "text-green-600"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       <div className="w-2 h-2 rounded-full bg-current"></div>
                       <span>Ordered</span>
                     </div>
                     <div className="flex-1 h-px bg-gray-300"></div>
                     <div
-                      className={`flex items-center gap-1 ${
-                        [
+                      className={`flex items-center gap-1 ${[
                           "confirmed",
                           "processing",
                           "shipped",
@@ -241,42 +238,39 @@ export default function MyOrders() {
                         ].includes(order.orderStatus)
                           ? "text-green-600"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       <div className="w-2 h-2 rounded-full bg-current"></div>
                       <span>Confirmed</span>
                     </div>
                     <div className="flex-1 h-px bg-gray-300"></div>
                     <div
-                      className={`flex items-center gap-1 ${
-                        ["processing", "shipped", "delivered"].includes(
-                          order.orderStatus
-                        )
+                      className={`flex items-center gap-1 ${["processing", "shipped", "delivered"].includes(
+                        order.orderStatus
+                      )
                           ? "text-green-600"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       <div className="w-2 h-2 rounded-full bg-current"></div>
                       <span>Processing</span>
                     </div>
                     <div className="flex-1 h-px bg-gray-300"></div>
                     <div
-                      className={`flex items-center gap-1 ${
-                        ["shipped", "delivered"].includes(order.orderStatus)
+                      className={`flex items-center gap-1 ${["shipped", "delivered"].includes(order.orderStatus)
                           ? "text-green-600"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       <div className="w-2 h-2 rounded-full bg-current"></div>
                       <span>Shipped</span>
                     </div>
                     <div className="flex-1 h-px bg-gray-300"></div>
                     <div
-                      className={`flex items-center gap-1 ${
-                        order.orderStatus === "delivered"
+                      className={`flex items-center gap-1 ${order.orderStatus === "delivered"
                           ? "text-green-600"
                           : "text-gray-400"
-                      }`}
+                        }`}
                     >
                       <div className="w-2 h-2 rounded-full bg-current"></div>
                       <span>Delivered</span>
@@ -287,8 +281,7 @@ export default function MyOrders() {
                   <div className="sm:hidden space-y-2">
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          [
+                        className={`w-2 h-2 rounded-full ${[
                             "pending",
                             "confirmed",
                             "processing",
@@ -297,11 +290,10 @@ export default function MyOrders() {
                           ].includes(order.orderStatus)
                             ? "bg-green-600"
                             : "bg-gray-400"
-                        }`}
+                          }`}
                       ></div>
                       <span
-                        className={`text-xs ${
-                          [
+                        className={`text-xs ${[
                             "pending",
                             "confirmed",
                             "processing",
@@ -310,15 +302,14 @@ export default function MyOrders() {
                           ].includes(order.orderStatus)
                             ? "text-green-600 font-medium"
                             : "text-gray-400"
-                        }`}
+                          }`}
                       >
                         Ordered
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          [
+                        className={`w-2 h-2 rounded-full ${[
                             "confirmed",
                             "processing",
                             "shipped",
@@ -326,11 +317,10 @@ export default function MyOrders() {
                           ].includes(order.orderStatus)
                             ? "bg-green-600"
                             : "bg-gray-400"
-                        }`}
+                          }`}
                       ></div>
                       <span
-                        className={`text-xs ${
-                          [
+                        className={`text-xs ${[
                             "confirmed",
                             "processing",
                             "shipped",
@@ -338,65 +328,59 @@ export default function MyOrders() {
                           ].includes(order.orderStatus)
                             ? "text-green-600 font-medium"
                             : "text-gray-400"
-                        }`}
+                          }`}
                       >
                         Confirmed
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          ["processing", "shipped", "delivered"].includes(
-                            order.orderStatus
-                          )
+                        className={`w-2 h-2 rounded-full ${["processing", "shipped", "delivered"].includes(
+                          order.orderStatus
+                        )
                             ? "bg-green-600"
                             : "bg-gray-400"
-                        }`}
+                          }`}
                       ></div>
                       <span
-                        className={`text-xs ${
-                          ["processing", "shipped", "delivered"].includes(
-                            order.orderStatus
-                          )
+                        className={`text-xs ${["processing", "shipped", "delivered"].includes(
+                          order.orderStatus
+                        )
                             ? "text-green-600 font-medium"
                             : "text-gray-400"
-                        }`}
+                          }`}
                       >
                         Processing
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          ["shipped", "delivered"].includes(order.orderStatus)
+                        className={`w-2 h-2 rounded-full ${["shipped", "delivered"].includes(order.orderStatus)
                             ? "bg-green-600"
                             : "bg-gray-400"
-                        }`}
+                          }`}
                       ></div>
                       <span
-                        className={`text-xs ${
-                          ["shipped", "delivered"].includes(order.orderStatus)
+                        className={`text-xs ${["shipped", "delivered"].includes(order.orderStatus)
                             ? "text-green-600 font-medium"
                             : "text-gray-400"
-                        }`}
+                          }`}
                       >
                         Shipped
                       </span>
                     </div>
                     <div className="flex items-center gap-2">
                       <div
-                        className={`w-2 h-2 rounded-full ${
-                          order.orderStatus === "delivered"
+                        className={`w-2 h-2 rounded-full ${order.orderStatus === "delivered"
                             ? "bg-green-600"
                             : "bg-gray-400"
-                        }`}
+                          }`}
                       ></div>
                       <span
-                        className={`text-xs ${
-                          order.orderStatus === "delivered"
+                        className={`text-xs ${order.orderStatus === "delivered"
                             ? "text-green-600 font-medium"
                             : "text-gray-400"
-                        }`}
+                          }`}
                       >
                         Delivered
                       </span>
@@ -455,12 +439,11 @@ export default function MyOrders() {
                 Need help with your order?
               </h3>
               <p className="text-xs sm:text-sm text-gray-600 mb-3">
-                If you have any questions about your order or need to make
-                changes, please contact our support team.
+                If you have any questions about your order or need to make changes, please contact our support team.
               </p>
-              <button className="text-xs sm:text-sm font-medium text-brand-primary hover:text-brand-primary/80 transition-colors">
+              <a href="https://wa.me/962789924535" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-brand-primary hover:text-brand-primary/80 transition-colors">
                 Contact Support →
-              </button>
+              </a>
             </div>
           </div>
         </div>
