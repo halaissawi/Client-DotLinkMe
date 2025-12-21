@@ -45,9 +45,9 @@ function adjustColorBrightness(color, percent) {
   );
 }
 
-// ✅ UPDATED: Fixed template styles function with proper priority
+// ✅ UPDATED: Fixed template styles function
 function getTemplateStyles(profile) {
-  // 🆕 PRIORITY 1: Custom Upload Design (HIGHEST PRIORITY)
+  // PRIORITY 1: Custom Upload Design
   if (profile?.customDesignUrl) {
     console.log("🎨 [PREVIEW] Using custom uploaded design");
     return {
@@ -79,7 +79,7 @@ function getTemplateStyles(profile) {
     };
   }
 
-  // PRIORITY 3: Template (template1, template2, etc.)
+  // PRIORITY 3: Template
   if (profile?.designMode === "template" && profile?.template) {
     const template = CARD_TEMPLATES[profile.template];
 
@@ -99,7 +99,7 @@ function getTemplateStyles(profile) {
     }
   }
 
-  // PRIORITY 4: Manual Color (FALLBACK)
+  // PRIORITY 4: Manual Color
   if (profile?.color) {
     console.log("🎨 [PREVIEW] Using manual color:", profile.color);
     const color = profile.color;
@@ -330,28 +330,8 @@ function LiveCardPreview({ profile }) {
             )}
 
             <div>
-              <p
-                className={`text-sm font-semibold ${
-                  isGlassTemplate
-                    ? "text-gray-700"
-                    : isNeonTemplate || isDarkTemplate
-                    ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
-                    : "opacity-90"
-                }`}      
-              >
-                .LinkMe       
-              </p>
-              <p
-                className={`text-xs ${
-                  isGlassTemplate
-                    ? "text-gray-500"
-                    : isNeonTemplate || isDarkTemplate
-                    ? "text-gray-300"
-                    : "opacity-70"
-                }`}
-              >
-                Smart NFC Digital Identity
-              </p>
+              <p className="text-sm font-semibold opacity-90">.LinkMe</p>
+              <p className="text-xs opacity-70">Smart NFC Digital Identity</p>
             </div>
           </div>
 
@@ -405,7 +385,7 @@ export default function ProfileSidebar({
 
   return (
     <div className="relative">
-      {/* Live Card Preview - STICKY POSITION */}
+      {/* Live Card Preview */}
       <div className="mb-6">
         <div
           className="bg-white border-2 border-gray-200 rounded-2xl p-6 space-y-4"
