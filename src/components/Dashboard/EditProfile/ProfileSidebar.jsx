@@ -378,9 +378,9 @@ function LiveCardPreview({ profile }) {
                     : isNeonTemplate || isDarkTemplate
                     ? "text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.5)]"
                     : "opacity-90"
-                }`}
+                }`}      
               >
-                Dot LinkMe
+                .LinkMe       
               </p>
               <p
                 className={`text-xs ${
