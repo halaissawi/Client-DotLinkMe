@@ -42,7 +42,11 @@ export default function TemplateSelector({
             <button
               key={template.id}
               type="button"
-              onClick={() => onTemplateChange(template.id)}
+              onClick={() => {
+                console.log("📋 Template selected:", template.id);
+                // Clear conflicting designs
+                onTemplateChange(template.id);
+              }}
               role="radio"
               aria-checked={isSelected}
               aria-label={`${template.name} template`}
@@ -114,7 +118,11 @@ export default function TemplateSelector({
             <button
               key={template.id}
               type="button"
-              onClick={() => onTemplateChange(template.id)}
+              onClick={() => {
+                console.log("📋 Template selected:", template.id);
+                // Clear conflicting designs
+                onTemplateChange(template.id);
+              }}
               onMouseEnter={() => setHoveredTemplate(template.id)}
               onMouseLeave={() => setHoveredTemplate(null)}
               role="radio"
