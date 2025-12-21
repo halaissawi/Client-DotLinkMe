@@ -34,8 +34,9 @@ const AboutUs = () => {
             </h1>
 
             <p className="text-lg text-gray-600  max-w-xl">
-              LinkMe transforms a standard NFC card into a dynamic digital identity — allowing you to share 
-              who you are in a single tap, with no apps and no friction.
+              LinkMe transforms a standard NFC card into a dynamic digital
+              identity — allowing you to share who you are in a single tap, with
+              no apps and no friction.
             </p>
 
             <div className="grid sm:grid-cols-3 gap-4 pt-2">
@@ -48,14 +49,14 @@ const AboutUs = () => {
                 </p>
               </div>
 
-              <div className="rounded-2xl border border-gray-200  px-4 py-3">
+              <div className="card-glass px-4 py-3">
                 <p className="text-xs uppercase text-gray-500 mb-1">
                   Your Gateway
                 </p>
                 <p className="text-sm font-medium">to Better Networking</p>
               </div>
 
-              <div className="rounded-2xl border border-gray-200  px-4 py-3">
+              <div className="card-glass  px-4 py-3">
                 <p className="text-xs uppercase text-gray-500 mb-1">
                   Everything You Are
                 </p>
@@ -175,7 +176,6 @@ const AboutUs = () => {
           </div>
         </div>
       </section>
-
 
       <section className="section-shell py-20 md:py-24 ">
         <div className="max-w-2xl mb-12" data-aos="fade-up">
