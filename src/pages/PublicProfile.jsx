@@ -236,7 +236,7 @@ END:VCARD`;
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         onShare={handleShare}
-        themeColor={profile.color}
+        themeColor={profile.pageColor || profile.color || "#3B82F6"}
       />
 
       <VisitorContactModal
@@ -244,7 +244,7 @@ END:VCARD`;
         onClose={() => setShowVisitorModal(false)}
         profileSlug={profile?.slug}
         source="link"
-        themeColor={profile.color}
+        themeColor={profile.pageColor || profile.color || "#3B82F6"}
       />
     </>
   );
