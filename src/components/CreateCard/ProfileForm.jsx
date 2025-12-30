@@ -167,6 +167,49 @@ export default function ProfileForm({
     e.target.value = ""; // Reset input
   };
 
+  // ✅ NEW: Handle template selection with proper clearing
+  const handleTemplateSelection = (templateId) => {
+    console.log("📋 [ProfileForm] Template selected:", templateId);
+
+    // Update template selection
+    onTemplateChange(templateId);
+
+    // Switch to template mode and clear AI background
+    updateProfile({
+      designMode: "template",
+      aiBackground: null,
+      aiPrompt: "",
+    });
+
+    console.log("✅ [ProfileForm] Cleared: AI background");
+  };
+
+  // ✅ NEW: Handle color selection with proper clearing
+  const handleColorSelection = (color) => {
+    console.log("🎨 [ProfileForm] Color selected:", color);
+
+    // Update color and switch to manual mode
+    updateProfile({
+      color: color,
+      designMode: "manual",
+    });
+
+    console.log("✅ [ProfileForm] Mode: manual, Color applied");
+  };
+
+  // ✅ NEW: Handle AI generation with proper clearing
+  const handleAIGeneration = (aiBackground) => {
+    console.log("🤖 [ProfileForm] AI generated:", aiBackground);
+
+    // Update AI background and switch to AI mode
+    updateProfile({
+      aiBackground: aiBackground,
+      designMode: "ai",
+    });
+
+    console.log("✅ [ProfileForm] Mode: ai, AI background applied");
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -260,11 +303,7 @@ export default function ProfileForm({
             <TemplateSelector
               templates={templates}
               selectedTemplate={selectedTemplate}
-              onTemplateChange={(templateId) => {
-                onTemplateChange(templateId);
-                // When template is selected, switch to template mode
-                updateProfile({ designMode: "template" });
-              }}
+              onTemplateChange={handleTemplateSelection}
             />
           </div>
 
@@ -273,12 +312,11 @@ export default function ProfileForm({
               currentProfile={currentProfile}
               updateProfile={updateProfile}
               onModeChange={(mode) => {
+                // Only update mode, don't clear anything
                 updateProfile({ designMode: mode });
-                // When Manual or AI is selected, clear template selection
-                if (mode !== "template") {
-                  onTemplateChange(null);
-                }
               }}
+              onColorChange={handleColorSelection}
+              onAIGenerate={handleAIGeneration}
             />
           </div>
         </div>

@@ -1,38 +1,20 @@
 import React from "react";
 import ColorPicker from "./ColorPicker";
 import AIDesignPanel from "./AIDesignPanel";
-import { Palette, Sparkles, Check } from "lucide-react";
+import { Palette, Sparkles } from "lucide-react";
 
 export default function DesignModeSection({
   currentProfile,
   updateProfile,
   onModeChange,
+  onColorChange, // ✅ NEW: Receive color change handler
+  onAIGenerate, // ✅ NEW: Receive AI generate handler
 }) {
-  // Handle mode change with proper cleanup
   const handleModeChange = (newMode) => {
-    console.log("🔄 Switching design mode to:", newMode);
+    console.log("🔄 [DesignModeSection] Switching mode to:", newMode);
 
-    // Clear conflicting design data based on new mode
-    const updates = {
-      designMode: newMode,
-    };
-
-    if (newMode === "manual") {
-      // Manual mode: Keep color, clear everything else
-      updates.aiBackground = null;
-      updates.aiPrompt = "";
-      updates.customDesignUrl = null;
-      updates.template = null;
-      console.log("✅ Cleared: AI, custom upload, template");
-    } else if (newMode === "ai") {
-      // AI mode: Keep AI settings, clear everything else
-      updates.customDesignUrl = null;
-      updates.template = null;
-      updates.color = currentProfile.color || "#2563eb"; // Keep color as fallback
-      console.log("✅ Cleared: custom upload, template");
-    }
-
-    updateProfile(updates);
+    // Only update mode, don't clear anything
+    updateProfile({ designMode: newMode });
     if (onModeChange) onModeChange(newMode);
   };
 
@@ -106,7 +88,7 @@ export default function DesignModeSection({
           <div className="bg-white p-3 rounded-lg border border-gray-100 shadow-sm">
             <ColorPicker
               color={currentProfile.color}
-              onChange={(color) => updateProfile({ color })}
+              onChange={onColorChange || ((color) => updateProfile({ color }))}
             />
           </div>
         )}
@@ -115,7 +97,10 @@ export default function DesignModeSection({
           <AIDesignPanel
             aiPrompt={currentProfile.aiPrompt}
             onPromptChange={(aiPrompt) => updateProfile({ aiPrompt })}
-            onGenerate={(aiBackground) => updateProfile({ aiBackground })}
+            onGenerate={
+              onAIGenerate ||
+              ((aiBackground) => updateProfile({ aiBackground }))
+            }
           />
         )}
       </div>

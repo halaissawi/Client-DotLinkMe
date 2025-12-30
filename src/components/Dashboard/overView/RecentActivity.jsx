@@ -1,5 +1,5 @@
 import React from "react";
-import { formatDate } from "./DashboardUtils";
+import { formatDate } from "../../../utils/helpers";
 import { User, Building, Clock } from "lucide-react";
 
 export default function RecentActivity({ activities }) {

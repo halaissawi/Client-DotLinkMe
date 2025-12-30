@@ -31,11 +31,8 @@ export default function AIDesignPanel({
       const imageUrl = await generateAIImage(aiPrompt);
       console.log("✅ Successfully generated image:", imageUrl);
 
-      // Pass the generated URL to parent AND clear conflicts
-      onGenerate(imageUrl, {
-        customDesignUrl: null,
-        template: null,
-      });
+      // Just pass the URL - don't clear anything!
+      onGenerate(imageUrl);
     } catch (err) {
       console.error("❌ Generation error:", err);
       setError(

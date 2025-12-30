@@ -16,16 +16,16 @@ import CreateCardHero from "../components/CreateCard/CreateCardHero";
 import ProfileTypeSwitch from "../components/CreateCard/ProfileTypeSwitch";
 import ProfileForm from "../components/CreateCard/ProfileForm";
 import LiveCardPreview from "../components/CreateCard/LiveCardPreview";
-
+import { TEMPLATES_ARRAY } from "../constants/cardTemplates";
 import Swal from "sweetalert2";
 
 const INITIAL_PERSONAL_DATA = {
   name: "",
   title: "",
   bio: "",
-  color: "#0066FF",
+  color: "#2563eb",
   image: null,
-  designMode: "template",
+  designMode: "manual",
   aiPrompt: "",
   aiBackground: null,
   customDesignUrl: null, // 🆕 NEW
@@ -36,9 +36,9 @@ const INITIAL_BUSINESS_DATA = {
   name: "",
   title: "",
   bio: "",
-  color: "#16213E",
+  color: "#2563eb",
   logo: null,
-  designMode: "template",
+  designMode: "manual",
   aiPrompt: "",
   aiBackground: null,
   customDesignUrl: null, // 🆕 NEW
@@ -55,57 +55,6 @@ const INITIAL_SOCIAL_LINKS = {
   email: "",
   phone: "",
 };
-
-export const TEMPLATES = [
-  {
-    id: "template1",
-    name: "template1",
-    description: "Bold and sophisticated for professionals",
-    icon: <Briefcase className="w-5 h-5" />,
-    previewImage: "/templates/previews/template1.webp",
-    fullImage: "/templates/full/template1.webp",
-  },
-  {
-    id: "template2",
-    name: "template2",
-    description: "Modern gradient for tech professionals",
-    icon: <Zap className="w-5 h-5" />,
-    previewImage: "/templates/previews/template2.webp",
-    fullImage: "/templates/full/template2.webp",
-  },
-  {
-    id: "template3",
-    name: "template3",
-    description: "Vibrant colors for creative minds",
-    icon: <Palette className="w-5 h-5" />,
-    previewImage: "/templates/previews/template3.webp",
-    fullImage: "/templates/full/template3.webp",
-  },
-  {
-    id: "template4",
-    name: "template4",
-    description: "Clean and simple elegance",
-    icon: <Sparkle className="w-5 h-5" />,
-    previewImage: "/templates/previews/template4.webp",
-    fullImage: "/templates/full/template4.webp",
-  },
-  {
-    id: "template5",
-    name: "template5",
-    description: "Organic and eco-friendly",
-    icon: <Crown className="w-5 h-5" />, // Change icon as needed
-    previewImage: "/templates/previews/template5.webp",
-    fullImage: "/templates/full/template5.webp",
-  },
-  {
-    id: "template6",
-    name: "template6",
-    description: "Professional healthcare design",
-    icon: <Moon className="w-5 h-5" />, // Change icon as needed
-    previewImage: "/templates/previews/template6.webp",
-    fullImage: "/templates/full/template6.webp",
-  },
-];
 
 async function createProfile(profileData, token) {
   const formData = new FormData();
@@ -183,7 +132,7 @@ export default function CreateCard() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [profileType, setProfileType] = useState("personal");
-  const [selectedTemplate, setSelectedTemplate] = useState("modern");
+  const [selectedTemplate, setSelectedTemplate] = useState("template1");
   const [personalData, setPersonalData] = useState(INITIAL_PERSONAL_DATA);
   const [businessData, setBusinessData] = useState(INITIAL_BUSINESS_DATA);
   const [socialLinks, setSocialLinks] = useState(INITIAL_SOCIAL_LINKS);
@@ -423,7 +372,7 @@ export default function CreateCard() {
             onSocialLinksChange={updateSocialLinks}
             selectedTemplate={selectedTemplate}
             onTemplateChange={setSelectedTemplate}
-            templates={TEMPLATES}
+            templates={TEMPLATES_ARRAY}
             onSubmit={handleCreateProfile}
             onSwitchProfile={handleSwitchProfile}
             loading={loading}
@@ -433,7 +382,7 @@ export default function CreateCard() {
             profileType={profileType}
             currentProfile={currentProfile}
             selectedTemplate={selectedTemplate}
-            templates={TEMPLATES} // ← ADD THIS LINE!
+            templates={TEMPLATES_ARRAY}
           />
         </div>
       </section>

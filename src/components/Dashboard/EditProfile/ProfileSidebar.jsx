@@ -16,7 +16,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { CARD_TEMPLATES } from "../../../constants/cardTemplates";
-
+import UniversalCardPreview from "../../shared/UniversalCardPreview";
 // ==================== UTILITY FUNCTIONS ====================
 function generateProfileUrl(slug) {
   if (!slug) {
@@ -121,8 +121,7 @@ function getTemplateStyles(profile) {
   console.log("🎨 [PREVIEW] Using default fallback");
   return {
     style: {},
-    className:
-      "bg-gradient-to-br from-brand-primary/90 via-[#0B0F19] to-[#16203A]",
+    className: "template1",
     textColor: "text-white",
     overlay: "from-black/10 to-transparent",
     mode: "default",
@@ -374,6 +373,9 @@ export default function ProfileSidebar({
   onCopyLink,
   onNavigate,
 }) {
+  // ✅ Generate the correct profile URL
+  const profileUrl = generateProfileUrl(profile.slug);
+
   const downloadQR = () => {
     const canvas = document.getElementById("qr-code");
     const url = canvas.toDataURL("image/png");
@@ -405,7 +407,11 @@ export default function ProfileSidebar({
               <p className="text-xs text-gray-600">Real-time card preview</p>
             </div>
           </div>
-          <LiveCardPreview profile={profile} />
+          <UniversalCardPreview
+            profile={profile}
+            selectedTemplate={profile.template}
+            showViewCount={true}
+          />
         </div>
       </div>
 
@@ -436,7 +442,7 @@ export default function ProfileSidebar({
           </a>
 
           <button
-            onClick={() => onCopyLink(profile.profileUrl)}
+            onClick={() => onCopyLink(profileUrl)}
             className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all w-full text-left group"
           >
             <div className="w-10 h-10 rounded-lg bg-green-50 flex items-center justify-center group-hover:bg-green-100 transition-colors">

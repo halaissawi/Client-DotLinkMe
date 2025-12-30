@@ -52,18 +52,20 @@ export default function DashboardLayout() {
 
         setUserInfo({
           name: fullName || "User",
-          email: data.email || "",
+          email: data.email || "", // ✅ Don't show fallback email
         });
       } catch (error) {
         console.error("Error fetching user info:", error);
-        setUserInfo({ name: "User", email: "" });
+        // ✅ If fetch fails, logout the user
+        logout();
+        navigate("/", { replace: true });
       } finally {
         setLoading(false);
       }
     };
 
     fetchUserInfo();
-  }, [API_URL]);
+  }, [API_URL, logout, navigate]);
 
   // Close sidebar when route changes on mobile
   useEffect(() => {
@@ -126,9 +128,9 @@ export default function DashboardLayout() {
           className="text-xl sm:text-[22px] font-extrabold tracking-tight flex items-center gap-1"
         >
           <span className="font-bold text-brand-primary whitespace-nowrap">
-              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
-              LinkMe
-            </span>
+            <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
+            LinkMe
+          </span>
         </Link>
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -157,9 +159,9 @@ export default function DashboardLayout() {
                 <div>
                   <div className="text-[22px] font-extrabold tracking-tight flex items-center gap-1">
                     <span className="font-bold text-brand-primary whitespace-nowrap">
-              <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
-              LinkMe
-            </span>
+                      <span className="inline-block w-2 h-2 sm:w-2 sm:h-2 md:w-2 md:h-2 bg-[#f2a91d] rounded-full translate-y-[2px]"></span>
+                      LinkMe
+                    </span>
                   </div>
                   <p className="text-xs text-gray-500">Smart NFC Platform</p>
                 </div>

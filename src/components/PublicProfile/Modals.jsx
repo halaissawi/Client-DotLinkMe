@@ -9,7 +9,12 @@ import {
   Share2,
 } from "lucide-react";
 
-export default function ShareModal({ isOpen, onClose, onShare }) {
+export default function ShareModal({
+  isOpen,
+  onClose,
+  onShare,
+  themeColor = "#3B82F6", // ✅ Added themeColor prop with blue default
+}) {
   if (!isOpen) return null;
 
   const shareOptions = [
@@ -49,6 +54,7 @@ export default function ShareModal({ isOpen, onClose, onShare }) {
           <button
             onClick={onClose}
             className="w-9 h-9 bg-gray-100 hover:bg-gray-200 rounded-full flex items-center justify-center transition-all"
+            aria-label="Close"
           >
             <X className="w-5 h-5 text-gray-600" />
           </button>
@@ -56,10 +62,12 @@ export default function ShareModal({ isOpen, onClose, onShare }) {
 
         {/* Content */}
         <div className="p-6">
+          {/* ✅ Native share button with dynamic color */}
           {hasNativeShare && (
             <button
               onClick={() => onShare("native")}
-              className="w-full mb-4 py-3 bg-blue-500 text-white font-semibold rounded-xl hover:bg-blue-600 transition-all flex items-center justify-center gap-2"
+              className="w-full mb-4 py-3 text-white font-semibold rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2"
+              style={{ backgroundColor: themeColor }}
             >
               <Share2 className="w-5 h-5" />
               Share via...
@@ -71,10 +79,21 @@ export default function ShareModal({ isOpen, onClose, onShare }) {
               <button
                 key={option.id}
                 onClick={() => onShare(option.id)}
-                className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-left"
+                className="w-full flex items-center gap-3 px-4 py-3 bg-gray-50 hover:bg-gray-100 rounded-xl transition-all text-left group"
               >
-                <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                  {option.icon}
+                {/* ✅ Icon container with dynamic color on hover */}
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center transition-colors"
+                  style={{
+                    backgroundColor: "white",
+                  }}
+                >
+                  <span
+                    className="group-hover:scale-110 transition-transform"
+                    style={{ color: themeColor }}
+                  >
+                    {option.icon}
+                  </span>
                 </div>
                 <span className="text-sm font-medium text-gray-900">
                   {option.name}

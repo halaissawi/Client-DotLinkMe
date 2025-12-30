@@ -6,6 +6,7 @@ import {
   Upload,
   Save,
   Image as ImageIcon,
+  X,
 } from "lucide-react";
 
 export default function BasicInfoForm({
@@ -14,6 +15,7 @@ export default function BasicInfoForm({
   saving,
   onSubmit,
   onImageChange,
+  onImageRemove, // Add this new prop
 }) {
   return (
     <form
@@ -45,15 +47,26 @@ export default function BasicInfoForm({
           <div className="flex items-center gap-6">
             <div className="relative group">
               {profile.avatarUrl ? (
-                <img
-                  src={profile.avatarUrl}
-                  alt={profile.name}
-                  className={`w-24 h-24 object-cover ring-4 ring-gray-100 group-hover:ring-brand-primary/50 transition-all ${
-                    profile.profileType === "personal"
-                      ? "rounded-full"
-                      : "rounded-2xl"
-                  }`}
-                />
+                <>
+                  <img
+                    src={profile.avatarUrl}
+                    alt={profile.name}
+                    className={`w-24 h-24 object-cover ring-4 ring-gray-100 group-hover:ring-brand-primary/50 transition-all ${
+                      profile.profileType === "personal"
+                        ? "rounded-full"
+                        : "rounded-2xl"
+                    }`}
+                  />
+                  {/* Remove button - shows on hover */}
+                  <button
+                    type="button"
+                    onClick={onImageRemove}
+                    className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                    title="Remove image"
+                  >
+                    <X className="w-4 h-4 text-white" />
+                  </button>
+                </>
               ) : (
                 <div
                   className={`w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl ring-4 ring-gray-100 group-hover:ring-brand-primary/50 transition-all ${
@@ -66,24 +79,38 @@ export default function BasicInfoForm({
                     <User className="w-5 h-5" />
                   ) : (
                     <Building className="w-5 h-5" />
-                  )}{" "}
+                  )}
                 </div>
               )}
-              <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                <ImageIcon className="w-8 h-8 text-white" />
-              </div>
+              {!profile.avatarUrl && (
+                <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <ImageIcon className="w-8 h-8 text-white" />
+                </div>
+              )}
             </div>
             <div className="flex-1">
-              <label className="btn-ghost-clean px-6 py-3 cursor-pointer inline-flex items-center gap-2">
-                <Upload className="w-4 h-4" />
-                Upload New Image
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={onImageChange}
-                  className="hidden"
-                />
-              </label>
+              <div className="flex flex-wrap gap-2">
+                <label className="btn-ghost-clean px-6 py-3 cursor-pointer inline-flex items-center gap-2">
+                  <Upload className="w-4 h-4" />
+                  {profile.avatarUrl ? "Change Image" : "Upload New Image"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={onImageChange}
+                    className="hidden"
+                  />
+                </label>
+                {profile.avatarUrl && (
+                  <button
+                    type="button"
+                    onClick={onImageRemove}
+                    className="px-6 py-3 border border-red-200 text-red-600 hover:bg-red-50 rounded-xl text-sm font-medium transition-all inline-flex items-center gap-2"
+                  >
+                    <X className="w-4 h-4" />
+                    Remove Image
+                  </button>
+                )}
+              </div>
               <p className="text-xs text-gray-500 mt-2">
                 Recommended: Square image (1:1 ratio), max 5MB
               </p>

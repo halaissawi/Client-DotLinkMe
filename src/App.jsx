@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
+import { Toaster } from "react-hot-toast"; // ✅ Add this import
 
 // Layout
 import Navbar from "./layout/Navbar";
@@ -50,6 +51,7 @@ import Gellary from "./pages/Gellary";
 // pricing
 import Pricing from "./pages/Pricing";
 import Contacts from "./pages/dashboard/Contacts";
+
 /* ---------- SCROLL TO TOP COMPONENT ---------- */
 const ScrollToTop = () => {
   const { pathname } = useLocation();
@@ -79,6 +81,49 @@ const AppContent = () => {
 
   return (
     <>
+      {/* ✅ Add Toaster component here */}
+      <Toaster
+        position="top-center"
+        reverseOrder={false}
+        gutter={8}
+        toastOptions={{
+          duration: 3000,
+          style: {
+            background: "#363636",
+            color: "#fff",
+            padding: "16px",
+            borderRadius: "10px",
+            fontSize: "14px",
+            fontWeight: "500",
+          },
+          success: {
+            duration: 2000,
+            style: {
+              background: "#10b981",
+            },
+            iconTheme: {
+              primary: "#fff",
+              secondary: "#10b981",
+            },
+          },
+          error: {
+            duration: 4000,
+            style: {
+              background: "#ef4444",
+            },
+            iconTheme: {
+              primary: "#fff",
+              secondary: "#ef4444",
+            },
+          },
+          loading: {
+            style: {
+              background: "#3b82f6",
+            },
+          },
+        }}
+      />
+
       <ScrollToTop />
       {!shouldHideNavbarFooter && <Navbar />}
       <Routes>

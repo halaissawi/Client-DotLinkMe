@@ -36,6 +36,48 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // ✅ UNIFIED LOGOUT FUNCTION - Use this everywhere
+  const logout = async () => {
+    console.log("🚪 Logging out user...");
+
+    // Call logout API to invalidate refresh token
+    if (user?.id) {
+      try {
+        await fetch(`${API_URL}/api/auth/logout`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ userId: user.id }),
+        });
+        console.log("✅ Backend logout API called");
+      } catch (error) {
+        console.error("❌ Error during logout API call:", error);
+      }
+    }
+
+    // ✅ Clear ALL storage items
+    localStorage.removeItem("token");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("user");
+    localStorage.removeItem("profile"); // ✅ Added
+    sessionStorage.clear(); // ✅ Added
+
+    // ✅ Reset all state
+    setToken(null);
+    setRefreshToken(null);
+    setUser(null);
+
+    console.log("✅ Logout complete - all storage cleared");
+  };
+
+  // ✅ Logout and refresh page (for critical auth failures)
+  const logoutAndRefresh = async () => {
+    console.log("🔄 Logout and refresh triggered");
+    await logout();
+    window.location.href = "/";
+  };
+
   // Refresh access token
   const refreshAccessToken = async () => {
     if (isRefreshing) return null;
@@ -75,34 +117,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  // Logout and refresh page
-  const logoutAndRefresh = async () => {
-    if (user?.id) {
-      try {
-        await fetch(`${API_URL}/api/auth/logout`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId: user.id }),
-        });
-      } catch (error) {
-        console.error("Error during logout:", error);
-      }
-    }
-
-    // Clear local storage and state
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-    setToken(null);
-    setRefreshToken(null);
-    setUser(null);
-
-    // Refresh the page to reset application state
-    window.location.href = "/";
-  };
-
   // Auto-refresh token when it's about to expire
   useEffect(() => {
     if (!token || !refreshToken) return;
@@ -127,6 +141,7 @@ export const AuthProvider = ({ children }) => {
     const validateSession = async () => {
       // If no user or no token, clear everything
       if (!user && token) {
+        console.log("⚠️ Token without user - logging out");
         await logoutAndRefresh();
         return;
       }
@@ -138,19 +153,21 @@ export const AuthProvider = ({ children }) => {
         refreshToken &&
         isTokenExpired(refreshToken)
       ) {
+        console.log("⚠️ Both tokens expired - logging out");
         await logoutAndRefresh();
         return;
       }
 
       // If user exists but no token, clear everything
       if (user && !token) {
+        console.log("⚠️ User without token - logging out");
         await logoutAndRefresh();
         return;
       }
     };
 
     validateSession();
-  }, []);
+  }, []); // ✅ Empty dependency array - only run on mount
 
   // Verify user still exists in backend (optional but recommended)
   useEffect(() => {
@@ -167,6 +184,7 @@ export const AuthProvider = ({ children }) => {
 
         if (response.status === 401 || response.status === 404) {
           // User doesn't exist or token is invalid
+          console.log("❌ User verification failed - logging out");
           await logoutAndRefresh();
         }
       } catch (error) {
@@ -185,37 +203,13 @@ export const AuthProvider = ({ children }) => {
   }, [token, user]);
 
   const login = (token, refreshToken, userData) => {
+    console.log("✅ User logged in:", userData.email);
     localStorage.setItem("token", token);
     localStorage.setItem("refreshToken", refreshToken);
     localStorage.setItem("user", JSON.stringify(userData));
     setToken(token);
     setRefreshToken(refreshToken);
     setUser(userData);
-  };
-
-  const logout = async () => {
-    // Call logout API to invalidate refresh token
-    if (user?.id) {
-      try {
-        await fetch(`${API_URL}/api/auth/logout`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ userId: user.id }),
-        });
-      } catch (error) {
-        console.error("Error during logout:", error);
-      }
-    }
-
-    // Clear local storage and state
-    localStorage.removeItem("token");
-    localStorage.removeItem("refreshToken");
-    localStorage.removeItem("user");
-    setToken(null);
-    setRefreshToken(null);
-    setUser(null);
   };
 
   const isAuthenticated = () => !!token && !isTokenExpired(token);
@@ -227,7 +221,7 @@ export const AuthProvider = ({ children }) => {
         refreshToken,
         user,
         login,
-        logout,
+        logout, // ✅ This is now the complete logout function
         isAuthenticated,
         refreshAccessToken,
         isRefreshing,

@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import CardPreview from "../../components/Dashboard/Cart/CardPreview";
+
 import ProfileSelector from "../../components/Dashboard/Cart/ProfileSelector";
-import DesignEditor from "../../components/Dashboard/Cart/DesignEditor";
-import TemplateGuide from "../../components/Dashboard/Cart/TemplateGuide";
+import UniversalCardPreview from "../../components/shared/UniversalCardPreview";
 import OrderSummary from "../../components/Dashboard/Cart/OrderSummary";
 import ContactInformationForm from "../../components/Dashboard/Cart/ContactInformationForm";
 import ShippingAddressForm from "../../components/Dashboard/Cart/ShippingAddressForm";
@@ -26,7 +25,7 @@ export default function CartCheckout() {
   const [profile, setProfile] = useState(null);
 
   const [showDesignEdit, setShowDesignEdit] = useState(false);
-  const [showTemplateGuide, setShowTemplateGuide] = useState(false);
+
   const [aiPrompt, setAiPrompt] = useState("");
 
   const [currentDesign, setCurrentDesign] = useState({
@@ -279,7 +278,17 @@ export default function CartCheckout() {
               <h2 className="text-lg font-semibold text-gray-900 mb-4">
                 Your Card Preview
               </h2>
-              <CardPreview profile={profile} currentDesign={currentDesign} />
+              <UniversalCardPreview
+                profile={{
+                  ...profile,
+                  color: currentDesign.color,
+                  template: currentDesign.template,
+                  designMode: currentDesign.designMode,
+                  aiBackground: currentDesign.aiBackground,
+                  customDesignUrl: currentDesign.uploadedImage,
+                }}
+                selectedTemplate={currentDesign.template}
+              />
 
               <div className="mt-4 flex gap-2">
                 <button
@@ -291,23 +300,6 @@ export default function CartCheckout() {
                 </button>
               </div>
             </div>
-
-            <TemplateGuide
-              isOpen={showTemplateGuide}
-              onClose={() => setShowTemplateGuide(false)}
-            />
-
-            {showDesignEdit && (
-              <DesignEditor
-                currentDesign={currentDesign}
-                onDesignChange={setCurrentDesign}
-                aiPrompt={aiPrompt}
-                onAiPromptChange={setAiPrompt}
-                onGenerateAI={handleGenerateAI}
-                isGeneratingAI={isGeneratingAI}
-                onImageUpload={handleImageUpload}
-              />
-            )}
 
             <OrderSummary totalAmount={15.0} />
           </div>

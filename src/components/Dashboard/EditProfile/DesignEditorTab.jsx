@@ -12,7 +12,7 @@ import {
   Save,
 } from "lucide-react";
 import { generateAIImage } from "../../CreateCard/Aiutils";
-import { CARD_TEMPLATES } from "../../../constants/cardTemplates";
+import { TEMPLATES_ARRAY } from "../../../constants/cardTemplates";
 
 export default function DesignEditorTab({
   profile,
@@ -29,7 +29,7 @@ export default function DesignEditorTab({
   const API_URL = import.meta.env.VITE_API_URL;
 
   // ✅ UPDATED: Use real templates from cardTemplates.js
-  const templates = Object.values(CARD_TEMPLATES);
+  const templates = TEMPLATES_ARRAY;
 
   const colorPresets = [
     "#0066FF", // Brand Blue
@@ -284,11 +284,11 @@ export default function DesignEditorTab({
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
               {templates.map((template) => (
                 <button
-                  key={template.name}
+                  key={template.id}
                   type="button"
-                  onClick={() => handleTemplateChange(template.name)}
+                  onClick={() => handleTemplateChange(template.id)}
                   className={`relative overflow-hidden rounded-xl border-2 transition-all ${
-                    profile.template === template.name
+                    profile.template === template.id
                       ? "border-blue-500 bg-blue-50 shadow-lg"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
@@ -301,7 +301,7 @@ export default function DesignEditorTab({
                       className="w-full h-full object-cover"
                       loading="lazy"
                     />
-                    {profile.template === template.name && (
+                    {profile.template === template.id && (
                       <div className="absolute inset-0 bg-blue-500/20 flex items-center justify-center">
                         <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center">
                           <Check className="w-5 h-5 text-white" />

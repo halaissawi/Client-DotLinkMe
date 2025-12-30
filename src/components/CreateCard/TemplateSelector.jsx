@@ -25,7 +25,7 @@ export default function TemplateSelector({
 
       {/* MOBILE — Horizontal Scroll */}
       <div
-        className="flex sm:hidden gap-3 overflow-x-auto pb-3 px-1 snap-x snap-mandatory"
+        className="flex sm:hidden gap-3 overflow-x-auto pb-3 px-1 snap-x snap-mandatory template-scroll-container"
         role="radiogroup"
         aria-label="Card template selection"
         style={{
@@ -217,7 +217,7 @@ export default function TemplateSelector({
       </div>
 
       {/* WebKit scrollbar styles */}
-      <style jsx>{`
+      <style>{`
         div::-webkit-scrollbar {
           height: 6px;
         }

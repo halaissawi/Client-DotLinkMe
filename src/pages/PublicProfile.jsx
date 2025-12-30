@@ -1,12 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import Swal from "sweetalert2";
-import ProfileCardDesktop from "../components/PublicProfile/ProfileCardDesktop";
-import ProfileCardMobile from "../components/PublicProfile/ProfileCardMobile";
 import ShareModal from "../components/PublicProfile/Modals";
 import NotFound from "./NotFound";
 import VisitorContactModal from "../components/PublicProfile/VisitorContactModal";
 import { Loader2 } from "lucide-react";
+import TemplateRenderer from "../components/PublicProfile/TemplateRenderer";
 
 export default function PublicProfile() {
   const { slug } = useParams();
@@ -215,44 +214,29 @@ END:VCARD`;
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 to-blue-100">
-      {/* Desktop View */}
-      <div className="hidden lg:block">
-        <ProfileCardDesktop
-          profile={profile}
-          phoneLink={phoneLink}
-          emailLink={emailLink}
-          whatsappLink={whatsappLink}
-          handleCall={handleCall}
-          handleEmail={handleEmail}
-          handleWhatsApp={handleWhatsApp}
-          handleDownloadVCard={handleDownloadVCard}
-          handleSocialClick={handleSocialClick}
-          setShowShareModal={setShowShareModal}
-        />
-      </div>
-
-      {/* Mobile View */}
-      <div className="lg:hidden">
-        <ProfileCardMobile
-          profile={profile}
-          phoneLink={phoneLink}
-          emailLink={emailLink}
-          whatsappLink={whatsappLink}
-          handleCall={handleCall}
-          handleEmail={handleEmail}
-          handleWhatsApp={handleWhatsApp}
-          handleDownloadVCard={handleDownloadVCard}
-          handleSocialClick={handleSocialClick}
-          setShowShareModal={setShowShareModal}
-        />
-      </div>
+    <>
+      {/* Template Renderer - Works for both mobile and desktop */}
+      <TemplateRenderer
+        templateId={profile.pageTemplate || "modern"} // ✅ Use PAGE template
+        themeColor={profile.pageColor || "#0EA5E9"} // ✅ Use PAGE color
+        profile={profile}
+        phoneLink={phoneLink}
+        emailLink={emailLink}
+        whatsappLink={whatsappLink}
+        handleCall={handleCall}
+        handleEmail={handleEmail}
+        handleWhatsApp={handleWhatsApp}
+        handleDownloadVCard={handleDownloadVCard}
+        handleSocialClick={handleSocialClick}
+        setShowShareModal={setShowShareModal}
+      />
 
       {/* Modals */}
       <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         onShare={handleShare}
+        themeColor={profile.color}
       />
 
       <VisitorContactModal
@@ -260,7 +244,8 @@ END:VCARD`;
         onClose={() => setShowVisitorModal(false)}
         profileSlug={profile?.slug}
         source="link"
+        themeColor={profile.color}
       />
-    </div>
+    </>
   );
 }

@@ -1,38 +1,39 @@
 import React from "react";
 import { Palette, Star, Check } from "lucide-react";
 
-export default function ColorPicker({ color, onChange }) {
-  const presetColors = [
-    {
-      name: "LinkMe Blue",
-      value: "#2563eb",
-      gradient: "from-blue-600 to-blue-400",
-    },
-    {
-      name: "Purple",
-      value: "#9333ea",
-      gradient: "from-purple-600 to-purple-400",
-    },
-    { name: "Pink", value: "#ec4899", gradient: "from-pink-600 to-pink-400" },
-    { name: "Red", value: "#ef4444", gradient: "from-red-600 to-red-400" },
-    {
-      name: "Orange",
-      value: "#f97316",
-      gradient: "from-orange-600 to-orange-400",
-    },
-    {
-      name: "Green",
-      value: "#10b981",
-      gradient: "from-green-600 to-green-400",
-    },
-    { name: "Teal", value: "#14b8a6", gradient: "from-teal-600 to-teal-400" },
-    {
-      name: "Indigo",
-      value: "#6366f1",
-      gradient: "from-indigo-600 to-indigo-400",
-    },
-  ];
+// Export presetColors so other files can use it
+export const presetColors = [
+  {
+    name: "LinkMe Blue",
+    value: "#2563eb",
+    gradient: "from-blue-600 to-blue-400",
+  },
+  {
+    name: "Purple",
+    value: "#9333ea",
+    gradient: "from-purple-600 to-purple-400",
+  },
+  { name: "Pink", value: "#ec4899", gradient: "from-pink-600 to-pink-400" },
+  { name: "Red", value: "#ef4444", gradient: "from-red-600 to-red-400" },
+  {
+    name: "Orange",
+    value: "#f97316",
+    gradient: "from-orange-600 to-orange-400",
+  },
+  {
+    name: "Green",
+    value: "#10b981",
+    gradient: "from-green-600 to-green-400",
+  },
+  { name: "Teal", value: "#14b8a6", gradient: "from-teal-600 to-teal-400" },
+  {
+    name: "Indigo",
+    value: "#6366f1",
+    gradient: "from-indigo-600 to-indigo-400",
+  },
+];
 
+export default function ColorPicker({ color, onChange }) {
   return (
     <div className="space-y-3">
       <div className="flex items-center gap-3">

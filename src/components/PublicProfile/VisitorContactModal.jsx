@@ -7,6 +7,7 @@ export default function VisitorContactModal({
   onClose,
   profileSlug,
   source = "direct",
+  themeColor = "#3B82F6", // ✅ Added themeColor prop with blue default
 }) {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
@@ -90,7 +91,7 @@ export default function VisitorContactModal({
         icon: "error",
         title: "Error",
         text: error.message,
-        confirmButtonColor: "#a855f7",
+        confirmButtonColor: themeColor, // ✅ Use dynamic color
       });
     } finally {
       setLoading(false);
@@ -116,11 +117,15 @@ export default function VisitorContactModal({
         className="bg-white rounded-3xl shadow-2xl max-w-sm w-full overflow-hidden"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Header */}
-        <div className="relative bg-blue-500 p-6 text-center">
+        {/* ✅ Header with dynamic color */}
+        <div
+          className="relative p-6 text-center"
+          style={{ backgroundColor: themeColor }}
+        >
           <button
             onClick={handleClose}
-            className="absolute top-4 right-4 p-2 bg-white/20 rounded-full active:bg-white/30 transition-colors"
+            className="absolute top-4 right-4 p-2 bg-white/20 rounded-full hover:bg-white/30 transition-colors"
+            aria-label="Close"
           >
             <X className="w-5 h-5 text-white" />
           </button>
@@ -160,8 +165,11 @@ export default function VisitorContactModal({
                     className={`w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
                       errors.email
                         ? "border-red-300 focus:ring-red-200"
-                        : "border-gray-200 focus:ring-blue-200"
+                        : "border-gray-200"
                     }`}
+                    style={
+                      !errors.email ? { focusRingColor: `${themeColor}33` } : {}
+                    }
                     disabled={loading}
                   />
                 </div>
@@ -188,7 +196,7 @@ export default function VisitorContactModal({
                     className={`w-full pl-11 pr-4 py-3 bg-gray-50 border rounded-xl focus:outline-none focus:ring-2 transition-all ${
                       errors.phone
                         ? "border-red-300 focus:ring-red-200"
-                        : "border-gray-200 focus:ring-blue-200"
+                        : "border-gray-200"
                     }`}
                     disabled={loading}
                   />
@@ -198,11 +206,12 @@ export default function VisitorContactModal({
                 )}
               </div>
 
-              {/* Submit */}
+              {/* ✅ Submit button with dynamic color */}
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 bg-blue-500 text-white font-semibold rounded-xl active:bg-blue-600 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                className="w-full py-3 text-white font-semibold rounded-xl hover:opacity-90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                style={{ backgroundColor: themeColor }}
               >
                 {loading ? (
                   <>

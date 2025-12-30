@@ -2,14 +2,12 @@ import {
   Globe,
   Linkedin,
   Instagram,
-  Twitter,
   Github,
   MessageCircle,
   Mail,
   Phone,
+  X,
 } from "lucide-react";
-
-import ReactCountryFlag from "react-country-flag";
 
 export const SOCIAL_PLATFORMS = [
   {
@@ -31,10 +29,10 @@ export const SOCIAL_PLATFORMS = [
     icon: Instagram,
   },
   {
-    key: "twitter",
-    label: "Twitter",
-    placeholder: "Your Twitter Username/link",
-    icon: Twitter,
+    key: "x",
+    label: "X",
+    icon: X,
+    placeholder: "Your X username or profile URL",
   },
   {
     key: "github",
@@ -67,145 +65,72 @@ export const countryCodes = [
     name: "Jordan",
     code: "+962",
     shortcut: "JO",
-    // JSX Element for easy rendering
-    flag: (
-      <ReactCountryFlag
-        countryCode="JO"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇯🇴", // Simple emoji flag instead of ReactCountryFlag component
   },
   {
     name: "Saudi Arabia",
     code: "+966",
     shortcut: "SA",
-    flag: (
-      <ReactCountryFlag
-        countryCode="SA"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇸🇦",
   },
   {
     name: "UAE",
     code: "+971",
     shortcut: "AE",
-    flag: (
-      <ReactCountryFlag
-        countryCode="AE"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇦🇪",
   },
   {
     name: "Qatar",
     code: "+974",
     shortcut: "QA",
-    flag: (
-      <ReactCountryFlag
-        countryCode="QA"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇶🇦",
   },
   {
     name: "Kuwait",
     code: "+965",
     shortcut: "KW",
-    flag: (
-      <ReactCountryFlag
-        countryCode="KW"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇰🇼",
   },
   {
     name: "USA",
     code: "+1",
     shortcut: "US",
-    flag: (
-      <ReactCountryFlag
-        countryCode="US"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇺🇸",
   },
   {
     name: "UK",
     code: "+44",
     shortcut: "GB",
-    flag: (
-      <ReactCountryFlag
-        countryCode="GB"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇬🇧",
   },
   {
     name: "Australia",
     code: "+61",
     shortcut: "AU",
-    flag: (
-      <ReactCountryFlag
-        countryCode="AU"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇦🇺",
   },
   {
     name: "Germany",
     code: "+49",
     shortcut: "DE",
-    flag: (
-      <ReactCountryFlag
-        countryCode="DE"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇩🇪",
   },
   {
     name: "France",
     code: "+33",
     shortcut: "FR",
-    flag: (
-      <ReactCountryFlag
-        countryCode="FR"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇫🇷",
   },
   {
     name: "Italy",
     code: "+39",
     shortcut: "IT",
-    flag: (
-      <ReactCountryFlag
-        countryCode="IT"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇮🇹",
   },
   {
     name: "Spain",
     code: "+34",
     shortcut: "ES",
-    flag: (
-      <ReactCountryFlag
-        countryCode="ES"
-        svg
-        style={{ width: "1.5em", height: "1.5em" }}
-      />
-    ),
+    flag: "🇪🇸",
   },
 ];

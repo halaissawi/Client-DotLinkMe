@@ -7,7 +7,9 @@ import {
   Loader2,
   ShieldCheck,
   AlertCircle,
+  HelpCircle,
 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function PasswordSettings() {
   const [passwordData, setPasswordData] = useState({
@@ -30,6 +32,11 @@ export default function PasswordSettings() {
     // Calculate password strength for new password
     if (field === "newPassword") {
       calculatePasswordStrength(value);
+    }
+
+    // Clear error message when user starts typing
+    if (message.type === "error") {
+      setMessage({ type: "", text: "" });
     }
   };
 
@@ -98,6 +105,20 @@ export default function PasswordSettings() {
     return true;
   };
 
+  const resetForm = () => {
+    setPasswordData({
+      currentPassword: "",
+      newPassword: "",
+      confirmPassword: "",
+    });
+    setPasswordStrength(0);
+    setShowPassword({
+      currentPassword: false,
+      newPassword: false,
+      confirmPassword: false,
+    });
+  };
+
   const handleChangePassword = async (e) => {
     e.preventDefault();
     setMessage({ type: "", text: "" });
@@ -107,27 +128,35 @@ export default function PasswordSettings() {
     }
 
     setSaving(true);
-    const API_URL = import.meta.env.VITE_API_URL; // For Vite
+    const API_URL = import.meta.env.VITE_API_URL;
 
     try {
       const token = localStorage.getItem("token");
-      await axios.put(`${API_URL}/api/me/password`, passwordData, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const response = await axios.put(
+        `${API_URL}/api/me/password`,
+        passwordData,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
       setMessage({ type: "success", text: "Password changed successfully!" });
-      setPasswordData({
-        currentPassword: "",
-        newPassword: "",
-        confirmPassword: "",
-      });
-      setPasswordStrength(0);
-      setTimeout(() => setMessage({ type: "", text: "" }), 3000);
+      resetForm();
+
+      // Auto-clear success message after 5 seconds
+      setTimeout(() => setMessage({ type: "", text: "" }), 5000);
     } catch (error) {
       console.error("Error changing password:", error);
+
+      // More detailed error handling
+      const errorMessage =
+        error.response?.data?.message ||
+        error.response?.data?.error ||
+        "Error changing password. Please try again.";
+
       setMessage({
         type: "error",
-        text: error.response?.data?.message || "Error changing password",
+        text: errorMessage,
       });
     } finally {
       setSaving(false);
@@ -163,12 +192,22 @@ export default function PasswordSettings() {
         </div>
       )}
 
-      <div className="space-y-6">
+      <form onSubmit={handleChangePassword} className="space-y-6">
         {/* Current Password */}
         <div className="space-y-2">
-          <label className="block text-sm font-semibold text-gray-700">
-            Current Password <span className="text-red-500">*</span>
-          </label>
+          <div className="flex items-center justify-between">
+            <label className="block text-sm font-semibold text-gray-700">
+              Current Password <span className="text-red-500">*</span>
+            </label>
+            {/* ✅ Forgot Password Link */}
+            <Link
+              to="/forgot-password"
+              className="text-xs font-medium text-brand-primary hover:text-brand-primary/80 flex items-center gap-1 transition-colors"
+            >
+              <HelpCircle className="w-3.5 h-3.5" />
+              Forgot Password?
+            </Link>
+          </div>
           <div className="relative">
             <input
               type={showPassword.currentPassword ? "text" : "password"}
@@ -178,11 +217,14 @@ export default function PasswordSettings() {
               }
               className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
               placeholder="Enter current password"
+              disabled={saving}
+              required
             />
             <button
               type="button"
               onClick={() => togglePasswordVisibility("currentPassword")}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+              tabIndex={-1}
             >
               {showPassword.currentPassword ? (
                 <EyeOff className="w-5 h-5" />
@@ -205,11 +247,15 @@ export default function PasswordSettings() {
               onChange={(e) => handleInputChange("newPassword", e.target.value)}
               className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
               placeholder="Enter new password"
+              disabled={saving}
+              required
+              minLength={6}
             />
             <button
               type="button"
               onClick={() => togglePasswordVisibility("newPassword")}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+              tabIndex={-1}
             >
               {showPassword.newPassword ? (
                 <EyeOff className="w-5 h-5" />
@@ -266,11 +312,14 @@ export default function PasswordSettings() {
               }
               className="w-full border border-gray-300 rounded-xl px-4 py-3 pr-12 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary focus:border-transparent transition-all"
               placeholder="Confirm new password"
+              disabled={saving}
+              required
             />
             <button
               type="button"
               onClick={() => togglePasswordVisibility("confirmPassword")}
               className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700 transition-colors"
+              tabIndex={-1}
             >
               {showPassword.confirmPassword ? (
                 <EyeOff className="w-5 h-5" />
@@ -291,7 +340,6 @@ export default function PasswordSettings() {
         <div className="flex justify-end pt-4 border-t border-gray-200">
           <button
             type="submit"
-            onClick={handleChangePassword}
             disabled={saving}
             className="btn-primary-clean px-8 py-3 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed hover:scale-105 transition-transform"
           >
@@ -308,7 +356,7 @@ export default function PasswordSettings() {
             )}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

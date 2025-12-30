@@ -58,21 +58,7 @@ export function getTemplateStyles(selectedTemplate, currentProfile) {
     };
   }
 
-  // PRIORITY 3: Uploaded image (temporary upload mode)
-  if (currentProfile.designMode === "upload" && currentProfile.uploadedImage) {
-    return {
-      style: {
-        backgroundImage: `url(${currentProfile.uploadedImage})`,
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      },
-      className: "",
-      textColor: "text-white",
-      overlay: "from-black/40 to-black/20",
-    };
-  }
-
-  // PRIORITY 4: Manual mode with templates
+  // PRIORITY 3: Template mode
   if (currentProfile.designMode === "template" && selectedTemplate) {
     const templateData = CARD_TEMPLATES[selectedTemplate];
 
@@ -89,7 +75,8 @@ export function getTemplateStyles(selectedTemplate, currentProfile) {
       };
     }
   }
-  // PRIORITY 5: Manual color fallback
+
+  // PRIORITY 4: Manual color
   if (currentProfile.designMode === "manual" && currentProfile.color) {
     return {
       style: { backgroundColor: currentProfile.color },
@@ -99,11 +86,25 @@ export function getTemplateStyles(selectedTemplate, currentProfile) {
     };
   }
 
-  // Default fallback
+  // ✅ FIXED FALLBACK: Use first template or LinkMe blue
+  // If we have a template selected (from any previous mode), show it
+  if (selectedTemplate && CARD_TEMPLATES[selectedTemplate]?.fullImage) {
+    return {
+      style: {
+        backgroundImage: `url(${CARD_TEMPLATES[selectedTemplate].fullImage})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+      },
+      className: "",
+      textColor: "text-white",
+      overlay: "from-black/30 to-transparent",
+    };
+  }
+
+  // Final fallback: Simple LinkMe blue color (not gradient with old classes)
   return {
-    style: {},
-    className:
-      "bg-gradient-to-br from-brand-primary/90 via-[#0B0F19] to-[#16203A]",
+    style: { backgroundColor: "#0066ff" }, // LinkMe blue
+    className: "",
     textColor: "text-white",
     overlay: "from-black/10 to-transparent",
   };

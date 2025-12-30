@@ -76,8 +76,14 @@ export default function EditProfile() {
       formData.append("color", profile.color);
       formData.append("template", profile.template);
 
+      // Only append avatar if there's a new file
       if (profile.avatarFile) {
         formData.append("avatar", profile.avatarFile);
+      }
+
+      // Signal avatar removal if avatarUrl is null but original profile had one
+      if (!profile.avatarUrl && !profile.avatarFile) {
+        formData.append("removeAvatar", "true");
       }
 
       const response = await fetch(`${API_URL}/api/profiles/${id}`, {
@@ -198,6 +204,22 @@ export default function EditProfile() {
 
     const url = URL.createObjectURL(file);
     setProfile({ ...profile, avatarUrl: url, avatarFile: file });
+  };
+  const handleImageRemove = () => {
+    Swal.fire({
+      title: "Remove Profile Image?",
+      text: "Your profile image will be removed when you save changes.",
+      icon: "info",
+      showCancelButton: true,
+      confirmButtonColor: "#060640",
+      cancelButtonColor: "#6B7280",
+      confirmButtonText: "Remove",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setProfile({ ...profile, avatarUrl: null, avatarFile: null });
+      }
+    });
   };
 
   const buildFinalLink = (platform, value) => {
@@ -457,6 +479,7 @@ export default function EditProfile() {
                 saving={saving}
                 onSubmit={handleUpdateProfile}
                 onImageChange={handleImageChange}
+                onImageRemove={handleImageRemove}
               />
             )}
 
@@ -480,7 +503,14 @@ export default function EditProfile() {
             )}
 
             {activeTab === "settings" && (
-              <SettingsTab profile={profile} onCopyLink={copyToClipboard} />
+              <SettingsTab
+                profile={profile}
+                onCopyLink={copyToClipboard}
+                onAccountDeleted={() => {
+                  // Redirect to home or login page
+                  navigate("/");
+                }}
+              />
             )}
           </div>
 
