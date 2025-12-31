@@ -170,22 +170,21 @@ export default function ProfileCardMobile({
               </div>
 
               {/* Social Links - Show ALL visible social links */}
-              {visibleSocialLinks.length > 0 && (
-                <div className="flex flex-wrap justify-center gap-3 mb-5">
-                  {visibleSocialLinks.map((link) => (
-                    <a
-                      key={link.id}
-                      href={link.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      onClick={() => handleSocialClick(link.id, link.url)}
-                      className="w-11 h-11 bg-blue-500 text-white rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                    >
-                      {getPlatformIcon(link.platform)}
-                    </a>
-                  ))}
-                </div>
-              )}
+              {visibleSocialLinks.map((link) => (
+                <a
+                  key={link.id}
+                  href={link.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={(e) => {
+                    // Don't prevent default - let link work normally
+                    handleSocialClick(link.id, link.url);
+                  }}
+                  className="w-11 h-11 bg-blue-500 text-white rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                >
+                  {getPlatformIcon(link.platform)}
+                </a>
+              ))}
 
               {/* Save Contact Button */}
               <button
