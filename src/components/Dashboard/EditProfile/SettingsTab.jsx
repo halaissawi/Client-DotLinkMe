@@ -13,15 +13,14 @@ import {
 } from "lucide-react";
 import axios from "axios";
 import toast from "react-hot-toast";
-import { useNavigate } from "react-router-dom"; // ✅ Add
-import { useAuth } from "../../../context/AuthContext"; // ✅ Add
-import TemplateSelector from "../../PublicProfile/TemplateSelector";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:4000/api";
 
 export default function SettingsTab({ profile, onCopyLink, onAccountDeleted }) {
-  const navigate = useNavigate(); // ✅ Add
-  const { logout } = useAuth(); // ✅ Add
+  const navigate = useNavigate();
+  const { logout } = useAuth();
   const [notifications, setNotifications] = useState({
     emailNotifications: profile?.emailNotifications ?? true,
     profileViews: profile?.profileViews ?? true,
@@ -33,54 +32,8 @@ export default function SettingsTab({ profile, onCopyLink, onAccountDeleted }) {
   const [isSaving, setIsSaving] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
 
-  // Fix: Use /u/ route for public profile
   const profileUrl = `${window.location.origin}/u/${profile.slug}`;
-  // NEW - CORRECT:
-  const [selectedTemplate, setSelectedTemplate] = useState(
-    profile.pageTemplate || "modern" // ✅ Use PAGE template
-  );
-  const [selectedColor, setSelectedColor] = useState(
-    profile.pageColor || "#0EA5E9" // ✅ Use PAGE color
-  );
-  // Add this function to update the profile
-  const updateProfile = async (updates) => {
-    try {
-      const token = localStorage.getItem("token");
 
-      const response = await axios.patch(
-        `${API_URL}/api/profiles/${profile.id}`, // ADD /api HERE
-        updates,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data.success) {
-        toast.success("Profile updated successfully!", {
-          duration: 2000,
-          position: "top-center",
-        });
-      }
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-      toast.error(error.response?.data?.message || "Failed to update profile", {
-        duration: 3000,
-        position: "top-center",
-      });
-    }
-  };
-  // NEW - CORRECT:
-  const handleTemplateChange = async (templateId) => {
-    setSelectedTemplate(templateId);
-    await updateProfile({ pageTemplate: templateId }); // ✅ Save to pageTemplate
-  };
-
-  const handleColorChange = async (color) => {
-    setSelectedColor(color);
-    await updateProfile({ pageColor: color }); // ✅ Save to pageColor
-  };
   // Update local state when profile prop changes
   useEffect(() => {
     if (profile) {
@@ -175,16 +128,13 @@ export default function SettingsTab({ profile, onCopyLink, onAccountDeleted }) {
       if (response.data.success) {
         toast.success("Account deleted successfully");
 
-        // Close modal
         setShowDeleteModal(false);
         setDeleteConfirmation("");
 
-        // ✅ IMPORTANT: Call logout to clear everything
         await logout();
 
-        // ✅ Navigate and force reload to reset app state
         setTimeout(() => {
-          window.location.href = "/"; // Force full page reload
+          window.location.href = "/";
         }, 1000);
       }
     } catch (error) {
@@ -440,12 +390,7 @@ export default function SettingsTab({ profile, onCopyLink, onAccountDeleted }) {
           </div>
         </div>
       </div>
-      <TemplateSelector
-        selectedTemplate={selectedTemplate}
-        selectedColor={selectedColor}
-        onTemplateChange={handleTemplateChange}
-        onColorChange={handleColorChange}
-      />
+
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
