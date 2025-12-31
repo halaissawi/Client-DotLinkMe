@@ -72,6 +72,10 @@ export default function PublicProfile() {
   }, [slug, API_URL]);
 
   const handleSocialClick = async (linkId, url) => {
+    // Open the link FIRST (before async fetch)
+    window.open(url, "_blank");
+
+    // Then track the click
     try {
       await fetch(`${API_URL}/api/social-links/${linkId}/click`, {
         method: "POST",
@@ -79,7 +83,6 @@ export default function PublicProfile() {
     } catch (err) {
       console.error("Error tracking click:", err);
     }
-    window.open(url, "_blank");
   };
 
   const handleShare = async (method) => {
