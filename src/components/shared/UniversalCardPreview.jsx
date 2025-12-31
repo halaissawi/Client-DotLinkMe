@@ -157,9 +157,11 @@ export default function UniversalCardPreview({
       setImageLoading(true);
 
       const img = new Image();
+      let timeoutId;
 
       img.onload = () => {
         if (isMountedRef.current) {
+          clearTimeout(timeoutId); // ✅ Clear timeout on success
           setImageLoading(false);
           setImageLoaded(true);
           setImageError(false);
@@ -168,17 +170,19 @@ export default function UniversalCardPreview({
 
       img.onerror = () => {
         if (isMountedRef.current) {
+          clearTimeout(timeoutId); // ✅ Clear timeout on error too
           setImageLoading(false);
           setImageLoaded(false);
           setImageError(true);
         }
       };
 
+      // Start loading
       img.src = backgroundUrl;
 
-      // Timeout fallback (30 seconds)
-      const timeout = setTimeout(() => {
-        if (isMountedRef.current && !imageLoaded) {
+      // Timeout fallback - only if image neither loads nor errors
+      timeoutId = setTimeout(() => {
+        if (isMountedRef.current) {
           setImageLoading(false);
           setImageError(true);
         }
@@ -186,7 +190,7 @@ export default function UniversalCardPreview({
 
       return () => {
         isMountedRef.current = false;
-        clearTimeout(timeout);
+        clearTimeout(timeoutId); // ✅ Clear on unmount
       };
     } else {
       // No background image needed
@@ -199,7 +203,6 @@ export default function UniversalCardPreview({
       isMountedRef.current = false;
     };
   }, [backgroundUrl, hasBackgroundImage]);
-
   return (
     <div
       className={`

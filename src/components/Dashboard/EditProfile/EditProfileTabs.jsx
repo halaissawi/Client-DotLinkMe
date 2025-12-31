@@ -8,7 +8,7 @@ export default function EditProfileTabs({
 }) {
   const tabs = [
     { id: "basic", label: "Basic Info", icon: Edit3 },
-    { id: "design", label: "Card Design", icon: Palette }, // 🆕 NEW TAB
+    { id: "design", label: "Design", icon: Palette }, // 🆕 NEW TAB
     {
       id: "links",
       label: "Social Links",
