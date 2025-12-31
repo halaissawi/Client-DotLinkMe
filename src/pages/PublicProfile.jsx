@@ -72,14 +72,18 @@ export default function PublicProfile() {
   }, [slug, API_URL]);
 
   const handleSocialClick = async (linkId, url) => {
+    // Don't use window.open - just track the analytics
+    // The <a> tag will handle navigation automatically
     try {
-      await fetch(`${API_URL}/api/social-links/${linkId}/click`, {
+      // Use fetch with keepalive to track even if user navigates away
+      fetch(`${API_URL}/api/social-links/${linkId}/click`, {
         method: "POST",
+        keepalive: true, // ✅ Ensures request completes even after navigation
       });
     } catch (err) {
       console.error("Error tracking click:", err);
     }
-    window.open(url, "_blank");
+    // Don't call window.open() - let the <a> tag handle it
   };
 
   const handleShare = async (method) => {
