@@ -5,7 +5,7 @@ import ProfilesSection from "../../components/Dashboard/overView/ProfilesSection
 import RecentActivity from "../../components/Dashboard/overView/RecentActivity";
 import ProfilePerformance from "../../components/Dashboard/overView/ProfilePerformance";
 import QuickActions from "../../components/Dashboard/overView/QuickActions";
-import LoadingSpinner from "../../components/Dashboard/overView/LoadingSpinner";
+import LoadingSpinner from "../../components/shared/LoadingSpinner";
 
 export default function DashboardOverview() {
   const [loading, setLoading] = useState(true);
@@ -65,7 +65,7 @@ export default function DashboardOverview() {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullPage text="Loading dashboard..." />;
   }
 
   return (

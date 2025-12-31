@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { User, Building, Eye, Loader2 } from "lucide-react";
 import { CARD_TEMPLATES } from "../../constants/cardTemplates";
 
@@ -23,18 +23,22 @@ function adjustColorBrightness(color, percent) {
 }
 
 function getTemplateStyles(profile, selectedTemplate) {
-  console.log("🎨 [UniversalCardPreview] Input:", {
-    selectedTemplate,
-    profileTemplate: profile?.template,
-    designMode: profile?.designMode,
-    hasCustom: !!profile?.customDesignUrl,
-    hasAI: !!profile?.aiBackground,
-    hasColor: !!profile?.color,
-  });
+  const isDev = import.meta.env.DEV;
+
+  if (isDev) {
+    console.log("🎨 [UniversalCardPreview] Input:", {
+      selectedTemplate,
+      profileTemplate: profile?.template,
+      designMode: profile?.designMode,
+      hasCustom: !!profile?.customDesignUrl,
+      hasAI: !!profile?.aiBackground,
+      hasColor: !!profile?.color,
+    });
+  }
 
   // PRIORITY 1: Custom Upload (always shows if exists)
   if (profile?.customDesignUrl) {
-    console.log("✅ [Priority 1] Custom Upload");
+    if (isDev) console.log("✅ [Priority 1] Custom Upload");
     return {
       style: {
         backgroundImage: `url(${profile.customDesignUrl})`,
@@ -48,7 +52,7 @@ function getTemplateStyles(profile, selectedTemplate) {
 
   // PRIORITY 2: AI Background (always shows if exists)
   if (profile?.aiBackground) {
-    console.log("✅ [Priority 2] AI Background");
+    if (isDev) console.log("✅ [Priority 2] AI Background");
     return {
       style: {
         backgroundImage: `url(${profile.aiBackground})`,
@@ -60,29 +64,9 @@ function getTemplateStyles(profile, selectedTemplate) {
     };
   }
 
-  // PRIORITY 3: Template (use profile.template OR selectedTemplate)
-  const templateToUse = profile?.template || selectedTemplate;
-
-  if (profile?.designMode === "template" && templateToUse) {
-    const template = CARD_TEMPLATES[templateToUse];
-
-    if (template?.fullImage) {
-      console.log("✅ [Priority 3] Template:", templateToUse);
-      return {
-        style: {
-          backgroundImage: `url(${template.fullImage})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-        },
-        textColor: "text-white",
-        overlay: "from-black/30 to-transparent",
-      };
-    }
-  }
-
-  // PRIORITY 4: Manual Color
+  // PRIORITY 3: Manual Color (only if explicitly in manual mode with color)
   if (profile?.designMode === "manual" && profile?.color) {
-    console.log("✅ [Priority 4] Manual Color:", profile.color);
+    if (isDev) console.log("✅ [Priority 3] Manual Color:", profile.color);
     const color = profile.color;
     return {
       style: {
@@ -96,12 +80,16 @@ function getTemplateStyles(profile, selectedTemplate) {
     };
   }
 
-  // PRIORITY 5: Fallback to template if exists
+  // PRIORITY 4: Template (use profile.template OR selectedTemplate)
+  // This now comes AFTER manual color check to prevent override
+  const templateToUse = profile?.template || selectedTemplate;
+
   if (templateToUse && CARD_TEMPLATES[templateToUse]?.fullImage) {
-    console.log("✅ [Priority 5] Fallback Template:", templateToUse);
+    const template = CARD_TEMPLATES[templateToUse];
+    if (isDev) console.log("✅ [Priority 4] Template:", templateToUse);
     return {
       style: {
-        backgroundImage: `url(${CARD_TEMPLATES[templateToUse].fullImage})`,
+        backgroundImage: `url(${template.fullImage})`,
         backgroundSize: "cover",
         backgroundPosition: "center",
       },
@@ -111,7 +99,7 @@ function getTemplateStyles(profile, selectedTemplate) {
   }
 
   // FINAL FALLBACK: LinkMe Blue
-  console.log("✅ [Fallback] LinkMe Blue");
+  if (isDev) console.log("✅ [Fallback] LinkMe Blue");
   return {
     style: { backgroundColor: "#0066ff" },
     textColor: "text-white",
@@ -131,6 +119,14 @@ export default function UniversalCardPreview({
   const [imageLoading, setImageLoading] = useState(false);
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
+  const isMountedRef = useRef(true);
+
+  // Early return if no profile
+  if (!profile) {
+    return (
+      <div className="w-full max-w-[360px] aspect-[1.586/1] rounded-[24px] bg-gray-200 animate-pulse" />
+    );
+  }
 
   // Determine profile type
   const isPersonal =
@@ -139,68 +135,79 @@ export default function UniversalCardPreview({
   // Get template styles
   const templateStyles = getTemplateStyles(profile, selectedTemplate);
 
-  // Check if we're using an image-based background
-  const hasBackgroundImage =
-    profile?.customDesignUrl ||
-    profile?.aiBackground ||
-    (profile?.designMode === "template" &&
-      (selectedTemplate || profile?.template));
-
+  // Determine background URL
   const templateToUse = profile?.template || selectedTemplate;
   const backgroundUrl =
     profile?.customDesignUrl ||
     profile?.aiBackground ||
     (templateToUse ? CARD_TEMPLATES[templateToUse]?.fullImage : null);
 
+  // Check if we're using an image-based background
+  const hasBackgroundImage = !!backgroundUrl;
+
   // Reset loading states when background URL changes
   useEffect(() => {
+    isMountedRef.current = true;
+
+    // Reset states immediately when URL changes
+    setImageLoaded(false);
+    setImageError(false);
+
     if (hasBackgroundImage && backgroundUrl) {
       setImageLoading(true);
-      setImageLoaded(false);
-      setImageError(false);
 
       const img = new Image();
 
       img.onload = () => {
-        setImageLoading(false);
-        setImageLoaded(true);
-        setImageError(false);
+        if (isMountedRef.current) {
+          setImageLoading(false);
+          setImageLoaded(true);
+          setImageError(false);
+        }
       };
 
       img.onerror = () => {
-        setImageLoading(false);
-        setImageLoaded(false);
-        setImageError(true);
+        if (isMountedRef.current) {
+          setImageLoading(false);
+          setImageLoaded(false);
+          setImageError(true);
+        }
       };
 
       img.src = backgroundUrl;
 
+      // Timeout fallback (30 seconds)
       const timeout = setTimeout(() => {
-        if (!imageLoaded) {
+        if (isMountedRef.current && !imageLoaded) {
           setImageLoading(false);
           setImageError(true);
         }
       }, 30000);
 
-      return () => clearTimeout(timeout);
+      return () => {
+        isMountedRef.current = false;
+        clearTimeout(timeout);
+      };
     } else {
+      // No background image needed
       setImageLoading(false);
       setImageLoaded(false);
       setImageError(false);
     }
-  }, [backgroundUrl, hasBackgroundImage, imageLoaded]);
+
+    return () => {
+      isMountedRef.current = false;
+    };
+  }, [backgroundUrl, hasBackgroundImage]);
 
   return (
     <div
       className={`
-        relative w-full max-w-[360px] h-[200px] sm:h-[220px]
+        relative w-full max-w-[360px] aspect-[1.586/1]
         rounded-[24px] shadow-2xl overflow-hidden transition-all
         ${className}
       `}
-      style={{
-        ...templateStyles.style,
-        aspectRatio: "1.586 / 1",
-      }}
+      style={templateStyles.style}
     >
       {/* Loading Overlay */}
       {showLoading && imageLoading && hasBackgroundImage && (
@@ -254,7 +261,11 @@ export default function UniversalCardPreview({
                 isPersonal ? "rounded-full" : "rounded-lg"
               } bg-white/20 backdrop-blur-sm`}
             >
-              {isPersonal ? <User /> : <Building />}
+              {isPersonal ? (
+                <User className="w-6 h-6" />
+              ) : (
+                <Building className="w-6 h-6" />
+              )}
             </div>
           )}
 

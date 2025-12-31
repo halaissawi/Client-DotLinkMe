@@ -8,7 +8,7 @@ import DesignEditorTab from "../../components/Dashboard/EditProfile/DesignEditor
 import SocialLinksTab from "../../components/Dashboard/EditProfile/SocialLinksTab";
 import SettingsTab from "../../components/Dashboard/EditProfile/SettingsTab";
 import ProfileSidebar from "../../components/Dashboard/EditProfile/ProfileSidebar";
-import LoadingSpinner from "../../components/Dashboard/overView/LoadingSpinner";
+import LoadingSpinner from "../../components/shared/LoadingSpinner";
 import SocialLinkModal from "../../components/SocialLinkModal"; // ✅ Renamed from AddSocialLinkModal
 import { X } from "lucide-react";
 
@@ -429,7 +429,7 @@ export default function EditProfile() {
   };
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullPage text="Loading profile..." />;
   }
 
   if (!profile) {

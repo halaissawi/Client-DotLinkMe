@@ -7,7 +7,7 @@ import OrderSummary from "../../components/Dashboard/Cart/OrderSummary";
 import ContactInformationForm from "../../components/Dashboard/Cart/ContactInformationForm";
 import ShippingAddressForm from "../../components/Dashboard/Cart/ShippingAddressForm";
 import PaymentMethodSection from "../../components/Dashboard/Cart/PaymentMethodSection";
-import LoadingSpinner from "../../components/Dashboard/Cart/LoadingSpinner";
+import LoadingSpinner from "../../components/shared/LoadingSpinner";
 import { generateAIImage } from "../../utils/cardUtils";
 import { Loader2 } from "lucide-react"; // <-- Added Loader2 import
 
@@ -211,9 +211,8 @@ export default function CartCheckout() {
       setSubmitting(false);
     }
   };
-
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullPage text="Loading checkout..." />;
   }
 
   if (!profile) {

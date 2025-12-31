@@ -6,7 +6,7 @@ import ProfilesStats from "../../components/Dashboard/MyProfile/ProfilesStats";
 import ProfilesFilters from "../../components/Dashboard/MyProfile/ProfilesFilters";
 import ProfilesGrid from "../../components/Dashboard/MyProfile/ProfilesGrid";
 import ProfilesList from "../../components/Dashboard/MyProfile/ProfilesList";
-import LoadingSpinner from "../../components/Dashboard/MyProfile/LoadingSpinner";
+import LoadingSpinner from "../../components/shared/LoadingSpinner";
 
 export default function MyProfiles() {
   const [profiles, setProfiles] = useState([]);
@@ -234,7 +234,7 @@ export default function MyProfiles() {
   });
 
   if (loading) {
-    return <LoadingSpinner />;
+    return <LoadingSpinner fullPage text="Loading profiles..." />;
   }
 
   return (
