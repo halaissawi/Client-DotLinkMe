@@ -169,17 +169,19 @@ export default function ProfileCardMobile({
                 )}
               </div>
 
-              {/* Social Links - Show ALL visible social links */}
               {visibleSocialLinks.map((link) => (
-                <a
-                  key={link.id}
-                  href={link.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-11 h-11 bg-blue-500 text-white rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                >
-                  {getPlatformIcon(link.platform)}
-                </a>
+                <div key={link.id}>
+                  <p className="text-xs">{link.url}</p>{" "}
+                  {/* Show the actual URL */}
+                  <a
+                    href={link.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-11 h-11 bg-blue-500 text-white rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                  >
+                    {getPlatformIcon(link.platform)}
+                  </a>
+                </div>
               ))}
 
               {/* Save Contact Button */}
