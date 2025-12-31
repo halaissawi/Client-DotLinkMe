@@ -7,29 +7,6 @@ import VisitorContactModal from "../components/PublicProfile/VisitorContactModal
 import { Loader2 } from "lucide-react";
 import TemplateRenderer from "../components/PublicProfile/TemplateRenderer";
 
-// Add this helper function after imports
-const normalizeUrl = (platform, value) => {
-  if (!value) return null;
-
-  // If it already starts with http, return as is
-  if (value.toLowerCase().startsWith("http")) {
-    return value;
-  }
-
-  // Otherwise, build the full URL based on platform
-  const platformUrls = {
-    instagram: `https://instagram.com/${value}`,
-    linkedin: `https://linkedin.com/in/${value}`,
-    x: `https://x.com/${value}`,
-    github: `https://github.com/${value}`,
-    website: value.startsWith("www.")
-      ? `https://${value}`
-      : `https://www.${value}`,
-  };
-
-  return platformUrls[platform] || `https://${value}`;
-};
-
 export default function PublicProfile() {
   const { slug } = useParams();
   const [profile, setProfile] = useState(null);
@@ -95,16 +72,14 @@ export default function PublicProfile() {
   }, [slug, API_URL]);
 
   const handleSocialClick = async (linkId, url) => {
-    // Just track the click - don't use window.open
     try {
-      fetch(`${API_URL}/api/social-links/${linkId}/click`, {
+      await fetch(`${API_URL}/api/social-links/${linkId}/click`, {
         method: "POST",
-        keepalive: true,
       });
     } catch (err) {
       console.error("Error tracking click:", err);
     }
-    // Don't call window.open - let the <a> tag handle navigation
+    window.open(url, "_blank");
   };
 
   const handleShare = async (method) => {
