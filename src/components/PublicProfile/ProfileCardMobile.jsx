@@ -169,20 +169,45 @@ export default function ProfileCardMobile({
                 )}
               </div>
 
-              {visibleSocialLinks.map((link) => (
-                <div key={link.id}>
-                  <p className="text-xs">{link.url}</p>{" "}
-                  {/* Show the actual URL */}
-                  <a
-                    href={link.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="w-11 h-11 bg-blue-500 text-white rounded-full flex items-center justify-center active:scale-95 transition-transform"
-                  >
-                    {getPlatformIcon(link.platform)}
-                  </a>
+              {/* Social Links - Show ALL visible social links */}
+              {visibleSocialLinks.length > 0 && (
+                <div className="flex flex-wrap justify-center gap-3 mb-5">
+                  {visibleSocialLinks.map((link) => {
+                    // Normalize URL to ensure it has https://
+                    const normalizeUrl = (platform, value) => {
+                      if (!value) return null;
+                      if (value.toLowerCase().startsWith("http")) return value;
+
+                      const platformUrls = {
+                        instagram: `https://instagram.com/${value}`,
+                        linkedin: `https://linkedin.com/in/${value}`,
+                        x: `https://x.com/${value}`,
+                        github: `https://github.com/${value}`,
+                        website: value.startsWith("www.")
+                          ? `https://${value}`
+                          : `https://www.${value}`,
+                      };
+
+                      return platformUrls[platform] || `https://${value}`;
+                    };
+
+                    const fullUrl = normalizeUrl(link.platform, link.url);
+
+                    return (
+                      <a
+                        key={link.id}
+                        href={fullUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        onClick={() => handleSocialClick(link.id, link.url)}
+                        className="w-11 h-11 bg-blue-500 text-white rounded-full flex items-center justify-center active:scale-95 transition-transform"
+                      >
+                        {getPlatformIcon(link.platform)}
+                      </a>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
 
               {/* Save Contact Button */}
               <button
