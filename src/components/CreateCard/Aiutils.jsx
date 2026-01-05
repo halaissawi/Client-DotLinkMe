@@ -1,47 +1,51 @@
-// Aiutils.js - Direct Pollinations AI Integration (No Backend Needed)
+// Aiutils.js - Frontend calls backend proxy (SECURE)
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
 /**
- * Generate AI Background Image using Pollinations AI
+ * Generate AI Background Image via backend proxy
  * @param {string} prompt - Description of the desired background
- * @returns {Promise<string>} Base64 encoded image data URL
+ * @returns {Promise<string>} Base64 image data URL
  */
 export const generateAIImage = async (prompt) => {
   try {
-    console.log("🎨 Generating AI background with prompt:", prompt);
+    console.log("🎨 Starting AI generation with prompt:", prompt);
 
     if (!prompt || !prompt.trim()) {
       throw new Error("Please provide a description for your design");
     }
 
-    // Pollinations AI URL - generates image on-the-fly
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(
-      prompt
-    )}?width=1024&height=640&model=flux&nologo=true&enhance=true&seed=${Date.now()}`;
+    const token = localStorage.getItem("token");
 
-    console.log("📡 Fetching from Pollinations AI...");
-
-    // Fetch the image
-    const response = await fetch(pollinationsUrl);
-
-    if (!response.ok) {
-      throw new Error(`Failed to generate image (Status: ${response.status})`);
-    }
-
-    console.log("✅ Image received, converting to base64...");
-
-    // Get image as blob
-    const blob = await response.blob();
-
-    // Convert blob to base64 data URL
-    const base64Image = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Failed to convert image"));
-      reader.readAsDataURL(blob);
+    // Call YOUR backend endpoint (not Pollinations directly)
+    const response = await fetch(`${API_URL}/api/ai/generate-ai-image`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`, // Your auth token
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        width: 1024,
+        height: 640,
+        type: "background",
+      }),
     });
 
-    console.log("✅ Background generated successfully!");
-    return base64Image;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to generate image");
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.imageUrl) {
+      throw new Error("Invalid response from server");
+    }
+
+    console.log("✅ Successfully generated image");
+
+    return data.imageUrl; // This is now a base64 data URL
   } catch (error) {
     console.error("❌ AI Image generation error:", error);
     throw new Error(
@@ -51,9 +55,9 @@ export const generateAIImage = async (prompt) => {
 };
 
 /**
- * Generate AI Logo using Pollinations AI
+ * Generate AI Logo via backend proxy
  * @param {string} prompt - Description of the desired logo
- * @returns {Promise<string>} Base64 encoded image data URL
+ * @returns {Promise<string>} Base64 image data URL
  */
 export const generateAILogo = async (prompt) => {
   try {
@@ -63,76 +67,40 @@ export const generateAILogo = async (prompt) => {
       throw new Error("Please provide a description for your logo");
     }
 
-    // Enhanced prompt for better logo results
-    const logoPrompt = `professional logo design: ${prompt}, simple, clean, centered, minimalist, high quality, vector style`;
+    const token = localStorage.getItem("token");
 
-    // Pollinations AI URL - square format for logos
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(
-      logoPrompt
-    )}?width=512&height=512&model=flux&nologo=true&enhance=true&seed=${Date.now()}`;
-
-    console.log("📡 Fetching logo from Pollinations AI...");
-
-    const response = await fetch(pollinationsUrl);
-
-    if (!response.ok) {
-      throw new Error(`Failed to generate logo (Status: ${response.status})`);
-    }
-
-    console.log("✅ Logo received, converting to base64...");
-
-    const blob = await response.blob();
-
-    const base64Image = await new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Failed to convert logo"));
-      reader.readAsDataURL(blob);
+    const response = await fetch(`${API_URL}/api/ai/generate-ai-image`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        width: 512,
+        height: 512,
+        type: "logo",
+      }),
     });
 
-    console.log("✅ Logo generated successfully!");
-    return base64Image;
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Failed to generate logo");
+    }
+
+    const data = await response.json();
+
+    if (!data.success || !data.imageUrl) {
+      throw new Error("Invalid response from server");
+    }
+
+    console.log("✅ Logo generated successfully");
+
+    return data.imageUrl;
   } catch (error) {
     console.error("❌ AI Logo generation error:", error);
     throw new Error(
       error.message || "Failed to generate logo. Please try again."
     );
-  }
-};
-
-/**
- * Optional: Generate AI Image with custom dimensions
- * @param {string} prompt - Description
- * @param {number} width - Image width
- * @param {number} height - Image height
- * @returns {Promise<string>} Base64 encoded image data URL
- */
-export const generateCustomAIImage = async (
-  prompt,
-  width = 1024,
-  height = 640
-) => {
-  try {
-    const pollinationsUrl = `https://image.pollinations.ai/prompt/${encodeURIComponent(
-      prompt
-    )}?width=${width}&height=${height}&model=flux&nologo=true&enhance=true&seed=${Date.now()}`;
-
-    const response = await fetch(pollinationsUrl);
-
-    if (!response.ok) {
-      throw new Error(`Failed to generate image (Status: ${response.status})`);
-    }
-
-    const blob = await response.blob();
-
-    return new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result);
-      reader.onerror = () => reject(new Error("Failed to convert image"));
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.error("❌ Custom AI generation error:", error);
-    throw new Error(error.message || "Failed to generate image");
   }
 };

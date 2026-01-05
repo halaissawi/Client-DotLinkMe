@@ -8,50 +8,7 @@ import TermsModal from "../components/TermsModal";
 import Swal from "sweetalert2";
 import ReactCountryFlag from "react-country-flag";
 import PrivacyPolicyModal from "../components/PrivacyPolicyModal";
-
-// Country codes moved outside component for performance
-const COUNTRY_CODES = [
-  { name: "Jordan", code: "+962", shortcut: "JO", flag: "JO" },
-  { name: "Saudi Arabia", code: "+966", shortcut: "SA", flag: "SA" },
-  { name: "UAE", code: "+971", shortcut: "AE", flag: "AE" },
-  { name: "Qatar", code: "+974", shortcut: "QA", flag: "QA" },
-  { name: "Kuwait", code: "+965", shortcut: "KW", flag: "KW" },
-  { name: "USA", code: "+1", shortcut: "US", flag: "US" },
-  { name: "UK", code: "+44", shortcut: "GB", flag: "GB" },
-  { name: "Australia", code: "+61", shortcut: "AU", flag: "AU" },
-  { name: "Germany", code: "+49", shortcut: "DE", flag: "DE" },
-  { name: "France", code: "+33", shortcut: "FR", flag: "FR" },
-  { name: "Italy", code: "+39", shortcut: "IT", flag: "IT" },
-  { name: "Spain", code: "+34", shortcut: "ES", flag: "ES" },
-  { name: "Netherlands", code: "+31", shortcut: "NL", flag: "NL" },
-  { name: "Sweden", code: "+46", shortcut: "SE", flag: "SE" },
-  { name: "Norway", code: "+47", shortcut: "NO", flag: "NO" },
-  { name: "Denmark", code: "+45", shortcut: "DK", flag: "DK" },
-  { name: "Finland", code: "+358", shortcut: "FI", flag: "FI" },
-  { name: "Brazil", code: "+55", shortcut: "BR", flag: "BR" },
-  { name: "Mexico", code: "+52", shortcut: "MX", flag: "MX" },
-  { name: "Argentina", code: "+54", shortcut: "AR", flag: "AR" },
-  { name: "South Africa", code: "+27", shortcut: "ZA", flag: "ZA" },
-  { name: "India", code: "+91", shortcut: "IN", flag: "IN" },
-  { name: "China", code: "+86", shortcut: "CN", flag: "CN" },
-  { name: "Japan", code: "+81", shortcut: "JP", flag: "JP" },
-  { name: "South Korea", code: "+82", shortcut: "KR", flag: "KR" },
-  { name: "Singapore", code: "+65", shortcut: "SG", flag: "SG" },
-  { name: "New Zealand", code: "+64", shortcut: "NZ", flag: "NZ" },
-  { name: "Russia", code: "+7", shortcut: "RU", flag: "RU" },
-  { name: "Turkey", code: "+90", shortcut: "TR", flag: "TR" },
-  { name: "Egypt", code: "+20", shortcut: "EG", flag: "EG" },
-  { name: "Morocco", code: "+212", shortcut: "MA", flag: "MA" },
-  { name: "Nigeria", code: "+234", shortcut: "NG", flag: "NG" },
-  { name: "Kenya", code: "+254", shortcut: "KE", flag: "KE" },
-  { name: "Pakistan", code: "+92", shortcut: "PK", flag: "PK" },
-  { name: "Bangladesh", code: "+880", shortcut: "BD", flag: "BD" },
-  { name: "Thailand", code: "+66", shortcut: "TH", flag: "TH" },
-  { name: "Vietnam", code: "+84", shortcut: "VN", flag: "VN" },
-  { name: "Philippines", code: "+63", shortcut: "PH", flag: "PH" },
-  { name: "Malaysia", code: "+60", shortcut: "MY", flag: "MY" },
-];
-
+import { COUNTRY_CODES } from "../constants/countries";
 const SignUp = () => {
   const [formData, setFormData] = useState({
     firstname: "",
@@ -85,14 +42,25 @@ const SignUp = () => {
   const API_URL = import.meta.env.VITE_API_URL;
 
   // Load saved form data (excluding sensitive fields)
+
   useEffect(() => {
     const savedData = localStorage.getItem("signupFormData");
     if (savedData) {
       try {
         const parsed = JSON.parse(savedData);
-        // Never load password from storage for security
         delete parsed.password;
         delete parsed.confirmPassword;
+
+        // ✅ If phone exists, find and set the correct country
+        if (parsed.phone) {
+          const matchedCountry = COUNTRY_CODES.find((c) =>
+            parsed.phone.startsWith(c.code)
+          );
+          if (matchedCountry) {
+            setSelectedCountry(matchedCountry);
+          }
+        }
+
         setFormData((prev) => ({ ...prev, ...parsed }));
       } catch (error) {
         console.error("Error loading saved form data:", error);
@@ -227,19 +195,57 @@ const SignUp = () => {
       return;
     }
 
-    // Only validate phone if user entered something
-    if (
-      formData.phone &&
-      formData.phone.trim() !== selectedCountry.code.trim()
-    ) {
+    // ✅ IMPROVED: Better phone validation
+    let validatedPhone = null;
+    if (formData.phone && formData.phone.trim()) {
       const phoneWithoutCode = formData.phone
         .replace(selectedCountry.code, "")
-        .trim();
-      if (
-        phoneWithoutCode.length < 8 ||
-        !/^\d+$/.test(phoneWithoutCode.replace(/\s/g, ""))
-      ) {
-        setError("Please enter a valid phone number");
+        .trim()
+        .replace(/\s/g, ""); // Remove all spaces
+
+      // Check if there are actual digits after country code
+      if (phoneWithoutCode.length > 0) {
+        if (phoneWithoutCode.length < 8) {
+          setError("Phone number must be at least 8 digits");
+          setLoading(false);
+          return;
+        }
+
+        if (!/^\d+$/.test(phoneWithoutCode)) {
+          setError("Phone number should contain only digits");
+          setLoading(false);
+          return;
+        }
+
+        // If validation passes, set the validated phone
+        validatedPhone = formData.phone.trim();
+      }
+      // If phoneWithoutCode is empty, it means user only has country code
+      // In this case, we don't send phone at all (validatedPhone stays null)
+    }
+
+    // ✅ IMPROVED: Date of Birth validation
+    if (formData.dob) {
+      const birthDate = new Date(formData.dob);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+
+      // Adjust age if birthday hasn't occurred this year
+      const actualAge =
+        monthDiff < 0 ||
+        (monthDiff === 0 && today.getDate() < birthDate.getDate())
+          ? age - 1
+          : age;
+
+      if (actualAge < 13) {
+        setError("You must be at least 13 years old to register");
+        setLoading(false);
+        return;
+      }
+
+      if (actualAge > 120) {
+        setError("Please enter a valid date of birth");
         setLoading(false);
         return;
       }
@@ -252,15 +258,27 @@ const SignUp = () => {
     }
 
     try {
+      // ✅ IMPROVED: Clean payload construction
       const payload = {
-        firstName: formData.firstname,
-        secondName: formData.secondname,
-        lastName: formData.lastname,
-        dateOfBirth: formData.dob,
-        email: formData.email,
-        phoneNumber: formData.phone,
+        firstName: formData.firstname.trim(),
+        lastName: formData.lastname.trim(),
+        email: formData.email.trim(),
         password: formData.password,
       };
+
+      // Only add optional fields if they have values
+      if (formData.secondname.trim()) {
+        payload.secondName = formData.secondname.trim();
+      }
+
+      if (formData.dob) {
+        payload.dateOfBirth = formData.dob;
+      }
+
+      // Only add phone if it's validated
+      if (validatedPhone) {
+        payload.phoneNumber = validatedPhone;
+      }
 
       const response = await axios.post(`${API_URL}/auth/signup`, payload);
 
