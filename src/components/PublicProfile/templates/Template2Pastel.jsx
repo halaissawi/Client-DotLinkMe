@@ -166,7 +166,7 @@ export default function Template2Pastel({
                     className="text-sm font-semibold"
                     style={{ color: themeColor }}
                   >
-                    My Story
+                    About Me
                   </p>
                 </div>
                 <p className="text-sm text-gray-700 leading-relaxed pl-8">
