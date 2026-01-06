@@ -51,7 +51,7 @@ export default function Template3Modern({
         {/* Main Card */}
         <div className="bg-white rounded-3xl overflow-visible shadow-2xl">
           {/* ✅ SUPER FIXED: Header with proper padding */}
-          <div className="relative bg-white pt-6 pb-4 px-6 flex items-center justify-between">
+          <div className="relative bg-white rounded-3xl pt-6 pb-4 px-6 flex items-center justify-between">
             <div className="w-8"></div>
             <button
               onClick={() => setShowShareModal(true)}

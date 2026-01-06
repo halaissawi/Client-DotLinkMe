@@ -184,6 +184,7 @@ END:VCARD`;
   };
 
   const handleWhatsApp = async (linkId, number) => {
+    // Track click first
     try {
       await fetch(`${API_URL}/api/social-links/${linkId}/click`, {
         method: "POST",
@@ -191,8 +192,10 @@ END:VCARD`;
     } catch (err) {
       console.error("Error tracking click:", err);
     }
+
+    // Then redirect (same pattern as handleCall and handleEmail)
     const cleanNumber = number.replace(/\D/g, "");
-    window.open(`https://wa.me/${cleanNumber}`);
+    window.location.href = `https://wa.me/${cleanNumber}`;
   };
 
   if (loading) {
