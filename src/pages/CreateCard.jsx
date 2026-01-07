@@ -97,9 +97,12 @@ async function createProfile(profileData, token) {
       case "linkedin":
         return `https://linkedin.com/in/${username}`;
       case "twitter":
+      case "x": // ✅ Handle both twitter and x
         return `https://twitter.com/${username}`;
       case "github":
         return `https://github.com/${username}`;
+      case "facebook": // ✅ ADD THIS
+        return `https://facebook.com/${username}`;
       case "website":
         return `https://${username}`;
       default:

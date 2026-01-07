@@ -238,13 +238,14 @@ export default function EditProfile() {
         return `https://twitter.com/${username}`;
       case "github":
         return `https://github.com/${username}`;
+      case "facebook": // ✅ ADD THIS
+        return `https://facebook.com/${username}`; // ✅ ADD THIS
       case "website":
         return `https://${username}`;
       default:
         return username;
     }
   };
-
   const handleAddSocialLink = async (platform, url) => {
     try {
       const token = localStorage.getItem("token");

@@ -492,6 +492,7 @@ export default function SocialLinksSection({
             instagram: "text-pink-600 bg-pink-50",
             x: "text-gray-900 bg-gray-100",
             github: "text-gray-700 bg-gray-100",
+            facebook: "text-blue-600 bg-blue-50",
           };
 
           return (

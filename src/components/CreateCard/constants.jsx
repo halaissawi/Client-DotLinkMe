@@ -7,6 +7,7 @@ import {
   Mail,
   Phone,
   X,
+  Facebook,
 } from "lucide-react";
 
 export const SOCIAL_PLATFORMS = [
@@ -27,6 +28,12 @@ export const SOCIAL_PLATFORMS = [
     label: "Instagram",
     placeholder: "Your Instagram Username/link",
     icon: Instagram,
+  },
+  {
+    key: "facebook", // ✅ ADD THIS ENTIRE OBJECT
+    label: "Facebook",
+    placeholder: "Your Facebook Username/link",
+    icon: Facebook,
   },
   {
     key: "x",

@@ -8,6 +8,7 @@ const PLATFORM_ENUM = [
   { value: "linkedin", label: "LinkedIn" },
   { value: "instagram", label: "Instagram" },
   { value: "twitter", label: "Twitter" },
+  { value: "facebook", label: "Facebook" },
   { value: "github", label: "GitHub" },
   { value: "whatsapp", label: "WhatsApp" },
   { value: "email", label: "Email" },
