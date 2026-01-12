@@ -4,7 +4,7 @@ import UniversalCardPreview from "../../shared/UniversalCardPreview";
 
 export function generateProfileUrl(slug) {
   if (!slug) {
-    return "https://linkme.io/your-smart-identity";
+    return "https://www.linkmejo.com/your-smart-identity";
   }
   return `${window.location.origin}/u/${slug}`;
 }

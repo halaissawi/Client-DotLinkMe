@@ -13,7 +13,7 @@ export function formatDate(dateString) {
 
 export function generateProfileUrl(name) {
   if (!name || !name.trim()) {
-    return "https://linkme.io/your-smart-identity";
+    return "https://www.linkmejo.com/your-smart-identity";
   }
 
   const slug = name
@@ -22,7 +22,7 @@ export function generateProfileUrl(name) {
     .replace(/\s+/g, "-")
     .replace(/[^a-z0-9-]/g, "");
 
-  return `https://linkme.io/${slug}`;
+  return `https://www.linkmejo.com/${slug}`;
 }
 
 export function adjustColorBrightness(color, percent) {
