@@ -167,6 +167,12 @@ export default function CartCheckout() {
 
     try {
       const token = localStorage.getItem("token");
+
+      // ✅ Generate the profile URL
+      const profileUrl = profile.slug
+        ? `${window.location.origin}/u/${profile.slug}`
+        : null;
+
       const response = await fetch(`${API_URL}/api/orders`, {
         method: "POST",
         headers: {
@@ -175,6 +181,7 @@ export default function CartCheckout() {
         },
         body: JSON.stringify({
           profileId: profile.id,
+          profileUrl: profileUrl, // ✅ ADD THIS
           customerInfo: {
             firstName: formData.firstName,
             lastName: formData.lastName,
