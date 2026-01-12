@@ -87,13 +87,7 @@ export default function Template4Cosmic({
 
       <div className="w-full max-w-sm relative z-10">
         {/* Header */}
-        <div className="flex justify-between items-center mb-8 px-4">
-          <button
-            className="p-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors"
-            aria-label="Menu"
-          >
-            <Menu className="w-5 h-5 text-white" />
-          </button>
+        <div className="flex justify-end items-center mb-8 px-4">
           <button
             onClick={() => setShowShareModal(true)}
             className="p-2 bg-white/10 backdrop-blur-sm rounded-full hover:bg-white/20 transition-colors"
