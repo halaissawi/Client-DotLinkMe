@@ -11,12 +11,15 @@ import {
   HelpCircle,
   User,
   LogOut,
+  ChevronDown,
+  Utensils,
 } from "lucide-react";
 
 const Navbar = () => {
   const { token, logout } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -32,6 +35,7 @@ const Navbar = () => {
   // Close menu when route changes
   useEffect(() => {
     setIsMenuOpen(false);
+    setIsCreateOpen(false);
   }, [location.pathname]);
 
   // Prevent body scroll when menu is open
@@ -61,6 +65,7 @@ const Navbar = () => {
   const mobileNavItems = [
     { to: "/", label: "Home", icon: Home },
     { to: "/create-card", label: "Create Card", icon: CreditCard },
+    { to: "/build-menu", label: "Build Menu", icon: Utensils },
     { to: "/how-it-works", label: "How It Works", icon: HelpCircle },
     { to: "/about", label: "About", icon: Info },
     { to: "/contact", label: "Contact", icon: Mail },
@@ -96,10 +101,29 @@ const Navbar = () => {
                 Home
               </NavLink>
             </li>
-            <li>
-              <NavLink to="/create-card" className={navLinkClass}>
-                Create Card
-              </NavLink>
+            <li 
+              className="relative group"
+              onMouseEnter={() => setIsCreateOpen(true)}
+              onMouseLeave={() => setIsCreateOpen(false)}
+            >
+              <button className={`flex items-center gap-1 ${location.pathname.includes('create') || location.pathname.includes('build') ? 'text-brand-accent font-bold' : 'hover:text-brand-primary'} transition-colors py-2`}>
+                Create
+                <ChevronDown className={`w-4 h-4 transition-transform duration-200 ${isCreateOpen ? 'rotate-180' : ''}`} />
+              </button>
+              
+              <div className={`
+                absolute top-full left-1/2 -translate-x-1/2 w-48 bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden transition-all duration-200
+                ${isCreateOpen ? 'opacity-100 visible translate-y-0' : 'opacity-0 invisible translate-y-2'}
+              `}>
+                <NavLink to="/create-card" className="flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors">
+                  <CreditCard className="w-4 h-4 text-brand-primary" />
+                  <span className="text-sm font-semibold">Digital Card</span>
+                </NavLink>
+                <NavLink to="/build-menu" className="flex items-center gap-3 px-5 py-4 hover:bg-gray-50 transition-colors border-t border-gray-50">
+                  <Utensils className="w-4 h-4 text-[#f2a91d]" />
+                  <span className="text-sm font-semibold">Digital Menu</span>
+                </NavLink>
+              </div>
             </li>
             <li>
               <NavLink to="/how-it-works" className={navLinkClass}>

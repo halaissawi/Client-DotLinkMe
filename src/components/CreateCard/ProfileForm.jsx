@@ -23,9 +23,9 @@ export default function ProfileForm({
   selectedTemplate,
   onTemplateChange,
   templates,
-  onSubmit,
   onSwitchProfile,
   loading,
+  isAccessory,
 }) {
   const API_URL = import.meta.env.VITE_API_URL;
   const [uploadError, setUploadError] = useState(null);
@@ -265,9 +265,11 @@ export default function ProfileForm({
               : "Business Information"}
           </span>
         </h2>
-        <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-primary/10 to-purple-500/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1 whitespace-nowrap">
-          <Zap className="w-3 h-3 flex-shrink-0" /> Live preview →
-        </span>
+        {!isAccessory && (
+          <span className="text-xs font-medium px-3 py-1.5 rounded-full bg-gradient-to-r from-brand-primary/10 to-purple-500/10 text-brand-primary border border-brand-primary/20 flex items-center gap-1 whitespace-nowrap">
+            <Zap className="w-3 h-3 flex-shrink-0" /> Live preview →
+          </span>
+        )}
       </div>
 
       {/* Basic Info */}
@@ -278,61 +280,63 @@ export default function ProfileForm({
       />
 
       {/* Custom Card Design Uploader */}
-      <div className="rounded-xl p-4 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200">
-        <CardDesignUploader
-          currentDesignUrl={currentProfile.customDesignUrl}
-          onUpload={handleCustomDesignUpload}
-          onRemove={handleCustomDesignRemove}
-        />
-        {uploadError && (
-          <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
-            <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-red-800">{uploadError}</p>
-          </div>
-        )}
-      </div>
-
-      {/* Card Design Settings */}
-      <div className="rounded-xl p-3 sm:p-4 bg-white shadow-sm space-y-3">
-        <h3 className="text-sm font-semibold text-gray-700 mb-1">
-          Card Design Settings
-        </h3>
-
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
-          <div className="lg:col-span-7">
-            <TemplateSelector
-              templates={templates}
-              selectedTemplate={selectedTemplate}
-              onTemplateChange={handleTemplateSelection}
-            />
-          </div>
-
-          <div className="lg:col-span-5 h-full">
-            <DesignModeSection
-              currentProfile={currentProfile}
-              updateProfile={updateProfile}
-              onModeChange={(mode) => {
-                // Only update mode, don't clear anything
-                updateProfile({ designMode: mode });
-              }}
-              onColorChange={handleColorSelection}
-              onAIGenerate={handleAIGeneration}
-            />
-          </div>
-        </div>
-
-        {/* Background upload section */}
-        <div className="pt-2 border-t border-gray-200/60">
-          <input
-            type="file"
-            accept="image/*"
-            id="custom-bg"
-            className="hidden"
-            onChange={handleBackgroundUpload}
-            aria-label="Upload custom background"
+      {!isAccessory && (
+        <div className="rounded-xl p-4 bg-gradient-to-br from-purple-50 to-blue-50 border-2 border-purple-200">
+          <CardDesignUploader
+            currentDesignUrl={currentProfile.customDesignUrl}
+            onUpload={handleCustomDesignUpload}
+            onRemove={handleCustomDesignRemove}
           />
+          {uploadError && (
+            <div className="mt-3 bg-red-50 border border-red-200 rounded-lg p-3 flex items-start gap-2">
+              <AlertCircle className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+              <p className="text-xs text-red-800">{uploadError}</p>
+            </div>
+          )}
         </div>
-      </div>
+      )}
+
+      {!isAccessory && (
+        <div className="rounded-xl p-3 sm:p-4 bg-white shadow-sm space-y-3">
+          <h3 className="text-sm font-semibold text-gray-700 mb-1">
+            Card Design Settings
+          </h3>
+
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 lg:gap-6">
+            <div className="lg:col-span-7">
+              <TemplateSelector
+                templates={templates}
+                selectedTemplate={selectedTemplate}
+                onTemplateChange={handleTemplateSelection}
+              />
+            </div>
+
+            <div className="lg:col-span-5 h-full">
+              <DesignModeSection
+                currentProfile={currentProfile}
+                updateProfile={updateProfile}
+                onModeChange={(mode) => {
+                  // Only update mode, don't clear anything
+                  updateProfile({ designMode: mode });
+                }}
+                onColorChange={handleColorSelection}
+                onAIGenerate={handleAIGeneration}
+              />
+            </div>
+          </div>
+
+          <div className="pt-2 border-t border-gray-200/60">
+            <input
+              type="file"
+              accept="image/*"
+              id="custom-bg"
+              className="hidden"
+              onChange={handleBackgroundUpload}
+              aria-label="Upload custom background"
+            />
+          </div>
+        </div>
+      )}
 
       {/* Social Links */}
       <SocialLinksSection
@@ -346,12 +350,12 @@ export default function ProfileForm({
           type="submit"
           disabled={loading}
           className="btn-primary-clean w-full py-3 sm:py-3.5 text-sm sm:text-base disabled:opacity-50 disabled:cursor-not-allowed font-semibold shadow-lg hover:shadow-xl transition-all"
-          aria-label={`Generate ${profileType} card`}
+          aria-label={`Generate ${profileType} ${isAccessory ? "profile" : "card"}`}
         >
           {loading ? (
             <span className="flex items-center justify-center gap-2">
               <Loader2 className="animate-spin h-5 w-5 flex-shrink-0" />
-              <span className="hidden sm:inline">Creating Your Card...</span>
+              <span className="hidden sm:inline">Creating Your {isAccessory ? "Profile" : "Card"}...</span>
               <span className="sm:hidden">Creating...</span>
             </span>
           ) : (
@@ -359,7 +363,8 @@ export default function ProfileForm({
               <Rocket className="w-4 h-4 flex-shrink-0" />
               <span className="hidden sm:inline">
                 Generate my{" "}
-                {profileType === "personal" ? "Personal" : "Business"} Card
+                {profileType === "personal" ? "Personal" : "Business"}{" "}
+                {isAccessory ? "Profile" : "Card"}
               </span>
               <span className="sm:hidden">
                 Generate {profileType === "personal" ? "Personal" : "Business"}

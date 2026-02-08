@@ -1,4 +1,3 @@
-import React from "react";
 import {
   LayoutGrid,
   List,
@@ -7,6 +6,9 @@ import {
   CheckCircle,
   PauseCircle,  
   BarChart2,
+  Share2,
+  UtensilsCrossed,
+  Star
 } from "lucide-react";
 
 export default function ProfilesFilters({
@@ -18,17 +20,32 @@ export default function ProfilesFilters({
   const filters = [
     {
       value: "all",
-      label: "All Profiles",
+      label: "All Items",
       icon: <BarChart2 className="w-4 h-4" />,
     },
     {
+      value: "social_link",
+      label: "Social Cards",
+      icon: <Share2 className="w-4 h-4" />,
+    },
+    {
+      value: "menu",
+      label: "Menus",
+      icon: <UtensilsCrossed className="w-4 h-4" />,
+    },
+    {
+      value: "review",
+      label: "Reviews",
+      icon: <Star className="w-4 h-4" />,
+    },
+    {
       value: "personal",
-      label: "Personal",
+      label: "Personal Profiles",
       icon: <User className="w-4 h-4" />,
     },
     {
       value: "business",
-      label: "Business",
+      label: "Business Profiles",
       icon: <Building className="w-4 h-4" />,
     },
     {

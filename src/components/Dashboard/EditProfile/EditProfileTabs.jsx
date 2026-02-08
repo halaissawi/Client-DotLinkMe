@@ -1,21 +1,29 @@
 import React from "react";
-import { Edit3, Link as LinkIcon, Settings, Palette } from "lucide-react";
+import { Edit3, Link as LinkIcon, Settings, Palette, UtensilsCrossed } from "lucide-react";
 
 export default function EditProfileTabs({
   activeTab,
   setActiveTab,
   socialLinksCount,
+  isUserProduct,
+  productType,
+  menuItemsCount,
 }) {
   const tabs = [
     { id: "basic", label: "Basic Info", icon: Edit3 },
-    { id: "design", label: "Design", icon: Palette }, // 🆕 NEW TAB
-    {
-      id: "links",
-      label: "Social Links",
-      icon: LinkIcon,
-      count: socialLinksCount,
-    },
-    { id: "settings", label: "Settings", icon: Settings },
+    { id: "design", label: "Design", icon: Palette },
+    ...(!isUserProduct ? [
+      {
+        id: "links",
+        label: "Social Links",
+        icon: LinkIcon,
+        count: socialLinksCount,
+      },
+      { id: "settings", label: "Settings", icon: Settings },
+    ] : []),
+    ...(isUserProduct && productType === "menu" ? [
+      { id: "menu", label: "Menu Items", icon: UtensilsCrossed, count: menuItemsCount },
+    ] : []),
   ];
 
   return (

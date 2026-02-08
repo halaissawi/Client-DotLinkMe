@@ -17,6 +17,7 @@ export default function BasicInfoForm({
   onSubmit,
   onImageChange,
   onImageRemove,
+  type = "profile"
 }) {
   const [cropModal, setCropModal] = useState({
     open: false,
@@ -25,6 +26,11 @@ export default function BasicInfoForm({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState(null);
+
+  const isProfile = type === "profile";
+  const isReview = profile.productType === "review";
+  const isSocial = profile.productType === "social_link";
+  const isMenu = profile.productType === "menu";
 
   const onCropComplete = useCallback((croppedArea, croppedAreaPixels) => {
     setCroppedAreaPixels(croppedAreaPixels);
@@ -129,144 +135,146 @@ export default function BasicInfoForm({
           </div>
           <div>
             <h2 className="text-2xl font-bold text-brand-dark">
-              Basic Information
+              {isProfile ? "Basic Information" : `${profile.productType?.replace('_', ' ').toUpperCase()} Settings`}
             </h2>
-            <p className="text-sm text-gray-600">Update your profile details</p>
+            <p className="text-sm text-gray-600">Update your {isProfile ? 'profile' : 'card'} details</p>
           </div>
         </div>
 
         <div className="space-y-6">
-          {/* Profile Image */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-3">
-              Profile Image
-            </label>
-            <div className="flex items-center gap-6">
-              <div className="relative group">
-                {profile.avatarUrl ? (
-                  <>
-                    <img
-                      src={profile.avatarUrl}
-                      alt={profile.name}
-                      className={`w-24 h-24 object-cover ring-4 ring-gray-100 group-hover:ring-brand-primary/50 transition-all ${
+          {/* Profile Image (Only show for Profiles or specific products if they have icons) */}
+          {isProfile && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-3">
+                Profile Image
+              </label>
+              <div className="flex items-center gap-6">
+                <div className="relative group">
+                  {profile.avatarUrl ? (
+                    <>
+                      <img
+                        src={profile.avatarUrl}
+                        alt={profile.name}
+                        className={`w-24 h-24 object-cover ring-4 ring-gray-100 group-hover:ring-brand-primary/50 transition-all ${
+                          profile.profileType === "personal"
+                            ? "rounded-full"
+                            : "rounded-2xl"
+                        }`}
+                      />
+                      <button
+                        type="button"
+                        onClick={onImageRemove}
+                        className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg"
+                        title="Remove image"
+                      >
+                        <X className="w-4 h-4 text-white" />
+                      </button>
+                    </>
+                  ) : (
+                    <div
+                      className={`w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl ring-4 ring-gray-100 group-hover:ring-brand-primary/50 transition-all ${
                         profile.profileType === "personal"
                           ? "rounded-full"
                           : "rounded-2xl"
                       }`}
-                    />
-                    {/* Remove button - shows on hover */}
-                    <button
-                      type="button"
-                      onClick={onImageRemove}
-                      className="absolute -top-2 -right-2 w-7 h-7 bg-red-500 hover:bg-red-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all shadow-lg"
-                      title="Remove image"
                     >
-                      <X className="w-4 h-4 text-white" />
-                    </button>
-                  </>
-                ) : (
-                  <div
-                    className={`w-24 h-24 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center text-4xl ring-4 ring-gray-100 group-hover:ring-brand-primary/50 transition-all ${
-                      profile.profileType === "personal"
-                        ? "rounded-full"
-                        : "rounded-2xl"
-                    }`}
-                  >
-                    {profile.profileType === "personal" ? (
-                      <User className="w-5 h-5" />
-                    ) : (
-                      <Building className="w-5 h-5" />
-                    )}
-                  </div>
-                )}
-                {!profile.avatarUrl && (
-                  <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                    <ImageIcon className="w-8 h-8 text-white" />
-                  </div>
-                )}
-              </div>
-              <div className="flex-1">
-                <div className="flex flex-wrap gap-2">
-                  <label className="btn-ghost-clean px-6 py-3 cursor-pointer inline-flex items-center gap-2">
-                    <Upload className="w-4 h-4" />
-                    {profile.avatarUrl ? "Change Image" : "Upload New Image"}
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileSelect}
-                      className="hidden"
-                    />
-                  </label>
-                  {profile.avatarUrl && (
-                    <button
-                      type="button"
-                      onClick={onImageRemove}
-                      className="px-6 py-3 border border-red-200 text-red-600 hover:bg-red-50 rounded-xl text-sm font-medium transition-all inline-flex items-center gap-2"
-                    >
-                      <X className="w-4 h-4" />
-                      Remove Image
-                    </button>
+                      {profile.profileType === "personal" ? (
+                        <User className="w-5 h-5" />
+                      ) : (
+                        <Building className="w-5 h-5" />
+                      )}
+                    </div>
                   )}
                 </div>
-                <p className="text-xs text-gray-500 mt-2">
-                  Recommended: Square image (1:1 ratio), max 5MB
-                </p>
+                <div className="flex-1">
+                  <div className="flex flex-wrap gap-2">
+                    <label className="btn-ghost-clean px-6 py-3 cursor-pointer inline-flex items-center gap-2">
+                      <Upload className="w-4 h-4" />
+                      {profile.avatarUrl ? "Change Image" : "Upload New Image"}
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleFileSelect}
+                        className="hidden"
+                      />
+                    </label>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Name */}
+          {/* Name / Nickname */}
           <div>
             <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {profile.profileType === "personal"
-                ? "Full Name"
-                : "Company Name"}
+              {isProfile 
+                ? (profile.profileType === "personal" ? "Full Name" : "Company Name")
+                : (isReview ? "Business Name" : "Card Nickname")}
             </label>
             <input
               type="text"
               value={profile.name}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all"
-              placeholder="Enter name"
+              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all font-medium"
+              placeholder={isProfile ? "Enter name" : "e.g. My Instagram Card"}
             />
           </div>
 
-          {/* Title */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              {profile.profileType === "personal" ? "Title / Role" : "Industry"}
-            </label>
-            <input
-              type="text"
-              value={profile.title || ""}
-              onChange={(e) =>
-                setProfile({ ...profile, title: e.target.value })
-              }
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all"
-              placeholder={
-                profile.profileType === "personal"
-                  ? "e.g. Software Engineer"
-                  : "e.g. Technology & Innovation"
-              }
-            />
-          </div>
+          {/* URL / Link (For Products) */}
+          {!isProfile && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {isReview ? "Google Review URL" : (isMenu ? "Menu / Website URL" : "Your Profile URL")}
+              </label>
+              <input
+                type="url"
+                value={profile.url || ""}
+                onChange={(e) => setProfile({ ...profile, url: e.target.value })}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all font-medium"
+                placeholder="https://..."
+              />
+              <p className="text-[10px] text-gray-500 font-bold uppercase tracking-widest mt-2 px-1">
+                This is where the NFC scan will redirect people
+              </p>
+            </div>
+          )}
 
-          {/* Bio */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Bio / Description
-            </label>
-            <textarea
-              rows={5}
-              value={profile.bio || ""}
-              onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
-              className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all resize-none"
-              placeholder="Tell people about yourself or your business..."
-            />
-            <p className="text-xs text-gray-500 mt-2">
-              {profile.bio?.length || 0} / 500 characters
-            </p>
-          </div>
+          {/* Title (Only for Profile or Review) */}
+          {(isProfile || isReview) && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                {isProfile 
+                  ? (profile.profileType === "personal" ? "Title / Role" : "Industry")
+                  : "Google Maps Business ID (Optional)"}
+              </label>
+              <input
+                type="text"
+                value={profile.title || ""}
+                onChange={(e) => setProfile({ ...profile, title: e.target.value })}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all"
+                placeholder={isProfile ? "e.g. Software Engineer" : "Your place ID"}
+              />
+            </div>
+          )}
+
+          {/* Bio (Only for Profile) */}
+          {isProfile && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-700 mb-2">
+                Bio / Description
+              </label>
+              <textarea
+                rows={5}
+                value={profile.bio || ""}
+                onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all resize-none"
+                placeholder="Tell people about yourself or your business..."
+              />
+              <p className="text-xs text-gray-500 mt-2">
+                {profile.bio?.length || 0} / 500 characters
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Save Button */}

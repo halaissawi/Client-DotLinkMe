@@ -9,7 +9,7 @@ import ProfilesList from "../../components/Dashboard/MyProfile/ProfilesList";
 import LoadingSpinner from "../../components/shared/LoadingSpinner";
 
 export default function MyProfiles() {
-  const [profiles, setProfiles] = useState([]);
+  const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
@@ -17,36 +17,73 @@ export default function MyProfiles() {
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    fetchProfiles();
+    fetchData();
   }, []);
 
-  const fetchProfiles = async () => {
+  const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/profiles`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      
+      const [profilesRes, userProductsRes] = await Promise.all([
+        fetch(`${API_URL}/api/profiles`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_URL}/api/user-products`, {
+          headers: { Authorization: `Bearer ${token}` },
+        })
+      ]);
 
-      const data = await response.json();
-      setProfiles(data.data || []);
+      const profilesData = await profilesRes.json();
+      const userProductsData = await userProductsRes.json();
+
+      const profiles = profilesData.data || [];
+      const userProducts = userProductsData.data || [];
+
+      // Transform profiles to unified format
+      const transformedProfiles = profiles.map((profile) => ({
+        ...profile,
+        id: profile.id, // Keep as number/string for compatibility
+        unifiedId: `profile-${profile.id}`,
+        type: "profile",
+      }));
+
+      // Transform user products to unified format
+      const transformedUserProducts = userProducts.map((up) => ({
+        ...up,
+        id: up.id,
+        unifiedId: `product-${up.id}`,
+        type: "user-product",
+        name: up.nickname || up.product?.name || "Unnamed Product",
+        profileType: up.productType, // For filtering
+        platform: up.platform || up.product?.platform,
+      }));
+
+      const combined = [...transformedProfiles, ...transformedUserProducts];
+      combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+      setAllProducts(combined);
     } catch (error) {
-      console.error("Error fetching profiles:", error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
   };
 
-  const handleToggleStatus = async (profileId, currentStatus) => {
+  const handleToggleStatus = async (item) => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`${API_URL}/api/profiles/${profileId}/toggle-status`, {
+      const endpoint = item.type === "profile" 
+        ? `${API_URL}/api/profiles/${item.id}/toggle-status`
+        : `${API_URL}/api/user-products/${item.id}/toggle-status`;
+
+      await fetch(endpoint, {
         method: "PATCH",
         headers: { Authorization: `Bearer ${token}` },
       });
 
-      setProfiles(
-        profiles.map((p) =>
-          p.id === profileId ? { ...p, isActive: !currentStatus } : p
+      setAllProducts(
+        allProducts.map((p) =>
+          p.unifiedId === item.unifiedId ? { ...p, isActive: !item.isActive } : p
         )
       );
     } catch (error) {
@@ -54,15 +91,14 @@ export default function MyProfiles() {
     }
   };
 
-  const handleDeleteProfile = async (profileId) => {
-    // Get profile info for better messaging
-    const profile = profiles.find((p) => p.id === profileId);
-
+  const handleDeleteItem = async (item) => {
+    const isProfile = item.type === "profile";
+    
     const result = await Swal.fire({
-      title: "Delete Profile?",
+      title: isProfile ? "Delete Profile?" : "Delete Product?",
       html: `
         <p>Are you sure you want to delete <strong>${
-          profile?.name || "this profile"
+          item.name || "this item"
         }</strong>?</p>
         <p class="text-sm text-gray-600 mt-2">This action cannot be undone.</p>
       `,
@@ -78,7 +114,11 @@ export default function MyProfiles() {
 
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/profiles/${profileId}`, {
+      const endpoint = isProfile 
+        ? `${API_URL}/api/profiles/${item.id}`
+        : `${API_URL}/api/user-products/${item.id}`;
+
+      const response = await fetch(endpoint, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -89,8 +129,8 @@ export default function MyProfiles() {
       const data = await response.json();
 
       if (!response.ok) {
-        // ✅ Check if profile has orders
-        if (data.hasOrders) {
+        if (isProfile && data.hasOrders) {
+          // Keep existing logic for profile with orders
           await Swal.fire({
             icon: "error",
             title: "Cannot Delete Profile",
@@ -108,8 +148,7 @@ export default function MyProfiles() {
                     You have <strong>${data.orderCount} order(s)</strong> for physical cards with this profile.
                   </p>
                   <p class="text-sm text-yellow-800">
-                    <strong>Good news:</strong> You can still edit all profile information, 
-                    including name, bio, social links, colors, and design anytime in your dashboard!
+                    <strong>Good news:</strong> You can still edit all profile information!
                   </p>
                 </div>
               </div>
@@ -119,48 +158,41 @@ export default function MyProfiles() {
             width: "600px",
           });
         } else {
-          throw new Error(
-            data.error || data.message || "Failed to delete profile"
-          );
+          throw new Error(data.error || data.message || "Failed to delete item");
         }
         return;
       }
 
-      // ✅ Success - profile deleted
       await Swal.fire({
         title: "Deleted!",
-        text: "Your profile has been deleted successfully.",
+        text: "Deleted successfully.",
         icon: "success",
         timer: 2000,
         showConfirmButton: false,
       });
 
-      // ✅ REFRESH - Remove from state AND reload to ensure sync
-      setProfiles(profiles.filter((p) => p.id !== profileId));
-
-      // Reload after a short delay to ensure everything is in sync
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
+      setAllProducts(allProducts.filter((p) => p.unifiedId !== item.unifiedId));
     } catch (error) {
-      console.error("Error deleting profile:", error);
+      console.error("Error deleting item:", error);
       await Swal.fire({
         title: "Error",
-        text: error.message || "Failed to delete the profile.",
+        text: error.message || "Failed to delete.",
         icon: "error",
         confirmButtonColor: "#060640",
       });
     }
   };
 
-  const handleShare = async (profile) => {
-    const shareUrl = `${window.location.origin}/u/${profile.slug}`;
+  const handleShare = async (item) => {
+    const shareUrl = item.type === "profile" 
+      ? `${window.location.origin}/u/${item.slug}`
+      : `${window.location.origin}/u/p/${item.id}`;
 
     if (navigator.share) {
       try {
         await navigator.share({
-          title: profile.name,
-          text: profile.bio,
+          title: item.name,
+          text: item.type === "profile" ? item.bio : `Connect with me on ${item.name}`,
           url: shareUrl,
         });
       } catch (error) {
@@ -195,8 +227,11 @@ export default function MyProfiles() {
     }
   };
 
-  const handleCopyLink = (slug) => {
-    const url = `${window.location.origin}/u/${slug}`;
+  const handleCopyLink = (item) => {
+    const url = item.type === "profile" 
+      ? `${window.location.origin}/u/${item.slug}`
+      : `${window.location.origin}/u/p/${item.id}`;
+      
     navigator.clipboard
       .writeText(url)
       .then(() => {
@@ -224,12 +259,20 @@ export default function MyProfiles() {
       });
   };
 
-  const filteredProfiles = profiles.filter((profile) => {
+  const filteredProducts = allProducts.filter((item) => {
     if (filter === "all") return true;
-    if (filter === "personal") return profile.profileType === "personal";
-    if (filter === "business") return profile.profileType === "business";
-    if (filter === "active") return profile.isActive;
-    if (filter === "inactive") return !profile.isActive;
+    if (filter === "active") return item.isActive;
+    if (filter === "inactive") return !item.isActive;
+    
+    // Exact product type matches
+    if (filter === "social_link") return item.productType === "social_link";
+    if (filter === "menu") return item.productType === "menu";
+    if (filter === "review") return item.productType === "review";
+    
+    // Profile type matches
+    if (filter === "personal") return item.type === "profile" && item.profileType === "personal";
+    if (filter === "business") return item.type === "profile" && item.profileType === "business";
+    
     return true;
   });
 
@@ -241,7 +284,7 @@ export default function MyProfiles() {
     <div className="space-y-6">
       <ProfilesHeader />
 
-      <ProfilesStats profiles={profiles} />
+      <ProfilesStats profiles={allProducts} />
 
       <ProfilesFilters
         filter={filter}
@@ -251,7 +294,7 @@ export default function MyProfiles() {
       />
 
       {/* Profiles Grid/List */}
-      {filteredProfiles.length === 0 ? (
+      {filteredProducts.length === 0 ? (
         <div
           className="p-16 text-center rounded-xl border border-gray-200 bg-white"
           style={{
@@ -275,12 +318,12 @@ export default function MyProfiles() {
             </svg>
           </div>
           <h3 className="text-2xl font-bold text-brand-dark mb-3">
-            No profiles found
+            No items found
           </h3>
           <p className="text-gray-600 mb-8 max-w-md mx-auto">
             {filter === "all"
               ? "Create your first smart digital card and start connecting with people"
-              : `No ${filter} profiles found. Try adjusting your filters.`}
+              : `No ${filter} items found. Try adjusting your filters.`}
           </p>
           {filter === "all" && (
             <Link
@@ -306,17 +349,17 @@ export default function MyProfiles() {
         </div>
       ) : viewMode === "grid" ? (
         <ProfilesGrid
-          profiles={filteredProfiles}
+          profiles={filteredProducts}
           showQR={showQR}
           setShowQR={setShowQR}
           onShare={handleShare}
           onCopyLink={handleCopyLink}
           onToggleStatus={handleToggleStatus}
-          onDelete={handleDeleteProfile}
+          onDelete={handleDeleteItem}
         />
       ) : (
         <ProfilesList
-          profiles={filteredProfiles}
+          profiles={filteredProducts}
           showQR={showQR}
           setShowQR={setShowQR}
           onShare={handleShare}

@@ -6,6 +6,7 @@ import NotFound from "./NotFound";
 import VisitorContactModal from "../components/PublicProfile/VisitorContactModal";
 import { Loader2 } from "lucide-react";
 import TemplateRenderer from "../components/PublicProfile/TemplateRenderer";
+import CustomProfileRenderer from "../components/PublicProfile/CustomProfileRenderer";
 
 export default function PublicProfile() {
   const { slug } = useParams();
@@ -111,25 +112,25 @@ export default function PublicProfile() {
       });
     } else if (method === "whatsapp") {
       window.open(
-        `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`
+        `https://wa.me/?text=${encodeURIComponent(shareText + " " + shareUrl)}`,
       );
     } else if (method === "twitter") {
       window.open(
         `https://twitter.com/intent/tweet?text=${encodeURIComponent(
-          shareText
-        )}&url=${encodeURIComponent(shareUrl)}`
+          shareText,
+        )}&url=${encodeURIComponent(shareUrl)}`,
       );
     } else if (method === "facebook") {
       window.open(
         `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-          shareUrl
-        )}`
+          shareUrl,
+        )}`,
       );
     } else if (method === "linkedin") {
       window.open(
         `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
-          shareUrl
-        )}`
+          shareUrl,
+        )}`,
       );
     }
 
@@ -140,7 +141,7 @@ export default function PublicProfile() {
     const phoneLink = profile.socialLinks?.find((l) => l.platform === "phone");
     const emailLink = profile.socialLinks?.find((l) => l.platform === "email");
     const websiteLink = profile.socialLinks?.find(
-      (l) => l.platform === "website"
+      (l) => l.platform === "website",
     );
 
     const vcard = `BEGIN:VCARD
@@ -193,7 +194,7 @@ END:VCARD`;
       console.error("Error tracking click:", err);
     }
 
-    // Then redirect (same pattern as handleCall and handleEmail)
+    // Then redirect
     const cleanNumber = number.replace(/\D/g, "");
     window.location.href = `https://wa.me/${cleanNumber}`;
   };
@@ -216,33 +217,55 @@ END:VCARD`;
   const phoneLink = profile.socialLinks?.find((l) => l.platform === "phone");
   const emailLink = profile.socialLinks?.find((l) => l.platform === "email");
   const whatsappLink = profile.socialLinks?.find(
-    (l) => l.platform === "whatsapp"
+    (l) => l.platform === "whatsapp",
   );
+
+  // 🆕 Determine which renderer to use
+  const isAIProfile = !!profile.customProfileDesign;
 
   return (
     <>
-      {/* Template Renderer - Works for both mobile and desktop */}
-      <TemplateRenderer
-        templateId={profile.pageTemplate || "modern"} // ✅ Use PAGE template
-        themeColor={profile.pageColor || "#0EA5E9"} // ✅ Use PAGE color
-        profile={profile}
-        phoneLink={phoneLink}
-        emailLink={emailLink}
-        whatsappLink={whatsappLink}
-        handleCall={handleCall}
-        handleEmail={handleEmail}
-        handleWhatsApp={handleWhatsApp}
-        handleDownloadVCard={handleDownloadVCard}
-        handleSocialClick={handleSocialClick}
-        setShowShareModal={setShowShareModal}
-      />
+      {/* 🆕 Use CustomProfileRenderer for AI profiles, TemplateRenderer for manual profiles */}
+      {isAIProfile ? (
+        <CustomProfileRenderer
+          profile={profile}
+          phoneLink={phoneLink}
+          emailLink={emailLink}
+          whatsappLink={whatsappLink}
+          handleCall={handleCall}
+          handleEmail={handleEmail}
+          handleWhatsApp={handleWhatsApp}
+          handleDownloadVCard={handleDownloadVCard}
+          handleSocialClick={handleSocialClick}
+          setShowShareModal={setShowShareModal}
+        />
+      ) : (
+        <TemplateRenderer
+          templateId={profile.pageTemplate || "modern"}
+          themeColor={profile.pageColor || "#0EA5E9"}
+          profile={profile}
+          phoneLink={phoneLink}
+          emailLink={emailLink}
+          whatsappLink={whatsappLink}
+          handleCall={handleCall}
+          handleEmail={handleEmail}
+          handleWhatsApp={handleWhatsApp}
+          handleDownloadVCard={handleDownloadVCard}
+          handleSocialClick={handleSocialClick}
+          setShowShareModal={setShowShareModal}
+        />
+      )}
 
       {/* Modals */}
       <ShareModal
         isOpen={showShareModal}
         onClose={() => setShowShareModal(false)}
         onShare={handleShare}
-        themeColor={profile.pageColor || profile.color || "#3B82F6"}
+        themeColor={
+          isAIProfile
+            ? profile.customProfileDesign?.colorPalette?.primary || "#8B5CF6"
+            : profile.pageColor || profile.color || "#3B82F6"
+        }
       />
 
       <VisitorContactModal
@@ -250,7 +273,11 @@ END:VCARD`;
         onClose={() => setShowVisitorModal(false)}
         profileSlug={profile?.slug}
         source="link"
-        themeColor={profile.pageColor || profile.color || "#3B82F6"}
+        themeColor={
+          isAIProfile
+            ? profile.customProfileDesign?.colorPalette?.primary || "#8B5CF6"
+            : profile.pageColor || profile.color || "#3B82F6"
+        }
       />
     </>
   );

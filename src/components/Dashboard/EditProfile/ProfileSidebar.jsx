@@ -18,14 +18,19 @@ import {
 import { CARD_TEMPLATES } from "../../../constants/cardTemplates";
 import UniversalCardPreview from "../../shared/UniversalCardPreview";
 // ==================== UTILITY FUNCTIONS ====================
-function generateProfileUrl(slug) {
-  if (!slug) {
-    return "https://www.linkmejo.com/your-smart-identity";
+// ==================== UTILITY FUNCTIONS ====================
+function generateProfileUrl(profile) {
+  if (profile?.type === "user-product") {
+    return `${window.location.origin}/u/p/${profile.id}`;
   }
-  return `${window.location.origin}/u/${slug}`;
+  if (!profile?.slug) {
+    return "https://dotlinkme.com/your-smart-identity";
+  }
+  return `${window.location.origin}/u/${profile.slug}`;
 }
 
 function adjustColorBrightness(color, percent) {
+  if (!color) return "#060640";
   const num = parseInt(color.replace("#", ""), 16);
   const amt = Math.round(2.55 * percent);
   const R = (num >> 16) + amt;
@@ -373,17 +378,18 @@ export default function ProfileSidebar({
   onCopyLink,
   onNavigate,
 }) {
-  // ✅ Generate the correct profile URL
-  const profileUrl = generateProfileUrl(profile.slug);
+  const profileUrl = generateProfileUrl(profile);
+  const isProduct = profile?.type === "user-product";
 
-  const downloadQR = () => {
-    const canvas = document.getElementById("qr-code");
-    const url = canvas.toDataURL("image/png");
-    const link = document.createElement("a");
-    link.download = `${profile.slug}-qr-code.png`;
-    link.href = url;
-    link.click();
+  const productImages = {
+    facebook: "/products/facebookNfc.avif",
+    instagram: "/products/instagramNfcCard.avif",
+    twitter: "/products/instagramNfcCard.avif",
+    youtube: "/products/youtubeNfcCard.avif",
+    review: "/products/WhiteGoogleReview.png",
   };
+
+  const productImg = productImages[profile.platform] || productImages[profile.productType] || profile.avatarUrl;
 
   return (
     <div className="relative">
@@ -398,20 +404,34 @@ export default function ProfileSidebar({
         >
           <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center">
-              <Eye className="w-5 h-5 text-white" />
+              {isProduct ? <Zap className="w-5 h-5 text-white" /> : <Eye className="w-5 h-5 text-white" />}
             </div>
             <div>
               <h2 className="text-xl font-bold text-brand-dark">
-                Live Preview
+                {isProduct ? "Product Preview" : "Live Preview"}
               </h2>
-              <p className="text-xs text-gray-600">Real-time card preview</p>
+              <p className="text-xs text-gray-600">{isProduct ? "Your physical card" : "Real-time card preview"}</p>
             </div>
           </div>
-          <UniversalCardPreview
-            profile={profile}
-            selectedTemplate={profile.template}
-            showViewCount={true}
-          />
+          
+          {isProduct ? (
+            <div className="relative aspect-[1.586/1] rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-200">
+              <img 
+                src={productImg} 
+                alt="Product" 
+                className="w-full h-full object-cover transform hover:scale-105 transition-transform duration-500"
+              />
+              <div className="absolute inset-x-0 bottom-0 p-3 bg-gradient-to-t from-black/60 to-transparent">
+                <p className="text-white text-[10px] font-bold uppercase tracking-widest">{profile.name}</p>
+              </div>
+            </div>
+          ) : (
+            <UniversalCardPreview
+              profile={profile}
+              selectedTemplate={profile.template}
+              showViewCount={true}
+            />
+          )}
         </div>
       </div>
 
@@ -427,7 +447,7 @@ export default function ProfileSidebar({
         >
           <h3 className="font-bold text-brand-dark mb-4">Quick Actions</h3>
           <a
-            href={`/u/${profile.slug}`}
+            href={profileUrl}
             target="_blank"
             rel="noopener noreferrer"
             className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all group"
@@ -436,8 +456,20 @@ export default function ProfileSidebar({
               <ExternalLink className="w-5 h-5 text-blue-600" />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-gray-900">View Public Profile</p>
-              <p className="text-xs text-gray-500">See how others see you</p>
+              <p className="font-medium text-gray-900">
+                {profile.productType === "menu" 
+                  ? "View Live Menu" 
+                  : isProduct 
+                    ? "View Link Destination" 
+                    : "View Public Profile"}
+              </p>
+              <p className="text-xs text-gray-500">
+                {profile.productType === "menu"
+                  ? "See how users view your menu"
+                  : isProduct 
+                    ? "See where the card goes" 
+                    : "See how others see you"}
+              </p>
             </div>
           </a>
 
@@ -449,23 +481,25 @@ export default function ProfileSidebar({
               <Copy className="w-5 h-5 text-green-600" />
             </div>
             <div className="flex-1">
-              <p className="font-medium text-gray-900">Copy Profile Link</p>
+              <p className="font-medium text-gray-900">Copy {isProduct ? "Card" : "Profile"} Link</p>
               <p className="text-xs text-gray-500">Share with anyone</p>
             </div>
           </button>
 
-          <button
-            onClick={() => onNavigate(`/dashboard/analytics`)}
-            className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all w-full text-left group"
-          >
-            <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition-colors">
-              <Activity className="w-5 h-5 text-purple-600" />
-            </div>
-            <div className="flex-1">
-              <p className="font-medium text-gray-900">View Analytics</p>
-              <p className="text-xs text-gray-500">Track performance</p>
-            </div>
-          </button>
+          {!isProduct && (
+            <button
+              onClick={() => onNavigate(`/dashboard/analytics`)}
+              className="flex items-center gap-3 p-3 rounded-xl hover:bg-gray-50 transition-all w-full text-left group"
+            >
+              <div className="w-10 h-10 rounded-lg bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                <Activity className="w-5 h-5 text-purple-600" />
+              </div>
+              <div className="flex-1">
+                <p className="font-medium text-gray-900">View Analytics</p>
+                <p className="text-xs text-gray-500">Track performance</p>
+              </div>
+            </button>
+          )}
         </div>
 
         {/* Stats Card */}
@@ -490,7 +524,7 @@ export default function ProfileSidebar({
                   <Eye className="w-5 h-5 text-blue-600" />
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Total Views</p>
+                  <p className="text-sm text-gray-600">Total Scans</p>
                   <p className="text-2xl font-bold text-brand-dark">
                     {profile.viewCount || 0}
                   </p>
@@ -498,24 +532,26 @@ export default function ProfileSidebar({
               </div>
             </div>
 
-            <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
-                  <LinkIcon className="w-5 h-5 text-green-600" />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Social Links</p>
-                  <p className="text-2xl font-bold text-brand-dark">
-                    {socialLinks.length}
-                  </p>
+            {!isProduct && (
+              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center">
+                    <LinkIcon className="w-5 h-5 text-green-600" />
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Social Links</p>
+                    <p className="text-2xl font-bold text-brand-dark">
+                      {socialLinks.length}
+                    </p>
+                  </div>
                 </div>
               </div>
-            </div>
+            )}
 
             <div className="flex items-center justify-between p-3 bg-gray-50 rounded-xl">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                  {profile.isActive ? (
+                  {profile.isActive || profile.setupComplete ? (
                     <Check className="w-5 h-5 text-green-600" />
                   ) : (
                     <X className="w-5 h-5 text-gray-600" />
@@ -526,12 +562,12 @@ export default function ProfileSidebar({
                   <p className="text-lg font-bold">
                     <span
                       className={`px-3 py-1 rounded-full text-sm ${
-                        profile.isActive
+                        profile.isActive || profile.setupComplete
                           ? "bg-green-100 text-green-700"
                           : "bg-gray-100 text-gray-700"
                       }`}
                     >
-                      {profile.isActive ? "Active" : "Inactive"}
+                      {profile.isActive || profile.setupComplete ? "Active" : "Inactive"}
                     </span>
                   </p>
                 </div>

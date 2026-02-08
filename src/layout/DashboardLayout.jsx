@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, Outlet, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 import {
   Home,
   Users,
@@ -16,6 +17,7 @@ import {
 } from "lucide-react";
 
 export default function DashboardLayout() {
+  const { cartCount } = useCart();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInfo, setUserInfo] = useState({ name: "", email: "" });
   const [loading, setLoading] = useState(true);
@@ -90,12 +92,13 @@ export default function DashboardLayout() {
     {
       path: "/dashboard/profiles",
       icon: <Users className="w-5 h-5" />,
-      label: "My Profiles",
+      label: "My Products",
     },
     {
       path: "/dashboard/cart",
       icon: <ShoppingCart className="w-5 h-5" />,
-      label: "Order Card",
+      label: "Cart",
+      badge: cartCount > 0 ? cartCount : null,
     },
     {
       path: "/dashboard/my-orders",
@@ -219,6 +222,15 @@ export default function DashboardLayout() {
                     {item.icon}
                   </span>
                   <span className="font-medium flex-1">{item.label}</span>
+                  {item.badge && (
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                      isActive(item.path) 
+                        ? "bg-white text-brand-primary" 
+                        : "bg-brand-accent text-white"
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
                   {isActive(item.path) && (
                     <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
                   )}

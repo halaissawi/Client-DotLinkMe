@@ -3,12 +3,12 @@ import React from "react";
 export default function ProfilesStats({ profiles }) {
   const stats = [
     {
-      label: "Total Profiles",
+      label: "Total Products",
       value: profiles.length,
       color: "text-brand-dark",
     },
     {
-      label: "Active",
+      label: "Active Items",
       value: profiles.filter((p) => p.isActive).length,
       color: "text-green-600",
     },
@@ -18,8 +18,8 @@ export default function ProfilesStats({ profiles }) {
       color: "text-blue-600",
     },
     {
-      label: "Personal",
-      value: profiles.filter((p) => p.profileType === "personal").length,
+      label: "Cards & Tools",
+      value: profiles.length,
       color: "text-purple-600",
     },
   ];

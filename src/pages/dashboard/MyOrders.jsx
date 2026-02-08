@@ -58,8 +58,11 @@ export default function MyOrders() {
       });
       const data = await response.json();
 
-      if (data.success) {
+      if (data.success && Array.isArray(data.data)) {
         setOrders(data.data);
+      } else if (Array.isArray(data)) {
+        // Fallback for flat array response
+        setOrders(data);
       }
     } catch (error) {
       console.error("Error fetching orders:", error);
@@ -110,338 +113,140 @@ export default function MyOrders() {
             first card!
           </p>
           <button
-            onClick={() => navigate("/dashboard/cart")}
+            onClick={() => navigate("/gallery")}
             className="btn-primary w-full sm:w-auto"
           >
             Order Your First Card
           </button>
         </div>
       ) : (
-        <div className="space-y-3 sm:space-y-4">
-          {orders.map((order) => (
-            <div
-              key={order.id}
-              className="bg-white rounded-xl sm:rounded-2xl shadow-lg overflow-hidden border border-gray-100 sm:border-2 hover:border-brand-primary/30 transition-all"
-            >
-              <div className="p-4 sm:p-6">
-                {/* Order Header */}
-                <div className="flex flex-col gap-3 sm:gap-4 mb-4">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3 mb-2">
-                        <h3 className="text-base sm:text-lg font-bold text-gray-900">
-                          Order #{order.orderNumber}
-                        </h3>
-                        <span
-                          className={`inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 rounded-full text-xs font-semibold border w-fit ${statusColors[order.orderStatus]
-                            }`}
-                        >
-                          {statusIcons[order.orderStatus]} {order.orderStatus}
-                        </span>
-                      </div>
-                      <p className="text-xs sm:text-sm text-gray-600">
-                        {statusDescriptions[order.orderStatus]}
-                      </p>
-                    </div>
-                    <div className="text-left sm:text-right">
-                      <p className="text-xs sm:text-sm text-gray-600">
-                        Order Date
-                      </p>
-                      <p className="text-sm sm:text-base font-semibold text-gray-900">
-                        {new Date(order.createdAt).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "short",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+        <div className="space-y-4 sm:space-y-6">
+          {(() => {
+            // Group orders by orderNumber to show them as a single card
+            const grouped = (orders || []).reduce((acc, order) => {
+              if (!order) return acc;
+              const key = order.orderNumber || order.id || Math.random();
+              if (!acc[key]) {
+                acc[key] = { ...order, orderItems: [] };
+              }
+              // If order already has items array from backend, use it, else add the order itself as an item
+              if (order.items && Array.isArray(order.items)) {
+                acc[key].orderItems = [...acc[key].orderItems, ...order.items];
+              } else {
+                acc[key].orderItems.push(order);
+              }
+              return acc;
+            }, {});
 
-                {/* Order Details Grid */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg sm:rounded-xl">
-                  {/* Card Info */}
-                  <div className="flex items-center gap-3 col-span-1">
-                    {order.profile?.avatarUrl ? (
-                      <img
-                        src={order.profile.avatarUrl}
-                        alt={order.profile.name}
-                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg object-cover border-2 border-white shadow-sm flex-shrink-0"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-brand-primary/10 border-2 border-brand-primary/20 flex items-center justify-center flex-shrink-0">
-                        {order.cardType === "personal" ? (
-                          <User className="w-4 h-4 sm:w-5 sm:h-5 text-brand-primary" />
-                        ) : (
-                          <Briefcase className="w-4 h-4 sm:w-5 sm:h-5 text-brand-primary" />
-                        )}
-                      </div>
-                    )}
-                    <div className="min-w-0 flex-1">
-                      <p className="text-sm font-semibold text-gray-900 truncate">
-                        {order.profile?.name || "NFC Card"}
-                      </p>
-                      <p className="text-xs text-gray-600">
-                        {order.cardType === "personal"
-                          ? "Personal Card"
-                          : "Business Card"}
-                      </p>
-                    </div>
+            return Object.values(grouped).map((order) => (
+              <div
+                key={order.id}
+                className="bg-white rounded-3xl shadow-xl overflow-hidden border-2 border-gray-100 hover:border-brand-primary/20 transition-all duration-300"
+              >
+                {/* Order Meta Header */}
+                <div className="bg-gray-50/50 px-6 py-4 border-b border-gray-100 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4">
+                     <div className="w-10 h-10 bg-brand-primary/10 rounded-xl flex items-center justify-center">
+                        <Package className="w-5 h-5 text-brand-primary" />
+                     </div>
+                     <div>
+                        <h3 className="text-sm font-black text-gray-900 uppercase tracking-widest">Order #{order.orderNumber}</h3>
+                        <p className="text-[10px] text-gray-400 font-bold uppercase tracking-tighter">
+                          Placed on {order.createdAt ? new Date(order.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          }) : 'Recent'}
+                        </p>
+                     </div>
                   </div>
-
-                  {/* Shipping Info */}
-                  <div className="col-span-1">
-                    <p className="text-xs text-gray-600 mb-1">Ship to:</p>
-                    <p className="text-sm font-medium text-gray-900 truncate">
-                      {order.shippingCity}, {order.shippingCountry}
-                    </p>
-                    <p className="text-xs text-gray-600 truncate">
-                      {order.shippingAddress}
-                    </p>
-                  </div>
-
-                  {/* Price */}
-                  <div className="col-span-1 sm:col-span-2 lg:col-span-1 text-left sm:text-right">
-                    <p className="text-xs text-gray-600 mb-1">Total</p>
-                    <p className="text-xl sm:text-2xl font-bold text-brand-primary">
-                      {order.totalAmount} JOD
-                    </p>
-                  </div>
-                </div>
-
-                {/* Order Timeline - Mobile Optimized */}
-                <div className="mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-200">
-                  {/* Desktop Timeline */}
-                  <div className="hidden sm:flex items-center gap-2 text-xs">
-                    <div
-                      className={`flex items-center gap-1 ${[
-                          "pending",
-                          "confirmed",
-                          "processing",
-                          "shipped",
-                          "delivered",
-                        ].includes(order.orderStatus)
-                          ? "text-green-600"
-                          : "text-gray-400"
-                        }`}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-current"></div>
-                      <span>Ordered</span>
-                    </div>
-                    <div className="flex-1 h-px bg-gray-300"></div>
-                    <div
-                      className={`flex items-center gap-1 ${[
-                          "confirmed",
-                          "processing",
-                          "shipped",
-                          "delivered",
-                        ].includes(order.orderStatus)
-                          ? "text-green-600"
-                          : "text-gray-400"
-                        }`}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-current"></div>
-                      <span>Confirmed</span>
-                    </div>
-                    <div className="flex-1 h-px bg-gray-300"></div>
-                    <div
-                      className={`flex items-center gap-1 ${["processing", "shipped", "delivered"].includes(
-                        order.orderStatus
-                      )
-                          ? "text-green-600"
-                          : "text-gray-400"
-                        }`}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-current"></div>
-                      <span>Processing</span>
-                    </div>
-                    <div className="flex-1 h-px bg-gray-300"></div>
-                    <div
-                      className={`flex items-center gap-1 ${["shipped", "delivered"].includes(order.orderStatus)
-                          ? "text-green-600"
-                          : "text-gray-400"
-                        }`}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-current"></div>
-                      <span>Shipped</span>
-                    </div>
-                    <div className="flex-1 h-px bg-gray-300"></div>
-                    <div
-                      className={`flex items-center gap-1 ${order.orderStatus === "delivered"
-                          ? "text-green-600"
-                          : "text-gray-400"
-                        }`}
-                    >
-                      <div className="w-2 h-2 rounded-full bg-current"></div>
-                      <span>Delivered</span>
-                    </div>
-                  </div>
-
-                  {/* Mobile Timeline - Vertical */}
-                  <div className="sm:hidden space-y-2">
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${[
-                            "pending",
-                            "confirmed",
-                            "processing",
-                            "shipped",
-                            "delivered",
-                          ].includes(order.orderStatus)
-                            ? "bg-green-600"
-                            : "bg-gray-400"
-                          }`}
-                      ></div>
-                      <span
-                        className={`text-xs ${[
-                            "pending",
-                            "confirmed",
-                            "processing",
-                            "shipped",
-                            "delivered",
-                          ].includes(order.orderStatus)
-                            ? "text-green-600 font-medium"
-                            : "text-gray-400"
-                          }`}
-                      >
-                        Ordered
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${[
-                            "confirmed",
-                            "processing",
-                            "shipped",
-                            "delivered",
-                          ].includes(order.orderStatus)
-                            ? "bg-green-600"
-                            : "bg-gray-400"
-                          }`}
-                      ></div>
-                      <span
-                        className={`text-xs ${[
-                            "confirmed",
-                            "processing",
-                            "shipped",
-                            "delivered",
-                          ].includes(order.orderStatus)
-                            ? "text-green-600 font-medium"
-                            : "text-gray-400"
-                          }`}
-                      >
-                        Confirmed
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${["processing", "shipped", "delivered"].includes(
-                          order.orderStatus
-                        )
-                            ? "bg-green-600"
-                            : "bg-gray-400"
-                          }`}
-                      ></div>
-                      <span
-                        className={`text-xs ${["processing", "shipped", "delivered"].includes(
-                          order.orderStatus
-                        )
-                            ? "text-green-600 font-medium"
-                            : "text-gray-400"
-                          }`}
-                      >
-                        Processing
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${["shipped", "delivered"].includes(order.orderStatus)
-                            ? "bg-green-600"
-                            : "bg-gray-400"
-                          }`}
-                      ></div>
-                      <span
-                        className={`text-xs ${["shipped", "delivered"].includes(order.orderStatus)
-                            ? "text-green-600 font-medium"
-                            : "text-gray-400"
-                          }`}
-                      >
-                        Shipped
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div
-                        className={`w-2 h-2 rounded-full ${order.orderStatus === "delivered"
-                            ? "bg-green-600"
-                            : "bg-gray-400"
-                          }`}
-                      ></div>
-                      <span
-                        className={`text-xs ${order.orderStatus === "delivered"
-                            ? "text-green-600 font-medium"
-                            : "text-gray-400"
-                          }`}
-                      >
-                        Delivered
-                      </span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Delivery Dates */}
-                {(order.shippedAt || order.deliveredAt) && (
-                  <div className="mt-3 flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs text-gray-600">
-                    {order.shippedAt && (
-                      <p>
-                        Shipped on:{" "}
-                        {new Date(order.shippedAt).toLocaleDateString()}
-                      </p>
-                    )}
-                    {order.deliveredAt && (
-                      <p>
-                        Delivered on:{" "}
-                        {new Date(order.deliveredAt).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Payment Method Footer */}
-              <div className="bg-gradient-to-r from-gray-50 to-gray-100 px-4 sm:px-6 py-3 border-t border-gray-200">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-0 text-xs sm:text-sm">
-                  <div className="flex items-center gap-2 text-gray-600">
-                    <Wallet className="w-4 h-4 flex-shrink-0" />
-                    <span>Payment: Cash on Delivery</span>
-                  </div>
-                  {order.orderStatus === "delivered" && (
-                    <span className="text-green-600 font-medium">
-                      <Check className="inline w-4 h-4 mr-1" />
-                      Completed
+                  <div className="flex items-center gap-3">
+                    <span className={`inline-flex items-center gap-1.5 px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.1em] border shadow-sm ${statusColors[order.orderStatus || 'pending'] || statusColors.pending}`}>
+                      {statusIcons[order.orderStatus || 'pending'] || statusIcons.pending} {order.orderStatus || 'pending'}
                     </span>
-                  )}
+                  </div>
+                </div>
+
+                <div className="p-6">
+                  {/* Products List inside the Order */}
+                  <div className="space-y-4">
+                    <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-4">Products in this Order</p>
+                    <div className="grid grid-cols-1 gap-4">
+                      {order.orderItems.map((item, idx) => (
+                        <div key={`${order.id}-item-${idx}`} className="flex items-center gap-4 p-4 bg-gray-50/50 rounded-2xl border border-gray-100 group hover:bg-white hover:shadow-md transition-all">
+                          <div className="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center flex-shrink-0 group-hover:scale-110 transition-transform">
+                             {item.profile?.avatarUrl || item.image ? (
+                               <img 
+                                 src={item.profile?.avatarUrl || item.image} 
+                                 className="w-full h-full object-contain p-1" 
+                                 alt=""
+                               />
+                             ) : (
+                               <div className="text-brand-primary">
+                                 {item.orderType === 'digital_activation' || item.productType ? <Package size={20}/> : <User size={20}/>}
+                               </div>
+                             )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                             <h4 className="text-sm font-bold text-gray-900 truncate">{item.productName || item.name || item.profile?.name || "NFC Product"}</h4>
+                             <p className="text-[10px] text-gray-500 font-medium uppercase tracking-widest">
+                               {item.orderType === 'digital_activation' || ["social_link", "menu", "review"].includes(item.productType) ? 'Digital Activation' : 'Physical Product'}
+                             </p>
+                          </div>
+                          <div className="text-right">
+                             <p className="text-xs font-black text-brand-primary">{item.price === 0 || item.totalAmount === 0 ? 'FREE' : `${item.price || item.totalAmount || 0} JOD`}</p>
+                             <p className="text-[9px] text-gray-400 font-bold uppercase">Qty: {item.quantity || 1}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Shipping & Payment Footer */}
+                  <div className="mt-8 pt-6 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <h4 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-3">Shipping Details</h4>
+                      <div className="flex gap-3">
+                         <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center shrink-0">
+                            <Truck className="w-4 h-4 text-gray-400" />
+                         </div>
+                         <div className="text-xs">
+                            <p className="font-bold text-gray-800">{order.shippingCity || 'N/A'}, {order.shippingCountry || 'Jordan'}</p>
+                            <p className="text-gray-500">{order.shippingAddress || 'Digital Delivery'}</p>
+                         </div>
+                      </div>
+                    </div>
+                    <div className="flex flex-col items-start md:items-end justify-center">
+                       <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-1">Total Amount Paid</p>
+                       <p className="text-3xl font-black text-gray-900">{order.totalAmount === 0 ? 'FREE' : `${order.totalAmount} JOD`}</p>
+                       <div className="flex items-center gap-1.5 text-[10px] font-bold text-green-600 mt-1 uppercase tracking-widest">
+                          <Wallet size={12} />
+                          Cash on Delivery
+                       </div>
+                    </div>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            ));
+          })()}
         </div>
       )}
 
       {/* Help Section */}
       {orders.length > 0 && (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-blue-200 sm:border-2">
-          <div className="flex items-start gap-3 sm:gap-4">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-              <MessageCircle className="w-5 h-5 sm:w-7 sm:h-7 text-blue-600" />
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-3xl p-8 border-2 border-blue-100 shadow-sm mt-12">
+          <div className="flex items-start gap-6">
+            <div className="w-16 h-16 bg-blue-100 rounded-2xl flex items-center justify-center flex-shrink-0">
+              <MessageCircle className="w-8 h-8 text-blue-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">
+              <h3 className="text-xl font-black text-gray-900 mb-2 whitespace-nowrap">
                 Need help with your order?
               </h3>
-              <p className="text-xs sm:text-sm text-gray-600 mb-3">
-                If you have any questions about your order or need to make changes, please contact our support team.
+              <p className="text-sm text-gray-600 mb-4 max-w-md">
+                Our support team is available 24/7 to help you with your NFC product activation or delivery status.
               </p>
-              <a href="https://wa.me/962789924535" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-xs sm:text-sm font-medium text-brand-primary hover:text-brand-primary/80 transition-colors">
+              <a href="https://wa.me/962789924535" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-6 py-2.5 bg-brand-primary text-white rounded-xl text-sm font-bold hover:shadow-lg transition-all">
                 Contact Support →
               </a>
             </div>

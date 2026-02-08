@@ -52,7 +52,7 @@ export default function DashboardHeader({ userName }) {
 
           {/* Subtitle */}
           <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-2xl leading-relaxed">
-            Here's what's happening with your profiles today
+            Here's what's happening with your products today
           </p>
         </div>
 

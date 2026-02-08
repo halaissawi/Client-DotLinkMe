@@ -7,6 +7,7 @@ import {
 } from "react-router-dom";
 
 import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast"; // ✅ Add this import
 
 // Layout
@@ -24,8 +25,9 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 import OAuthSuccessWrapper from "./components/OAuthSuccessWrapper";
 import OTPVerify from "./pages/OTPVerify";
-import TermsModal from "./components/TermsModal";
+
 import CreateCard from "./pages/CreateCard";
+import BuildMenu from "./pages/BuildMenu";
 import PublicProfile from "./pages/PublicProfile";
 import HowItWorks from "./pages/HowItWorks";
 import VerifyAccount from "./pages/VerifyAccount";
@@ -38,6 +40,7 @@ import EditProfile from "./pages/dashboard/EditProfile";
 import Analytics from "./pages/dashboard/Analytics";
 import Settings from "./pages/dashboard/Settings";
 import CartCheckout from "./pages/dashboard/CartCheckout";
+import CartPage from "./pages/dashboard/CartPage";
 import MyOrders from "./pages/dashboard/MyOrders";
 // Helpers
 import ScrollToTopButton from "./layout/ScrollToTopButton";
@@ -51,6 +54,11 @@ import Gellary from "./pages/Gellary";
 // pricing
 import Pricing from "./pages/Pricing";
 import Contacts from "./pages/dashboard/Contacts";
+
+import SetupSocialLink from "./pages/setup/SetupSocialLink";
+import SetupMenu from "./pages/setup/SetupMenu";
+import SetupReview from "./pages/setup/SetupReview";
+import PublicProductView from "./pages/PublicProductView";
 
 /* ---------- SCROLL TO TOP COMPONENT ---------- */
 const ScrollToTop = () => {
@@ -76,7 +84,7 @@ const AppContent = () => {
   ];
 
   const shouldHideNavbarFooter = hideNavbarFooterPaths.some((path) =>
-    location.pathname.startsWith(path)
+    location.pathname.startsWith(path),
   );
 
   return (
@@ -153,12 +161,22 @@ const AppContent = () => {
         <Route path="/verify-otp" element={<OTPVerify />} />
         <Route path="/verify-account" element={<VerifyAccount />} />
         <Route path="/u/:slug" element={<PublicProfile />} />
+        <Route path="/u/p/:id" element={<PublicProductView />} />
         <Route path="/create-card" element={<CreateCard />} />
+        <Route path="/build-menu" element={<BuildMenu />} />
         <Route path="/gallery" element={<Gellary />} />
         <Route path="/not-found" element={<NotFound />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/pricing" element={<Pricing />} />
+
+        <Route
+          path="/setup-social-link/:userProductId"
+          element={<SetupSocialLink />}
+        />
+        <Route path="/setup-menu/:userProductId" element={<SetupMenu />} />
+        <Route path="/setup-review/:userProductId" element={<SetupReview />} />
+
         {/* ---------- PROTECTED USER ROUTES ---------- */}
         <Route
           path="/profile"
@@ -179,9 +197,11 @@ const AppContent = () => {
           <Route index element={<DashboardOverview />} />
           <Route path="profiles" element={<MyProfiles />} />
           <Route path="profiles/:id" element={<EditProfile />} />
+          <Route path="edit/:type/:id" element={<EditProfile />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
-          <Route path="cart" element={<CartCheckout />} />
+          <Route path="cart" element={<CartPage />} />
+          <Route path="order-card" element={<CartCheckout />} />
           <Route path="my-orders" element={<MyOrders />} />
           <Route path="contacts" element={<Contacts />} />
         </Route>
@@ -197,9 +217,11 @@ const AppContent = () => {
 const App = () => {
   return (
     <AuthProvider>
-      <Router>
-        <AppContent />
-      </Router>
+      <CartProvider>
+        <Router>
+          <AppContent />
+        </Router>
+      </CartProvider>
     </AuthProvider>
   );
 };

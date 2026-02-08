@@ -22,45 +22,55 @@ export default function RecentActivity({ activities }) {
           </div>
         ) : (
           <div className="space-y-3">
-            {activities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors"
-              >
-                {/* Profile Type Icon */}
-                <div
-                  className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                    activity.profileType === "personal"
-                      ? "bg-blue-100 text-blue-600"
-                      : "bg-purple-100 text-purple-600"
-                  }`}
-                >
-                  {activity.profileType === "personal" ? (
-                    <User className="w-5 h-5" />
-                  ) : (
-                    <Building className="w-5 h-5" />
-                  )}
-                </div>
+            {activities.map((activity) => {
+              // Helper to get icon and color
+              const getIconConfig = () => {
+                if (activity.profileType === "personal") return { icon: User, color: "bg-blue-100 text-blue-600" };
+                if (activity.profileType === "business") return { icon: Building, color: "bg-purple-100 text-purple-600" };
+                
+                // For other products
+                switch (activity.productType) {
+                  case "social_link": return { icon: User, color: "bg-pink-100 text-pink-600" };
+                  case "menu": return { icon: Building, color: "bg-orange-100 text-orange-600" };
+                  case "review": return { icon: Clock, color: "bg-yellow-100 text-yellow-600" };
+                  default: return { icon: Clock, color: "bg-gray-100 text-gray-600" };
+                }
+              };
 
-                {/* Activity Info */}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-brand-dark truncate">
-                    {activity.name}
-                  </p>
-                  <p className="text-xs text-gray-500">
-                    Updated {formatDate(activity.updatedAt)}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1">
-                    <span className="text-xs text-gray-400">
-                      {activity.viewCount || 0} views
-                    </span>
-                    {activity.isActive && (
-                      <span className="w-2 h-2 bg-green-500 rounded-full"></span>
-                    )}
+              const { icon: ActivityIcon, color: iconColor } = getIconConfig();
+
+              return (
+                <div
+                  key={activity.id}
+                  className="flex items-start gap-3 p-3 rounded-xl hover:bg-gray-50 transition-colors"
+                >
+                  {/* Product Icon */}
+                  <div
+                    className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${iconColor}`}
+                  >
+                    <ActivityIcon className="w-5 h-5" />
+                  </div>
+
+                  {/* Activity Info */}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-brand-dark truncate">
+                      {activity.name}
+                    </p>
+                    <p className="text-xs text-gray-500">
+                      Updated {formatDate(activity.updatedAt)}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <span className="text-xs text-gray-400">
+                        {activity.viewCount || 0} views
+                      </span>
+                      {activity.isActive && (
+                        <span className="w-2 h-2 bg-green-500 rounded-full"></span>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

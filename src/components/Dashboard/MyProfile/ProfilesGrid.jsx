@@ -1,10 +1,48 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { Edit, Eye, Share2, Pause, Play, Trash2, Link2 } from "lucide-react";
+import { 
+  Edit, 
+  Eye, 
+  Share2, 
+  Pause, 
+  Play, 
+  Trash2, 
+  Link2, 
+  User, 
+  Building, 
+  Facebook, 
+  Instagram, 
+  Twitter, 
+  Youtube, 
+  UtensilsCrossed, 
+  Star,
+  ShoppingCart
+} from "lucide-react";
 import ProfileCardPreview from "./ProfileCardPreview";
 
+/* ==================== UTILITY FUNCTION ==================== */
+function adjustColorBrightness(color, percent) {
+  const num = parseInt(color.replace("#", ""), 16);
+  const amt = Math.round(2.55 * percent);
+  const R = (num >> 16) + amt;
+  const G = ((num >> 8) & 0xff) + amt;
+  const B = (num & 0xff) + amt;
+  return (
+    "#" +
+    (
+      0x1000000 +
+      (Math.min(255, Math.max(0, R)) << 16) +
+      (Math.min(255, Math.max(0, G)) << 8) +
+      Math.min(255, Math.max(0, B))
+    )
+      .toString(16)
+      .slice(1)
+  );
+}
+
+
 export default function ProfilesGrid({
-  profiles,
+  profiles: items,
   showQR,
   setShowQR,
   onShare,
@@ -12,107 +50,263 @@ export default function ProfilesGrid({
   onToggleStatus,
   onDelete,
 }) {
+  const getProductConfig = (item) => {
+    if (item.type === "profile") {
+      const isProductBased = !!item.product;
+      return {
+        icon: item.profileType === "personal" ? User : Building,
+        label: isProductBased ? item.product.name : (item.profileType === "personal" ? "Personal Profile" : "Business Profile"),
+        defaultImage: item.product?.image || null,
+        editLink: `/dashboard/edit/profile/${item.id}`,
+        viewLink: `/u/${item.slug}`,
+        isSetup: true,
+      };
+    }
+
+    // For user-products
+    switch (item.productType) {
+      case "social_link":
+        const platformIcons = { 
+          facebook: { icon: Facebook, color: "#1877F2", img: "/products/facebookNfc.avif" }, 
+          instagram: { icon: Instagram, color: "#E4405F", img: "/products/instagramNfcCard.avif" }, 
+          twitter: { icon: Twitter, color: "#1DA1F2", img: "/products/instagramNfcCard.avif" }, 
+          youtube: { icon: Youtube, color: "#FF0000", img: "/products/youtubeNfcCard.avif" } 
+        };
+        const platform = platformIcons[item.platform] || platformIcons.facebook;
+        return {
+          icon: platform.icon,
+          platformColor: platform.color,
+          defaultImage: platform.img,
+          label: `${item.platform?.charAt(0).toUpperCase() + item.platform?.slice(1)} Card`,
+          subLabel: item.nickname,
+          editLink: `/dashboard/edit/user-product/${item.id}`,
+          viewLink: item.profileData?.url || null,
+          isSetup: item.setupComplete,
+        };
+
+      case "menu":
+        return {
+          icon: UtensilsCrossed,
+          defaultImage: "/products/menuNfcCard.avif",
+          label: "Digital Menu",
+          subLabel: item.nickname,
+          editLink: `/dashboard/edit/user-product/${item.id}`,
+          viewLink: item.isPaid ? (item.profileData?.url || null) : null,
+          isSetup: item.setupComplete,
+          isPaid: item.isPaid,
+        };
+      case "review":
+        return {
+          icon: Star,
+          defaultImage: "/products/WhiteGoogleReview.png",
+          label: "Review Stand",
+          subLabel: item.profileData?.businessName || item.nickname,
+          editLink: `/dashboard/edit/user-product/${item.id}`,
+          viewLink: item.profileData?.url || null,
+          isSetup: item.setupComplete,
+        };
+
+      default:
+        return {
+          icon: User,
+          label: "Product",
+          subLabel: item.name,
+          editLink: `/dashboard/edit/user-product/${item.id}`,
+          viewLink: item.profileData?.url || null,
+          isSetup: false,
+        };
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      {profiles.map((profile) => (
-        <div
-          key={profile.id}
-          className="group bg-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:border-brand-primary/50 transition-all duration-300 space-y-4"
-        >
-          {/* Card Preview */}
-          <ProfileCardPreview
-            profile={profile}
-            onShare={onCopyLink}
-            onToggleQR={(id) => setShowQR(showQR === id ? null : id)}
-            showQR={showQR}
-          />
+      {items.map((item) => {
+        const config = getProductConfig(item);
+        const Icon = config.icon;
 
-          {/* Profile Info & Stats */}
-          <div className="flex items-center justify-between pt-3 border-t border-gray-200">
-            <div className="flex items-center gap-3 text-sm">
-              <div className="flex items-center gap-1 text-gray-600">
-                <Link2 className="w-4 h-4" />
-                <span className="font-medium">
-                  {profile.socialLinks?.length || 0}
-                </span>
+        return (
+          <div
+            key={item.unifiedId}
+            className="group bg-white border-2 border-gray-200 rounded-2xl p-6 hover:shadow-xl hover:border-brand-primary/50 transition-all duration-300 space-y-4"
+          >
+            {/* Card/Icon Preview */}
+            {item.type === "profile" && !item.product ? (
+              <ProfileCardPreview
+                profile={item}
+                onShare={onCopyLink}
+                onToggleQR={(id) => setShowQR(showQR === id ? null : id)}
+                showQR={showQR}
+              />
+            ) : (item.product?.image || item.image || config.defaultImage) ? (
+              <div className="relative h-44 flex items-center justify-center p-2">
+                 <img 
+                   src={item.product?.image || item.image || config.defaultImage} 
+                   alt={item.name} 
+                   className="max-w-full max-h-full object-contain drop-shadow-2xl transition-transform duration-500 group-hover:scale-110"
+                 />
+                 
+                 {/* Subtle Status Badges */}
+                 <div className="absolute top-0 left-0 flex gap-2">
+                   {!item.setupComplete && item.type !== 'profile' && (
+                     <span className="bg-red-500 text-white text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-md">
+                       Setup Required
+                     </span>
+                   )}
+                   {item.isActive && (
+                      <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_10px_rgba(74,222,128,1)] animate-pulse"></div>
+                   )}
+                 </div>
               </div>
+            ) : (
+              <div 
+                className={`relative h-44 rounded-2xl overflow-hidden flex flex-col items-center justify-center p-6 text-white shadow-inner transition-all duration-500 group-hover:scale-[1.03] group-hover:shadow-2xl`}
+                style={{
+                  background: item.productType === 'social_link' 
+                    ? `linear-gradient(135deg, ${config.platformColor || '#0066ff'} 0%, ${adjustColorBrightness(config.platformColor || '#0066ff', -30)} 100%)`
+                    : item.productType === 'review' 
+                      ? 'linear-gradient(135deg, #f2a91d 0%, #d97706 100%)'
+                      : 'linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%)'
+                }}
+              >
+                {/* Decorative Pattern */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl pointer-events-none"></div>
+                <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl pointer-events-none"></div>
+
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center mb-4 shadow-lg border border-white/30 transform group-hover:rotate-12 transition-transform duration-500">
+                    <Icon className="w-9 h-9 text-white drop-shadow-md" />
+                  </div>
+                  <h4 className="font-black text-lg tracking-tight drop-shadow-sm">{config.label}</h4>
+                  <p className="text-xs font-medium opacity-90 truncate max-w-[150px] mt-1 drop-shadow-sm">
+                    {item.profileData?.businessName || item.nickname || config.subLabel}
+                  </p>
+                </div>
+
+                {/* Status Badges */}
+                <div className="absolute top-3 left-3 flex gap-2">
+                   {!item.setupComplete && (
+                     <span className="bg-white/90 text-red-600 text-[9px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-sm">
+                       Setup Required
+                     </span>
+                   )}
+                   {item.isActive && (
+                      <div className="w-2 h-2 rounded-full bg-green-400 shadow-[0_0_8px_rgba(74,222,128,0.8)] animate-pulse"></div>
+                   )}
+                </div>
+
+                {/* Brand Logo */}
+                <div className="absolute bottom-3 right-4 opacity-50 text-[10px] font-bold tracking-widest uppercase">
+                  .LinkMe
+                </div>
+              </div>
+            )}
+
+            {/* Item Info & Stats */}
+            <div className="flex items-center justify-between pt-3 border-t border-gray-200">
+              <div className="flex items-center gap-3 text-sm">
+                <div className="flex items-center gap-1 text-gray-600">
+                  <Link2 className="w-4 h-4" />
+                  <span className="font-medium">
+                    {item.type === "profile" ? (item.socialLinks?.length || 0) : (item.setupComplete ? "Active" : "New")}
+                  </span>
+                </div>
+              </div>
+
+              <span
+                className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 ${
+                  item.isActive
+                    ? "bg-green-100 text-green-700"
+                    : "bg-gray-100 text-gray-700"
+                }`}
+              >
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    item.isActive ? "bg-green-500" : "bg-gray-500"
+                  }`}
+                ></span>
+                {item.isActive ? "Active" : "Inactive"}
+              </span>
             </div>
 
-            <span
-              className={`px-3 py-1.5 rounded-full text-xs font-semibold flex items-center gap-1 ${
-                profile.isActive
-                  ? "bg-green-100 text-green-700"
-                  : "bg-gray-100 text-gray-700"
-              }`}
-            >
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  profile.isActive ? "bg-green-500" : "bg-gray-500"
-                }`}
-              ></span>
-              {profile.isActive ? "Active" : "Inactive"}
-            </span>
-          </div>
+            {/* Action Buttons */}
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                to={config.editLink}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all font-medium text-sm"
+              >
+                <Edit className="w-4 h-4" />
+                Edit
+              </Link>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2">
-            <Link
-              to={`/dashboard/profiles/${profile.id}`}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all font-medium text-sm"
-            >
-              <Edit className="w-4 h-4" />
-              Edit
-            </Link>
-
-            <Link
-              to={`/u/${profile.slug}`}
-              target="_blank"
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-primary to-blue-600 text-white hover:shadow-lg transition-all font-medium text-sm"
-            >
-              <Eye className="w-4 h-4" />
-              View
-            </Link>
-
-            <button
-              onClick={() => onShare(profile)}
-              className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all font-medium text-sm"
-            >
-              <Share2 className="w-4 h-4" />
-              Share
-            </button>
-
-            <button
-              onClick={() => onToggleStatus(profile.id, profile.isActive)}
-              className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all font-medium text-sm ${
-                profile.isActive
-                  ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
-                  : "bg-green-50 text-green-600 hover:bg-green-100"
-              }`}
-            >
-              {profile.isActive ? (
-                <>
-                  <Pause className="w-4 h-4" />
-                  Pause
-                </>
+              {config.viewLink ? (
+                <a
+                  href={config.viewLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-primary to-blue-600 text-white hover:shadow-lg transition-all font-medium text-sm"
+                >
+                  <Eye className="w-4 h-4" />
+                  View
+                </a>
+              ) : item.productType === 'menu' && !item.isPaid ? (
+                <Link
+                  to="/gallery"
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-orange-100 text-orange-700 hover:bg-orange-200 transition-all font-bold text-sm"
+                >
+                  <ShoppingCart className="w-4 h-4" />
+                  Buy Product
+                </Link>
               ) : (
-                <>
-                  <Play className="w-4 h-4" />
-                  Activate
-                </>
+                <button
+                  disabled
+                  className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 text-gray-400 cursor-not-allowed font-medium text-sm"
+                >
+                  <Eye className="w-4 h-4" />
+                  View
+                </button>
               )}
+
+              <button
+                onClick={() => onShare(item)}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-50 text-blue-600 hover:bg-blue-100 transition-all font-medium text-sm"
+              >
+                <Share2 className="w-4 h-4" />
+                Share
+              </button>
+
+              <button
+                onClick={() => onToggleStatus(item)}
+                className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all font-medium text-sm ${
+                  item.isActive
+                    ? "bg-orange-50 text-orange-600 hover:bg-orange-100"
+                    : "bg-green-50 text-green-600 hover:bg-green-100"
+                }`}
+              >
+                {item.isActive ? (
+                  <>
+                    <Pause className="w-4 h-4" />
+                    Pause
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-4 h-4" />
+                    Activate
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Delete Button */}
+            <button
+              onClick={() => onDelete(item)}
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all font-medium text-sm"
+            >
+              <Trash2 className="w-4 h-4" />
+              Delete {item.type === "profile" ? "Profile" : "Product"}
             </button>
           </div>
-
-          {/* Delete Button */}
-          <button
-            onClick={() => onDelete(profile.id)}
-            className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-red-50 text-red-600 hover:bg-red-100 transition-all font-medium text-sm"
-          >
-            <Trash2 className="w-4 h-4" />
-            Delete Profile
-          </button>
-        </div>
-      ))}
+        );
+      })}
     </div>
   );
 }

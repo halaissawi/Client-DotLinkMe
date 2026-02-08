@@ -7,7 +7,7 @@ export default function StatsGrid({ stats }) {
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
       <StatCard
         icon={<User className="w-7 h-7" />}
-        label="Total Profiles"
+        label="Total Products"
         value={stats?.totalProfiles || 0}
         bgColor="bg-gradient-to-br from-brand-primary to-blue-600 text-white"
         gradient={true}
@@ -26,7 +26,7 @@ export default function StatsGrid({ stats }) {
       />
       <StatCard
         icon={<CheckCircle className="w-7 h-7" />}
-        label="Active Profiles"
+        label="Active Products"
         value={stats?.activeProfiles || 0}
         bgColor="bg-gradient-to-br from-purple-500 to-pink-600 text-white"
       />

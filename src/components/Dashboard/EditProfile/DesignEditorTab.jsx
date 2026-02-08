@@ -7,7 +7,6 @@ import {
   Layout,
   X,
   Loader2,
-  Image as ImageIcon,
   Check,
   Save,
 } from "lucide-react";
@@ -15,6 +14,7 @@ import toast from "react-hot-toast";
 import { generateAIImage } from "../../CreateCard/Aiutils";
 import { TEMPLATES_ARRAY } from "../../../constants/cardTemplates";
 import TemplateSelector from "../../PublicProfile/TemplateSelector";
+import AIProfileEditor from "./AIProfileEditor";
 
 const API_URL = import.meta.env.VITE_API_URL;
 
@@ -23,21 +23,32 @@ export default function DesignEditorTab({
   setProfile,
   saving,
   onSubmit,
+  type = "profile"
 }) {
+  const isProduct = type === "user-product";
   const [designMode, setDesignMode] = useState(
-    profile.customDesignUrl ? "custom" : profile.designMode || "manual"
+    profile.customDesignUrl ? "custom" : profile.designMode || "manual",
   );
   const [uploadingCustom, setUploadingCustom] = useState(false);
   const [generatingAI, setGeneratingAI] = useState(false);
 
-  // Page template/color state
-  const [selectedTemplate, setSelectedTemplate] = useState(
-    profile.pageTemplate || "modern"
-  );
-  const [selectedColor, setSelectedColor] = useState(
-    profile.pageColor || "#0EA5E9"
+  // 🆕 Check if this is an AI-generated profile
+  const isAIProfile = !!(
+    profile.customProfileDesign &&
+    (typeof profile.customProfileDesign === "object"
+      ? Object.keys(profile.customProfileDesign).length > 0
+      : profile.customProfileDesign.length > 0)
   );
 
+  // 🔍 DEBUG - ADD THESE LINES
+  console.log("🎨 [DesignEditorTab] Profile check:");
+  console.log("  Full profile:", profile);
+  console.log("  customProfileDesign:", profile.customProfileDesign);
+  console.log("  type:", typeof profile.customProfileDesign);
+  console.log("  isAIProfile:", isAIProfile);
+  console.log("  skills:", profile.skills);
+  console.log("  experience:", profile.experience);
+  console.log("  education:", profile.education);
   const templates = TEMPLATES_ARRAY;
 
   const colorPresets = [
@@ -50,49 +61,6 @@ export default function DesignEditorTab({
     "#06B6D4", // Cyan
     "#6366F1", // Indigo
   ];
-
-  // Update profile function for page template/color
-  const updateProfile = async (updates) => {
-    try {
-      const token = localStorage.getItem("token");
-
-      const response = await fetch(`${API_URL}/api/profiles/${profile.id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updates),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        toast.success("Profile updated successfully!", {
-          duration: 2000,
-          position: "top-center",
-        });
-      } else {
-        throw new Error(data.message || "Update failed");
-      }
-    } catch (error) {
-      console.error("Failed to update profile:", error);
-      toast.error(error.message || "Failed to update profile", {
-        duration: 3000,
-        position: "top-center",
-      });
-    }
-  };
-
-  const handleTemplateChange = async (templateId) => {
-    setSelectedTemplate(templateId);
-    await updateProfile({ pageTemplate: templateId });
-  };
-
-  const handleColorChange = async (color) => {
-    setSelectedColor(color);
-    await updateProfile({ pageColor: color });
-  };
 
   // Handle AI Background Generation
   const handleGenerateAI = async () => {
@@ -117,7 +85,7 @@ export default function DesignEditorTab({
 
       setDesignMode("ai");
       console.log(
-        "✅ AI background generated, cleared: custom upload, template"
+        "✅ AI background generated, cleared: custom upload, template",
       );
 
       alert("AI background generated!");
@@ -150,12 +118,6 @@ export default function DesignEditorTab({
       const formData = new FormData();
       formData.append("avatar", file);
 
-      console.log(
-        "📸 [FRONTEND] Uploading to:",
-        `${API_URL}/api/profiles/upload-temp`
-      );
-      console.log("📸 [FRONTEND] Token exists:", !!token);
-
       const response = await fetch(`${API_URL}/api/profiles/upload-temp`, {
         method: "POST",
         headers: {
@@ -164,23 +126,11 @@ export default function DesignEditorTab({
         body: formData,
       });
 
-      console.log("📡 [FRONTEND] Response status:", response.status);
-
-      const contentType = response.headers.get("content-type");
-      if (!contentType?.includes("application/json")) {
-        const text = await response.text();
-        console.error("❌ [FRONTEND] Non-JSON response:", text);
-        throw new Error("Server returned HTML instead of JSON");
-      }
-
       const data = await response.json();
-      console.log("📡 [FRONTEND] Response data:", data);
 
       if (!response.ok) {
         throw new Error(data.message || "Upload failed");
       }
-
-      console.log("✅ [FRONTEND] Upload successful:", data.url);
 
       setProfile({
         ...profile,
@@ -204,7 +154,6 @@ export default function DesignEditorTab({
 
   // Handle Remove Custom Design
   const handleRemoveCustomDesign = () => {
-    console.log("🗑️ Removing custom design");
     setProfile({
       ...profile,
       customDesignUrl: null,
@@ -216,7 +165,6 @@ export default function DesignEditorTab({
 
   // Handle Template Change (Card Design)
   const handleCardTemplateChange = (templateId) => {
-    console.log("📋 Template selected:", templateId);
     setProfile({
       ...profile,
       template: templateId,
@@ -226,12 +174,10 @@ export default function DesignEditorTab({
       aiPrompt: "",
     });
     setDesignMode("manual");
-    console.log("✅ Template applied, cleared: custom upload, AI");
   };
 
   // Handle Color Change (Card Design)
   const handleCardColorChange = (color) => {
-    console.log("🎨 Color changed:", color);
     setProfile({
       ...profile,
       color: color,
@@ -241,11 +187,24 @@ export default function DesignEditorTab({
       aiPrompt: "",
     });
     setDesignMode("manual");
-    console.log("✅ Color applied, cleared: custom upload, AI");
   };
 
   return (
     <div className="space-y-6">
+      {/* 🆕 AI Profile Badge */}
+      {isAIProfile && (
+        <div className="bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-2xl p-6">
+          <div className="flex items-center gap-3 mb-2">
+            <Sparkles className="w-6 h-6" />
+            <h3 className="text-xl font-bold">AI-Generated Profile</h3>
+          </div>
+          <p className="text-sm opacity-90">
+            This profile was created using AI. Edit your content below or
+            regenerate for a new design.
+          </p>
+        </div>
+      )}
+
       {/* Card Design Section */}
       <form
         onSubmit={onSubmit}
@@ -263,7 +222,7 @@ export default function DesignEditorTab({
           <div>
             <h2 className="text-2xl font-bold text-brand-dark">Card Design</h2>
             <p className="text-sm text-gray-600">
-              Customize your card appearance
+              Customize your NFC card appearance
             </p>
           </div>
         </div>
@@ -555,10 +514,10 @@ export default function DesignEditorTab({
               {profile.customDesignUrl
                 ? "📸 Custom Upload"
                 : profile.aiBackground
-                ? "🎨 AI Generated"
-                : profile.template
-                ? `📋 ${profile.template}`
-                : "🎨 Manual Color"}
+                  ? "🎨 AI Generated"
+                  : profile.template
+                    ? `📋 ${profile.template}`
+                    : "🎨 Manual Color"}
             </span>
           </div>
 
@@ -583,13 +542,44 @@ export default function DesignEditorTab({
         </div>
       </form>
 
-      {/* Page Layout Customization */}
-      <TemplateSelector
-        selectedTemplate={selectedTemplate}
-        selectedColor={selectedColor}
-        onTemplateChange={handleTemplateChange}
-        onColorChange={handleColorChange}
-      />
+      {/* 🆕 AI Profile Editor OR Template Selector */}
+      {!isProduct && (
+        isAIProfile ? (
+          <AIProfileEditor
+            profile={profile}
+            onUpdate={(updatedProfile) => setProfile(updatedProfile)}
+          />
+        ) : (
+          <TemplateSelector
+            selectedTemplate={profile.pageTemplate || "modern"}
+            selectedColor={profile.pageColor || "#0EA5E9"}
+            onTemplateChange={async (template) => {
+              const token = localStorage.getItem("token");
+              await fetch(`${API_URL}/api/profiles/${profile.id}`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ pageTemplate: template }),
+              });
+              toast.success("Profile template updated!");
+            }}
+            onColorChange={async (color) => {
+              const token = localStorage.getItem("token");
+              await fetch(`${API_URL}/api/profiles/${profile.id}`, {
+                method: "PATCH",
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+                body: JSON.stringify({ pageColor: color }),
+              });
+              toast.success("Profile color updated!");
+            }}
+          />
+        )
+      )}
     </div>
   );
 }

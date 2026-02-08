@@ -8,7 +8,7 @@ export default function ProfilePerformance({ profiles }) {
       <div className="flex items-center gap-2 mb-6">
         <BarChart2 className="w-6 h-6 text-brand-primary" />
         <h2 className="text-2xl font-bold text-brand-dark">
-          Profile Performance
+          Product Performance
         </h2>
       </div>
 
@@ -29,10 +29,10 @@ export default function ProfilePerformance({ profiles }) {
               <div className="flex items-center gap-3">
                 {/* Type Icon */}
                 <div className="text-3xl">
-                  {profile.type === "personal" ? (
-                    <User className="w-6 h-6 text-brand-primary" />
-                  ) : (
+                  {profile.type === "business" ? (
                     <Building className="w-6 h-6 text-brand-primary" />
+                  ) : (
+                    <User className="w-6 h-6 text-brand-primary" />
                   )}
                 </div>
 

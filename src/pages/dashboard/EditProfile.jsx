@@ -8,12 +8,13 @@ import DesignEditorTab from "../../components/Dashboard/EditProfile/DesignEditor
 import SocialLinksTab from "../../components/Dashboard/EditProfile/SocialLinksTab";
 import SettingsTab from "../../components/Dashboard/EditProfile/SettingsTab";
 import ProfileSidebar from "../../components/Dashboard/EditProfile/ProfileSidebar";
+import MenuEditorTab from "../../components/Dashboard/EditProfile/MenuEditorTab";
 import LoadingSpinner from "../../components/shared/LoadingSpinner";
 import SocialLinkModal from "../../components/SocialLinkModal"; // ✅ Renamed from AddSocialLinkModal
 import { X } from "lucide-react";
 
 export default function EditProfile() {
-  const { id } = useParams();
+  const { type = "profile", id } = useParams();
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -21,25 +22,51 @@ export default function EditProfile() {
   const [socialLinks, setSocialLinks] = useState([]);
   const [activeTab, setActiveTab] = useState("basic");
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingLink, setEditingLink] = useState(null); // ✅ NEW: Track which link is being edited
+  const [editingLink, setEditingLink] = useState(null);
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
-    fetchProfile();
-    fetchSocialLinks();
-  }, [id]);
+    fetchData();
+    if (type === "profile") {
+      fetchSocialLinks();
+    }
+  }, [id, type]);
 
-  const fetchProfile = async () => {
+  const fetchData = async () => {
     try {
       const token = localStorage.getItem("token");
-      const response = await fetch(`${API_URL}/api/profiles/${id}`, {
+      const endpoint = type === "profile" 
+        ? `${API_URL}/api/profiles/${id}`
+        : `${API_URL}/api/user-products/${id}`;
+
+      const response = await fetch(endpoint, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
       const data = await response.json();
-      setProfile(data.data);
+      
+      if (type === "profile") {
+        setProfile(data.data);
+      } else {
+        // Transform UserProduct to Profile format for common UI compatibility
+        const up = data.data;
+        setProfile({
+          ...up,
+          id: up.id,
+          name: up.nickname || up.product?.name,
+          title: up.profileData?.businessName || "",
+          bio: up.profileData?.desc || "",
+          url: up.profileData?.url || "",
+          avatarUrl: up.image || up.product?.image || null,
+          color: up.profileData?.color || "#060640",
+          template: up.profileData?.template || "default",
+          type: "user-product",
+          productType: up.productType,
+          platform: up.platform || up.product?.platform,
+        });
+      }
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      console.error("Error fetching data:", error);
     } finally {
       setLoading(false);
     }
@@ -62,65 +89,79 @@ export default function EditProfile() {
     }
   };
 
-  const handleUpdateProfile = async (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
     setSaving(true);
 
     try {
       const token = localStorage.getItem("token");
-      const formData = new FormData();
+      
+      if (type === "profile") {
+        const formData = new FormData();
+        formData.append("name", profile.name);
+        formData.append("title", profile.title || "");
+        formData.append("bio", profile.bio || "");
+        formData.append("color", profile.color);
+        formData.append("template", profile.template);
 
-      formData.append("name", profile.name);
-      formData.append("title", profile.title || "");
-      formData.append("bio", profile.bio || "");
-      formData.append("color", profile.color);
-      formData.append("template", profile.template);
+        if (profile.avatarFile) formData.append("avatar", profile.avatarFile);
+        if (!profile.avatarUrl && !profile.avatarFile) formData.append("removeAvatar", "true");
 
-      // Only append avatar if there's a new file
-      if (profile.avatarFile) {
-        formData.append("avatar", profile.avatarFile);
-      }
-
-      // Signal avatar removal if avatarUrl is null but original profile had one
-      if (!profile.avatarUrl && !profile.avatarFile) {
-        formData.append("removeAvatar", "true");
-      }
-
-      const response = await fetch(`${API_URL}/api/profiles/${id}`, {
-        method: "PUT",
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Profile Updated",
-          text: "Profile updated successfully!",
-          confirmButtonColor: "#060640",
-        }).then(() => fetchProfile());
-      } else {
-        const errorMessage = data.error
-          ? data.error.replace(/^Validation error:\s*/i, "")
-          : data.message || "Error updating profile";
-
-        Swal.fire({
-          icon: "error",
-          title: "Update Failed",
-          text: errorMessage,
-          confirmButtonColor: "#060640",
+        const response = await fetch(`${API_URL}/api/profiles/${id}`, {
+          method: "PUT",
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
         });
+
+        const data = await response.json();
+        if (data.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Updated",
+            text: "Profile updated successfully!",
+            timer: 2000,
+            showConfirmButton: false,
+          }).then(() => fetchData());
+        }
+      } else {
+        // For User Products (Social, Menu, Review)
+        const updateBody = {
+          nickname: profile.name,
+          profileData: {
+            ...profile.profileData,
+            url: profile.url,
+            platform: profile.platform,
+            businessName: profile.productType === "review" ? profile.title : undefined,
+            desc: profile.bio || "",
+          },
+          setupComplete: true
+        };
+
+        // If it's a specific product, we might need to nest data differently
+        // but the /setup endpoint is usually the way
+        const response = await fetch(`${API_URL}/api/user-products/${id}/setup`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updateBody),
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          Swal.fire({
+            icon: "success",
+            title: "Saved!",
+            text: "Product settings updated successfully.",
+            timer: 2000,
+            showConfirmButton: false,
+          }).then(() => fetchData());
+        }
       }
     } catch (error) {
-      console.error("Error updating profile:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Update Failed",
-        text: "Error updating profile",
-        confirmButtonColor: "#060640",
-      });
+      console.error("Error updating:", error);
+      Swal.fire({ icon: "error", title: "Failed", text: "Error saving changes" });
     } finally {
       setSaving(false);
     }
@@ -128,6 +169,7 @@ export default function EditProfile() {
 
   const handleUpdateDesign = async (e) => {
     e.preventDefault();
+    if (type !== "profile") return handleUpdate(e);
     setSaving(true);
 
     try {
@@ -468,6 +510,9 @@ export default function EditProfile() {
           activeTab={activeTab}
           setActiveTab={setActiveTab}
           socialLinksCount={socialLinks.length}
+          isUserProduct={type === "user-product"}
+          productType={profile?.productType}
+          menuItemsCount={profile?.profileData?.categories?.reduce((acc, cat) => acc + (cat.items?.length || 0), 0) || 0}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -478,9 +523,10 @@ export default function EditProfile() {
                 profile={profile}
                 setProfile={setProfile}
                 saving={saving}
-                onSubmit={handleUpdateProfile}
+                onSubmit={handleUpdate}
                 onImageChange={handleImageChange}
                 onImageRemove={handleImageRemove}
+                type={type}
               />
             )}
 
@@ -490,16 +536,24 @@ export default function EditProfile() {
                 setProfile={setProfile}
                 saving={saving}
                 onSubmit={handleUpdateDesign}
+                type={type}
               />
             )}
 
-            {activeTab === "links" && (
+            {activeTab === "links" && !loading && (
               <SocialLinksTab
                 socialLinks={socialLinks}
-                onAddLink={handleOpenAddModal} // ✅ Updated
-                onEditLink={handleOpenEditModal} // ✅ NEW
+                onAddLink={handleOpenAddModal}
+                onEditLink={handleOpenEditModal}
                 onToggleVisibility={handleToggleLinkVisibility}
                 onDelete={handleDeleteSocialLink}
+              />
+            )}
+
+            {activeTab === "menu" && (
+              <MenuEditorTab
+                profile={profile}
+                setProfile={setProfile}
               />
             )}
 
@@ -508,7 +562,6 @@ export default function EditProfile() {
                 profile={profile}
                 onCopyLink={copyToClipboard}
                 onAccountDeleted={() => {
-                  // Redirect to home or login page
                   navigate("/");
                 }}
               />
@@ -524,13 +577,12 @@ export default function EditProfile() {
           />
         </div>
 
-        {/* ✅ Updated Modal with edit support */}
         <SocialLinkModal
           isOpen={isModalOpen}
           onClose={handleCloseModal}
           onAdd={handleAddSocialLink}
-          onEdit={handleEditSocialLink} // ✅ NEW
-          editingLink={editingLink} // ✅ NEW
+          onEdit={handleEditSocialLink}
+          editingLink={editingLink}
           existingPlatforms={socialLinks.map((link) => link.platform)}
         />
       </div>
