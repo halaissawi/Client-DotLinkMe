@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Upload, Loader2, X, Image as ImageIcon } from "lucide-react";
+import Swal from "sweetalert2";
 
 export default function StepBasics({ formData, updateFormData }) {
   const [uploadingLogo, setUploadingLogo] = useState(false);
@@ -17,7 +18,12 @@ export default function StepBasics({ formData, updateFormData }) {
     if (!file) return;
 
     if (file.size > 5 * 1024 * 1024) {
-      alert("Image must be less than 5MB");
+      Swal.fire({
+        icon: "error",
+        title: "File too large",
+        text: "Image must be less than 5MB",
+        confirmButtonColor: "#f2a91d",
+      });
       return;
     }
 
@@ -38,12 +44,26 @@ export default function StepBasics({ formData, updateFormData }) {
       const data = await response.json();
       if (data.success) {
         updateFormData({ [type]: data.data.url });
+        Swal.fire({
+          icon: "success",
+          title: "Uploaded!",
+          text: `${type === "logo" ? "Logo" : "Cover image"} uploaded successfully`,
+          timer: 1500,
+          showConfirmButton: false,
+          toast: true,
+          position: "top-end",
+        });
       } else {
         throw new Error(data.message);
       }
     } catch (error) {
       console.error(`${type} upload error:`, error);
-      alert(`Failed to upload ${type}`);
+      Swal.fire({
+        icon: "error",
+        title: "Upload Failed",
+        text: error.message || `Failed to upload ${type}`,
+        confirmButtonColor: "#f2a91d",
+      });
     } finally {
       setLoading(false);
     }

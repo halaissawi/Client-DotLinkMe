@@ -213,7 +213,7 @@ export default function BuildMenu() {
           ),
           theme: formData.theme,
           social: formData.social,
-          status: "locked", // Menu is created but locked
+          status: "active", // Menu is active immediately
         }),
       });
 
@@ -225,40 +225,41 @@ export default function BuildMenu() {
 
       localStorage.removeItem("buildMenuFormData");
 
-      // Show success with purchase prompt
+      // Show success with direct links
       Swal.fire({
         icon: "success",
         title: "Menu Created! 🎉",
         html: `
           <div class="text-left space-y-4">
-            <p class="text-gray-700">Your digital menu has been built successfully!</p>
+            <p class="text-gray-700">Your digital restaurant menu is now live and ready to be shared with customers!</p>
             
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
               <div class="flex items-start gap-3">
-                <div class="bg-yellow-100 p-2 rounded-lg">
-                  <svg class="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
-                    <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"/>
+                <div class="bg-green-100 p-2 rounded-lg text-green-600">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
-                  <p class="font-bold text-yellow-800 text-sm">Link Locked</p>
-                  <p class="text-xs text-yellow-700 mt-1">Purchase an NFC menu stand to unlock and activate your menu link</p>
+                  <p class="font-bold text-green-800 text-sm">Menu Active</p>
+                  <p class="text-xs text-green-700 mt-1">Your menu link is active and reachable via QR code or NFC.</p>
                 </div>
               </div>
             </div>
             
-            <p class="text-sm text-gray-600">You can view and edit your menu in the dashboard</p>
+            <p class="text-sm text-gray-600">You can manage, edit, and view analytics for this menu in your dashboard.</p>
           </div>
         `,
-        confirmButtonText: "🛒 Shop NFC Stands",
-        confirmButtonColor: "#f2a91d",
+        confirmButtonText: "🚀 View My Menu",
+        confirmButtonColor: "#0ea5e9",
         showCancelButton: true,
         cancelButtonText: "Go to Dashboard",
         cancelButtonColor: "#6b7280",
-        width: "600px",
+        width: "500px",
       }).then((result) => {
         if (result.isConfirmed) {
-          navigate("/products?filter=menu");
+          window.open(`/menu/${createData.data.uniqueSlug}`, "_blank");
+          navigate("/dashboard");
         } else {
           navigate("/dashboard");
         }

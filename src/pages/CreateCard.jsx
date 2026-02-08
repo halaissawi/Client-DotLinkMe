@@ -151,7 +151,7 @@ async function createProfile(profileData, token) {
 export default function CreateCard() {
   const navigate = useNavigate();
   const location = useLocation();
-  const product = location.state?.product;
+  const [product, setProduct] = useState(location.state?.product || null);
   const isAccessory = product?.category === "Accessories" || product?.category === "Bracelet";
 
   const [loading, setLoading] = useState(false);
@@ -183,6 +183,10 @@ export default function CreateCard() {
 
         if (parsedData.selectedTemplate) {
           setSelectedTemplate(parsedData.selectedTemplate);
+        }
+
+        if (parsedData.product) {
+          setProduct(parsedData.product);
         }
 
         if (parsedData.personalData) {
@@ -438,6 +442,7 @@ export default function CreateCard() {
       personalData,
       businessData,
       socialLinks,
+      product,
     };
     localStorage.setItem("createCardFormData", JSON.stringify(formDataToSave));
   };

@@ -377,6 +377,7 @@ export default function ProfileSidebar({
   socialLinks,
   onCopyLink,
   onNavigate,
+  isAccessory,
 }) {
   const profileUrl = generateProfileUrl(profile);
   const isProduct = profile?.type === "user-product";
@@ -393,7 +394,7 @@ export default function ProfileSidebar({
 
   return (
     <div className="relative">
-      {/* Live Card Preview */}
+      {/* Live Card Preview or Product Preview */}
       <div className="mb-6">
         <div
           className="bg-white border-2 border-gray-200 rounded-2xl p-6 space-y-4"
@@ -404,17 +405,19 @@ export default function ProfileSidebar({
         >
           <div className="flex items-center gap-3 pb-4 border-b border-gray-200">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-brand-primary to-blue-600 flex items-center justify-center">
-              {isProduct ? <Zap className="w-5 h-5 text-white" /> : <Eye className="w-5 h-5 text-white" />}
+              {isAccessory || isProduct ? <Zap className="w-5 h-5 text-white" /> : <Eye className="w-5 h-5 text-white" />}
             </div>
             <div>
               <h2 className="text-xl font-bold text-brand-dark">
-                {isProduct ? "Product Preview" : "Live Preview"}
+                {isAccessory ? "Product Details" : isProduct ? "Product Preview" : "Live Preview"}
               </h2>
-              <p className="text-xs text-gray-600">{isProduct ? "Your physical card" : "Real-time card preview"}</p>
+              <p className="text-xs text-gray-600">
+                {isAccessory ? "Your physical bracelet" : isProduct ? "Your physical card" : "Real-time card preview"}
+              </p>
             </div>
           </div>
           
-          {isProduct ? (
+          {(isAccessory || isProduct) ? (
             <div className="relative aspect-[1.586/1] rounded-2xl overflow-hidden bg-gray-50 flex items-center justify-center border border-gray-200">
               <img 
                 src={productImg} 

@@ -43,20 +43,36 @@ export default function ProductCard({ product }) {
   const getProductConfig = () => {
     // Digital Profile (created free)
     if (product.type === "profile") {
+      const isProductBased = !!product.product;
       return {
-        icon: product.profileType === "personal" ? User : Building,
+        icon: isProductBased ? User : (product.profileType === "personal" ? User : Building),
         iconBgColor:
           product.profileType === "personal" ? "bg-blue-100" : "bg-purple-100",
         iconColor:
           product.profileType === "personal"
             ? "text-blue-600"
             : "text-purple-600",
-        badge: product.profileType === "personal" ? "Personal" : "Business",
+        badge: isProductBased ? product.product.name : (product.profileType === "personal" ? "Personal" : "Business"),
         badgeColor:
           product.profileType === "personal" ? "bg-blue-500" : "bg-purple-500",
-        link: `/dashboard/profiles/${product.originalId}`,
+        link: `/dashboard/edit/profile/${product.originalId}`,
         canView: true,
-        showCard: true,
+        showCard: !isProductBased, // Hide card preview if it's a physical product based profile
+      };
+    }
+
+    // New Standalone Menus
+    if (product.type === "menu") {
+      return {
+        icon: UtensilsCrossed,
+        iconBgColor: "bg-orange-100",
+        iconColor: "text-orange-600",
+        defaultImage: "/products/menuNfcCard.avif",
+        badge: "Digital Menu",
+        badgeColor: "bg-orange-500",
+        link: `/dashboard/edit/menu/${product.originalId}`,
+        canView: true,
+        showCard: false,
       };
     }
 
@@ -97,9 +113,7 @@ export default function ProductCard({ product }) {
           defaultImage: "/products/menuNfcCard.avif",
           badge: "Digital Menu",
           badgeColor: "bg-orange-500",
-          link: product.setupComplete
-            ? `/u/p/${product.originalId}`
-            : `/setup-menu/${product.originalId}`,
+          link: `/dashboard/edit/menu/${product.originalId}`,
           canView: product.setupComplete,
           showCard: false,
         };
@@ -181,7 +195,10 @@ export default function ProductCard({ product }) {
 
   // For purchased products, show a clean product-focused card
   return (
-    <Link to={config.link} className="block group">
+    <Link 
+      to={config.link} 
+      className="block group"
+    >
       <div className="relative bg-white rounded-3xl border-2 border-gray-100 p-6 shadow-sm hover:shadow-xl hover:border-brand-primary/50 transition-all duration-300 group-hover:scale-[1.02]">
         {/* Status Badges */}
         <div className="absolute top-4 right-4 flex flex-col items-end gap-2 z-20">
@@ -204,7 +221,7 @@ export default function ProductCard({ product }) {
           <div className="relative w-full aspect-square flex items-center justify-center mb-6">
              <div className={`absolute inset-0 ${config.iconBgColor} opacity-20 blur-3xl rounded-full`}></div>
              <img 
-               src={product.image || config.defaultImage} 
+               src={product.product?.image || product.image || config.defaultImage} 
                alt={product.name} 
                className="relative z-10 max-w-[85%] max-h-[85%] object-contain drop-shadow-2xl group-hover:scale-110 transition-transform duration-500"
              />

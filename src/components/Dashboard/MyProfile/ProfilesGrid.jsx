@@ -16,8 +16,10 @@ import {
   Youtube, 
   UtensilsCrossed, 
   Star,
-  ShoppingCart
+  ShoppingCart,
+  QrCode
 } from "lucide-react";
+import { QRCodeCanvas } from "qrcode.react";
 import ProfileCardPreview from "./ProfileCardPreview";
 
 /* ==================== UTILITY FUNCTION ==================== */
@@ -56,9 +58,21 @@ export default function ProfilesGrid({
       return {
         icon: item.profileType === "personal" ? User : Building,
         label: isProductBased ? item.product.name : (item.profileType === "personal" ? "Personal Profile" : "Business Profile"),
-        defaultImage: item.product?.image || null,
+        defaultImage: item.product?.image || "/products/standardCard.png", // Added fallback
         editLink: `/dashboard/edit/profile/${item.id}`,
         viewLink: `/u/${item.slug}`,
+        isSetup: true,
+      };
+    }
+
+    if (item.type === "menu") {
+      return {
+        icon: UtensilsCrossed,
+        label: "Digital Menu",
+        subLabel: item.restaurantName,
+        defaultImage: "/products/menuNfcCard.avif",
+        editLink: `/dashboard/edit/menu/${item.id}`,
+        viewLink: `/menu/${item.uniqueSlug}`,
         isSetup: true,
       };
     }
@@ -275,6 +289,19 @@ export default function ProfilesGrid({
               </button>
 
               <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setShowQR(showQR === item.unifiedId ? null : item.unifiedId);
+                }}
+                className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-purple-50 text-purple-600 hover:bg-purple-100 transition-all font-medium text-sm"
+              >
+                <QrCode className="w-4 h-4" />
+                QR Code
+              </button>
+
+              <button
                 onClick={() => onToggleStatus(item)}
                 className={`flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl transition-all font-medium text-sm ${
                   item.isActive
@@ -304,6 +331,57 @@ export default function ProfilesGrid({
               <Trash2 className="w-4 h-4" />
               Delete {item.type === "profile" ? "Profile" : "Product"}
             </button>
+
+            {/* QR Code Modal Fallback for non-ProfileCardPreview items */}
+            {showQR === item.unifiedId && (
+              <div
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowQR(null);
+                }}
+                className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4"
+              >
+                <div
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-white rounded-3xl p-8 shadow-2xl max-w-sm w-full transform animate-in zoom-in-95 duration-200"
+                >
+                  <div className="flex flex-col items-center gap-6">
+                    <div className="text-center">
+                      <h3 className="text-xl font-bold text-gray-900">
+                        {item.name}
+                      </h3>
+                      <p className="text-sm text-gray-500 mt-1 uppercase tracking-wider font-semibold">
+                        {config.label}
+                      </p>
+                    </div>
+
+                    <div className="bg-white p-6 rounded-2xl border-4 border-gray-50 shadow-inner">
+                      <QRCodeCanvas
+                        value={
+                          item.type === "profile"
+                            ? `${window.location.origin}/u/${item.slug}`
+                            : `${window.location.origin}/u/p/${item.id}`
+                        }
+                        size={200}
+                        level="H"
+                        includeMargin={false}
+                      />
+                    </div>
+
+                    <p className="text-sm text-gray-500 text-center px-4">
+                      Scan this code to view the {item.type === "profile" ? "profile" : "product"} page instantly.
+                    </p>
+
+                    <button
+                      onClick={() => setShowQR(null)}
+                      className="w-full py-3.5 bg-gray-900 text-white rounded-xl font-bold hover:bg-black transition-all shadow-lg active:scale-95"
+                    >
+                      Close Preview
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         );
       })}

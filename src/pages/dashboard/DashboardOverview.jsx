@@ -23,7 +23,7 @@ export default function DashboardOverview() {
     try {
       const token = localStorage.getItem("token");
 
-      const [summaryRes, profilesRes, userProductsRes, activityRes, userRes] =
+      const [summaryRes, profilesRes, userProductsRes, menusRes, activityRes, userRes] =
         await Promise.all([
           fetch(`${API_URL}/api/dashboard/summary`, {
             headers: { Authorization: `Bearer ${token}` },
@@ -31,8 +31,10 @@ export default function DashboardOverview() {
           fetch(`${API_URL}/api/profiles`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          // 🆕 Fetch user products
           fetch(`${API_URL}/api/user-products`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }),
+          fetch(`${API_URL}/api/menus/my-menus`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
           fetch(`${API_URL}/api/dashboard/recent-activity?limit=5`, {
@@ -46,22 +48,20 @@ export default function DashboardOverview() {
       const summaryData = await summaryRes.json();
       const profilesData = await profilesRes.json();
       const userProductsData = await userProductsRes.json();
+      const menusData = await menusRes.json();
       const activityData = await activityRes.json();
       const userData = await userRes.json();
 
-      // 🆕 Combine profiles and user products
       const profiles = profilesData.data || [];
       const userProducts = userProductsData.data || [];
+      const menus = menusData.data || [];
 
-      // Transform profiles to unified format
       const transformedProfiles = profiles.map((profile) => ({
+        ...profile,
         id: `profile-${profile.id}`,
         type: "profile",
         originalId: profile.id,
         name: profile.name,
-        profileType: profile.profileType,
-        template: profile.template,
-        color: profile.color,
         avatarUrl: profile.avatarUrl,
         isActive: profile.isActive,
         createdAt: profile.createdAt,
@@ -71,10 +71,17 @@ export default function DashboardOverview() {
         aiBackground: profile.aiBackground,
         title: profile.title,
         bio: profile.bio,
+        slug: profile.slug,
+        product: profile.product ? {
+          ...profile.product,
+          image: profile.product.image?.startsWith('http') || profile.product.image?.startsWith('/')
+            ? profile.product.image
+            : `/${profile.product.image}`
+        } : null,
       }));
 
-      // Transform user products to unified format
       const transformedUserProducts = userProducts.map((up) => ({
+        ...up,
         id: `product-${up.id}`,
         type: "user-product",
         originalId: up.id,
@@ -85,13 +92,31 @@ export default function DashboardOverview() {
         isActive: up.isActive,
         setupComplete: up.setupComplete,
         createdAt: up.createdAt,
-        product: up.product,
+        image: up.product?.image?.startsWith('http') || up.product?.image?.startsWith('/') 
+          ? up.product.image 
+          : up.product?.image ? `/${up.product.image}` : null,
+        product: up.product ? {
+          ...up.product,
+          image: up.product.image?.startsWith('http') || up.product.image?.startsWith('/') 
+            ? up.product.image 
+            : `/${up.product.image}`
+        } : null,
       }));
 
-      // Combine both arrays
-      const combined = [...transformedProfiles, ...transformedUserProducts];
+      const transformedMenus = menus.map((menu) => ({
+        ...menu,
+        id: `menu-${menu.id}`,
+        type: "menu",
+        originalId: menu.id,
+        name: menu.restaurantName,
+        isActive: menu.status === "active",
+        createdAt: menu.createdAt,
+        image: "/products/menuNfcCard.avif",
+        slug: menu.uniqueSlug,
+        viewLink: `/menu/${menu.uniqueSlug}`,
+      }));
 
-      // Sort by creation date (newest first)
+      const combined = [...transformedProfiles, ...transformedUserProducts, ...transformedMenus];
       combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       setStats(summaryData.data);

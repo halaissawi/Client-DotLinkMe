@@ -9,6 +9,7 @@ import {
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
 import { Toaster } from "react-hot-toast"; // ✅ Add this import
+import { HelmetProvider } from "react-helmet-async";
 
 // Layout
 import Navbar from "./layout/Navbar";
@@ -28,6 +29,7 @@ import OTPVerify from "./pages/OTPVerify";
 
 import CreateCard from "./pages/CreateCard";
 import BuildMenu from "./pages/BuildMenu";
+import MenuViewer from "./pages/MenuViewer";
 import PublicProfile from "./pages/PublicProfile";
 import HowItWorks from "./pages/HowItWorks";
 import VerifyAccount from "./pages/VerifyAccount";
@@ -42,6 +44,7 @@ import Settings from "./pages/dashboard/Settings";
 import CartCheckout from "./pages/dashboard/CartCheckout";
 import CartPage from "./pages/dashboard/CartPage";
 import MyOrders from "./pages/dashboard/MyOrders";
+import EditMenu from "./pages/dashboard/EditMenu";
 // Helpers
 import ScrollToTopButton from "./layout/ScrollToTopButton";
 
@@ -81,6 +84,7 @@ const AppContent = () => {
     "/reset-password",
     "/dashboard",
     "/u/",
+    "/menu/",
   ];
 
   const shouldHideNavbarFooter = hideNavbarFooterPaths.some((path) =>
@@ -162,6 +166,7 @@ const AppContent = () => {
         <Route path="/verify-account" element={<VerifyAccount />} />
         <Route path="/u/:slug" element={<PublicProfile />} />
         <Route path="/u/p/:id" element={<PublicProductView />} />
+        <Route path="/menu/:slug" element={<MenuViewer />} />
         <Route path="/create-card" element={<CreateCard />} />
         <Route path="/build-menu" element={<BuildMenu />} />
         <Route path="/gallery" element={<Gellary />} />
@@ -197,6 +202,8 @@ const AppContent = () => {
           <Route index element={<DashboardOverview />} />
           <Route path="profiles" element={<MyProfiles />} />
           <Route path="profiles/:id" element={<EditProfile />} />
+          <Route path="edit/menu/:id" element={<EditMenu />} />
+          <Route path="edit/profile/:id" element={<EditProfile />} />
           <Route path="edit/:type/:id" element={<EditProfile />} />
           <Route path="analytics" element={<Analytics />} />
           <Route path="settings" element={<Settings />} />
@@ -216,13 +223,15 @@ const AppContent = () => {
 
 const App = () => {
   return (
-    <AuthProvider>
-      <CartProvider>
-        <Router>
-          <AppContent />
-        </Router>
-      </CartProvider>
-    </AuthProvider>
+    <HelmetProvider>
+      <AuthProvider>
+        <CartProvider>
+          <Router>
+            <AppContent />
+          </Router>
+        </CartProvider>
+      </AuthProvider>
+    </HelmetProvider>
   );
 };
 

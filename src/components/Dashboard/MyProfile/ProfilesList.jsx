@@ -32,14 +32,28 @@ export default function ProfilesList({
 
   const getProductConfig = (item) => {
     if (item.type === "profile") {
+      const isProductBased = !!item.product;
       return {
         icon: item.profileType === "personal" ? User : Building,
-        avatar: item.avatarUrl,
-        label: item.profileType === "personal" ? "Personal Profile" : "Business Profile",
+        avatar: item.product?.image || item.avatarUrl || "/products/standardCard.png",
+        label: isProductBased ? item.product.name : (item.profileType === "personal" ? "Personal Profile" : "Business Profile"),
         subLabel: item.title,
         editLink: `/dashboard/edit/profile/${item.id}`,
         viewLink: `/u/${item.slug}`,
         qrValue: `${window.location.origin}/u/${item.slug}`,
+        isSetup: true,
+      };
+    }
+
+    if (item.type === "menu") {
+      return {
+        icon: UtensilsCrossed,
+        avatar: "/products/menuNfcCard.avif",
+        label: "Digital Menu",
+        subLabel: item.restaurantName,
+        editLink: `/dashboard/edit/menu/${item.id}`,
+        viewLink: `/menu/${item.uniqueSlug}`,
+        qrValue: `${window.location.origin}/menu/${item.uniqueSlug}`,
         isSetup: true,
       };
     }

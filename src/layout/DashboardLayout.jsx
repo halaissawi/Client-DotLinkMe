@@ -14,6 +14,7 @@ import {
   X,
   Menu,
   UserCircle,
+  Utensils,
 } from "lucide-react";
 
 export default function DashboardLayout() {

@@ -24,20 +24,25 @@ export default function MyProfiles() {
     try {
       const token = localStorage.getItem("token");
       
-      const [profilesRes, userProductsRes] = await Promise.all([
+      const [profilesRes, userProductsRes, menusRes] = await Promise.all([
         fetch(`${API_URL}/api/profiles`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch(`${API_URL}/api/user-products`, {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch(`${API_URL}/api/menus/my-menus`, {
           headers: { Authorization: `Bearer ${token}` },
         })
       ]);
 
       const profilesData = await profilesRes.json();
       const userProductsData = await userProductsRes.json();
+      const menusData = await menusRes.json();
 
       const profiles = profilesData.data || [];
       const userProducts = userProductsData.data || [];
+      const menus = menusData.data || [];
 
       // Transform profiles to unified format
       const transformedProfiles = profiles.map((profile) => ({
@@ -45,6 +50,13 @@ export default function MyProfiles() {
         id: profile.id, // Keep as number/string for compatibility
         unifiedId: `profile-${profile.id}`,
         type: "profile",
+        slug: profile.slug,
+        product: profile.product ? {
+          ...profile.product,
+          image: profile.product.image?.startsWith('http') || profile.product.image?.startsWith('/') 
+            ? profile.product.image 
+            : `/${profile.product.image}`
+        } : null,
       }));
 
       // Transform user products to unified format
@@ -56,9 +68,28 @@ export default function MyProfiles() {
         name: up.nickname || up.product?.name || "Unnamed Product",
         profileType: up.productType, // For filtering
         platform: up.platform || up.product?.platform,
+        image: up.product?.image?.startsWith('http') || up.product?.image?.startsWith('/') 
+          ? up.product.image 
+          : up.product?.image ? `/${up.product.image}` : null,
+        product: up.product ? {
+          ...up.product,
+          image: up.product.image?.startsWith('http') || up.product.image?.startsWith('/') 
+            ? up.product.image 
+            : `/${up.product.image}`
+        } : null,
       }));
 
-      const combined = [...transformedProfiles, ...transformedUserProducts];
+      // Transform menus to unified format
+      const transformedMenus = menus.map((menu) => ({
+        ...menu,
+        unifiedId: `menu-${menu.id}`,
+        type: "menu",
+        name: menu.restaurantName,
+        isActive: menu.status === "active",
+        createdAt: menu.createdAt,
+      }));
+
+      const combined = [...transformedProfiles, ...transformedUserProducts, ...transformedMenus];
       combined.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
       setAllProducts(combined);
@@ -74,7 +105,9 @@ export default function MyProfiles() {
       const token = localStorage.getItem("token");
       const endpoint = item.type === "profile" 
         ? `${API_URL}/api/profiles/${item.id}/toggle-status`
-        : `${API_URL}/api/user-products/${item.id}/toggle-status`;
+        : item.type === "menu"
+          ? `${API_URL}/api/menus/${item.id}/toggle-status`
+          : `${API_URL}/api/user-products/${item.id}/toggle-status`;
 
       await fetch(endpoint, {
         method: "PATCH",
@@ -116,7 +149,9 @@ export default function MyProfiles() {
       const token = localStorage.getItem("token");
       const endpoint = isProfile 
         ? `${API_URL}/api/profiles/${item.id}`
-        : `${API_URL}/api/user-products/${item.id}`;
+        : item.type === "menu"
+          ? `${API_URL}/api/menus/${item.id}`
+          : `${API_URL}/api/user-products/${item.id}`;
 
       const response = await fetch(endpoint, {
         method: "DELETE",
@@ -266,7 +301,7 @@ export default function MyProfiles() {
     
     // Exact product type matches
     if (filter === "social_link") return item.productType === "social_link";
-    if (filter === "menu") return item.productType === "menu";
+    if (filter === "menu") return item.productType === "menu" || item.type === "menu";
     if (filter === "review") return item.productType === "review";
     
     // Profile type matches

@@ -1,5 +1,5 @@
-import React from "react";
-import { Plus, Trash2, Utensils } from "lucide-react";
+import React, { useState } from "react";
+import { Plus, Trash2, Utensils, Image as ImageIcon, Upload, Loader2, X } from "lucide-react";
 
 export default function StepMenuItems({ formData, updateFormData }) {
   const addCategory = () => {
@@ -96,6 +96,48 @@ export default function StepMenuItems({ formData, updateFormData }) {
     { id: "popular", label: "⭐ Popular", color: "yellow" },
   ];
 
+  const [uploadingItemIds, setUploadingItemIds] = useState({});
+
+  const handleImageUpload = async (e, categoryId, itemId) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Image must be less than 5MB");
+      return;
+    }
+
+    setUploadingItemIds(prev => ({ ...prev, [itemId]: true }));
+
+    try {
+      const token = localStorage.getItem("token");
+      const uploadFormData = new FormData();
+      uploadFormData.append("image", file);
+
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/api/upload/menu-item`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+        body: uploadFormData,
+      });
+
+      const data = await response.json();
+      if (data.success) {
+        updateItem(categoryId, itemId, "image", data.data.url);
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error("Item image upload error:", error);
+      alert("Failed to upload image");
+    } finally {
+      setUploadingItemIds(prev => {
+        const newState = { ...prev };
+        delete newState[itemId];
+        return newState;
+      });
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div>
@@ -148,68 +190,107 @@ export default function StepMenuItems({ formData, updateFormData }) {
             <div className="space-y-4">
               {category.items && category.items.map((item) => (
                 <div key={item.id} className="bg-white p-5 rounded-xl border-2 border-gray-100 hover:border-[#f2a91d]/30 transition-all space-y-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    {/* Item Name */}
-                    <div className="md:col-span-2">
-                      <input
-                        type="text"
-                        value={item.name || ""}
-                        onChange={(e) => updateItem(category.id, item.id, "name", e.target.value)}
-                        placeholder="Dish name"
-                        className="w-full px-4 py-2.5 bg-gray-50 rounded-lg border-2 border-transparent focus:bg-white focus:border-[#f2a91d] outline-none transition-all font-semibold"
-                      />
-                    </div>
-                    
-                    {/* Price */}
-                    <div className="flex items-center gap-2">
-                      <div className="relative flex-1">
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
-                        <input
-                          type="number"
-                          step="0.01"
-                          value={item.price || ""}
-                          onChange={(e) => updateItem(category.id, item.id, "price", e.target.value)}
-                          placeholder="0.00"
-                          className="w-full pl-8 pr-4 py-2.5 bg-gray-50 rounded-lg border-2 border-transparent focus:bg-white focus:border-[#f2a91d] outline-none transition-all font-bold text-[#f2a91d]"
-                        />
+                  <div className="flex flex-col md:flex-row gap-6">
+                    {/* Item Image */}
+                    <div className="shrink-0">
+                      <div className="w-24 h-24 rounded-xl border-2 border-dashed border-gray-200 flex items-center justify-center bg-gray-50 relative group overflow-hidden">
+                        {item.image ? (
+                          <>
+                            <img src={item.image} alt={item.name} className="w-full h-full object-cover" />
+                            <button
+                              type="button"
+                              onClick={() => updateItem(category.id, item.id, "image", null)}
+                              className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </>
+                        ) : (
+                          <div className="text-center p-2">
+                            {uploadingItemIds[item.id] ? (
+                              <Loader2 className="w-6 h-6 animate-spin text-[#f2a91d] mx-auto" />
+                            ) : (
+                              <label className="cursor-pointer block">
+                                <Upload className="w-6 h-6 text-gray-300 mx-auto mb-1 group-hover:text-[#f2a91d] transition-colors" />
+                                <span className="text-[10px] font-bold text-gray-400 group-hover:text-[#f2a91d]">ADD PIC</span>
+                                <input
+                                  type="file"
+                                  accept="image/*"
+                                  className="hidden"
+                                  onChange={(e) => handleImageUpload(e, category.id, item.id)}
+                                />
+                              </label>
+                            )}
+                          </div>
+                        )}
                       </div>
-                      <button
-                        type="button"
-                        onClick={() => removeItem(category.id, item.id)}
-                        className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
-                      >
-                        <Trash2 className="w-5 h-5" />
-                      </button>
                     </div>
-                  </div>
 
-                  {/* Description */}
-                  <textarea
-                    value={item.description || ""}
-                    onChange={(e) => updateItem(category.id, item.id, "description", e.target.value)}
-                    placeholder="Description (optional)"
-                    rows={2}
-                    className="w-full px-4 py-2.5 bg-gray-50 rounded-lg border-2 border-transparent focus:bg-white focus:border-[#f2a91d] outline-none transition-all text-sm text-gray-600"
-                  />
+                    <div className="flex-1 space-y-4">
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        {/* Item Name */}
+                        <div className="md:col-span-2">
+                          <input
+                            type="text"
+                            value={item.name || ""}
+                            onChange={(e) => updateItem(category.id, item.id, "name", e.target.value)}
+                            placeholder="Dish name"
+                            className="w-full px-4 py-2.5 bg-gray-50 rounded-lg border-2 border-transparent focus:bg-white focus:border-[#f2a91d] outline-none transition-all font-semibold"
+                          />
+                        </div>
+                        
+                        {/* Price */}
+                        <div className="flex items-center gap-2">
+                          <div className="relative flex-1">
+                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 font-bold">$</span>
+                            <input
+                              type="number"
+                              step="0.01"
+                              value={item.price || ""}
+                              onChange={(e) => updateItem(category.id, item.id, "price", e.target.value)}
+                              placeholder="0.00"
+                              className="w-full pl-8 pr-4 py-2.5 bg-gray-50 rounded-lg border-2 border-transparent focus:bg-white focus:border-[#f2a91d] outline-none transition-all font-bold text-[#f2a91d]"
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => removeItem(category.id, item.id)}
+                            className="p-2.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        </div>
+                      </div>
 
-                  {/* Dietary Tags */}
-                  <div>
-                    <p className="text-xs font-semibold text-gray-600 mb-2">Tags:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {dietaryTags.map((tag) => (
-                        <button
-                          key={tag.id}
-                          type="button"
-                          onClick={() => toggleItemTag(category.id, item.id, tag.id)}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                            item.tags && item.tags.includes(tag.id)
-                              ? `bg-${tag.color}-100 text-${tag.color}-700 border-2 border-${tag.color}-300`
-                              : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:border-gray-300'
-                          }`}
-                        >
-                          {tag.label}
-                        </button>
-                      ))}
+                      {/* Description */}
+                      <textarea
+                        value={item.description || ""}
+                        onChange={(e) => updateItem(category.id, item.id, "description", e.target.value)}
+                        placeholder="Description (optional)"
+                        rows={2}
+                        className="w-full px-4 py-2.5 bg-gray-50 rounded-lg border-2 border-transparent focus:bg-white focus:border-[#f2a91d] outline-none transition-all text-sm text-gray-600"
+                      />
+
+                      {/* Dietary Tags */}
+                      <div>
+                        <p className="text-xs font-semibold text-gray-600 mb-2">Tags:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {dietaryTags.map((tag) => (
+                            <button
+                              key={tag.id}
+                              type="button"
+                              onClick={() => toggleItemTag(category.id, item.id, tag.id)}
+                              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                                item.tags && item.tags.includes(tag.id)
+                                  ? `bg-${tag.color}-100 text-${tag.color}-700 border-2 border-${tag.color}-300`
+                                  : 'bg-gray-100 text-gray-600 border-2 border-transparent hover:border-gray-300'
+                              }`}
+                            >
+                              {tag.label}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -8,6 +8,7 @@ export default function EditProfileTabs({
   isUserProduct,
   productType,
   menuItemsCount,
+  isAccessory,
 }) {
   const tabs = [
     { id: "basic", label: "Basic Info", icon: Edit3 },

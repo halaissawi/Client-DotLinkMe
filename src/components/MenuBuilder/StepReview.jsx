@@ -90,24 +90,33 @@ export default function StepReview({ formData }) {
                     {category.items.map((item) => (
                       <div key={item.id} className="flex justify-between items-start gap-4">
                         <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-1">
-                            <h5 className="font-semibold text-gray-900">{item.name}</h5>
-                            {item.tags && item.tags.length > 0 && (
-                              <div className="flex gap-1">
-                                {item.tags.map(tag => (
-                                  <span key={tag} className="text-xs">
-                                    {tag === 'vegetarian' && '🌱'}
-                                    {tag === 'vegan' && '🥬'}
-                                    {tag === 'gluten-free' && '🌾'}
-                                    {tag === 'spicy' && '🌶️'}
-                                    {tag === 'popular' && '⭐'}
-                                  </span>
-                                ))}
-                              </div>
+                          <div className="flex items-center gap-3 mb-1">
+                            {item.image && (
+                              <img 
+                                src={item.image} 
+                                alt={item.name} 
+                                className="w-12 h-12 rounded-lg object-cover border border-gray-200"
+                              />
                             )}
+                            <div>
+                              <h5 className="font-semibold text-gray-900">{item.name}</h5>
+                              {item.tags && item.tags.length > 0 && (
+                                <div className="flex gap-1 mt-0.5">
+                                  {item.tags.map(tag => (
+                                    <span key={tag} className="text-xs">
+                                      {tag === 'vegetarian' && '🌱'}
+                                      {tag === 'vegan' && '🥬'}
+                                      {tag === 'gluten-free' && '🌾'}
+                                      {tag === 'spicy' && '🌶️'}
+                                      {tag === 'popular' && '⭐'}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           {item.description && (
-                            <p className="text-sm text-gray-600">{item.description}</p>
+                            <p className="text-sm text-gray-600 pl-[3.75rem]">{item.description}</p>
                           )}
                         </div>
                         <span className="font-bold text-[#f2a91d] text-lg whitespace-nowrap">

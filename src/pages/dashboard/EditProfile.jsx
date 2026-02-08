@@ -25,6 +25,17 @@ export default function EditProfile() {
   const [editingLink, setEditingLink] = useState(null);
   const API_URL = import.meta.env.VITE_API_URL;
 
+  const isAccessory = 
+    profile?.product?.category?.toLowerCase().includes("accessories") || 
+    profile?.product?.category?.toLowerCase().includes("bracelet") ||
+    profile?.productCategory?.toLowerCase().includes("accessories") || 
+    profile?.productCategory?.toLowerCase().includes("bracelet") ||
+    profile?.category?.toLowerCase().includes("accessories") ||
+    profile?.category?.toLowerCase().includes("bracelet") ||
+    profile?.product?.name?.toLowerCase().includes("bracelet") ||
+    profile?.name?.toLowerCase().includes("bracelet") ||
+    (profile?.productId && profile?.product);
+
   useEffect(() => {
     fetchData();
     if (type === "profile") {
@@ -71,6 +82,8 @@ export default function EditProfile() {
       setLoading(false);
     }
   };
+
+
 
   const fetchSocialLinks = async () => {
     try {
@@ -513,6 +526,7 @@ export default function EditProfile() {
           isUserProduct={type === "user-product"}
           productType={profile?.productType}
           menuItemsCount={profile?.profileData?.categories?.reduce((acc, cat) => acc + (cat.items?.length || 0), 0) || 0}
+          isAccessory={isAccessory}
         />
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -537,6 +551,7 @@ export default function EditProfile() {
                 saving={saving}
                 onSubmit={handleUpdateDesign}
                 type={type}
+                isAccessory={isAccessory}
               />
             )}
 
@@ -574,6 +589,7 @@ export default function EditProfile() {
             socialLinks={socialLinks}
             onCopyLink={copyToClipboard}
             onNavigate={navigate}
+            isAccessory={isAccessory}
           />
         </div>
 

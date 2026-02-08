@@ -45,7 +45,13 @@ export default function EditProfileHeader({ profile, onBack, onCopyLink }) {
         <div className="flex items-center gap-2 sm:gap-3 fade-strong">
           {/* View Live Button */}
           <a
-            href={profile.type === "user-product" ? `/u/p/${profile.id}` : `/u/${profile.slug}`}
+            href={
+              profile.type === "menu" 
+                ? `/menu/${profile.slug}` 
+                : profile.type === "user-product" 
+                  ? `/u/p/${profile.id}` 
+                  : `/u/${profile.slug}`
+            }
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 sm:flex-initial group relative overflow-hidden px-4 sm:px-6 py-2.5 sm:py-3 rounded-xl bg-white border-2 border-[#0066ff]/30 hover:border-[#0066ff]/50 text-[#0066ff] font-semibold transition-all duration-300 hover:shadow-lg hover:scale-[1.02] flex items-center justify-center gap-2"
