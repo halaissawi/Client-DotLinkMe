@@ -23,6 +23,7 @@ export default function ProfileForm({
   selectedTemplate,
   onTemplateChange,
   templates,
+  onSubmit,
   onSwitchProfile,
   loading,
   isAccessory,
