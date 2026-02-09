@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
 import OrderSummary from "../../components/Dashboard/Cart/OrderSummary";
 import ContactInformationForm from "../../components/Dashboard/Cart/ContactInformationForm";
 import ShippingAddressForm from "../../components/Dashboard/Cart/ShippingAddressForm";
@@ -10,17 +9,13 @@ import { Loader2, Package, CheckCircle2, ArrowRight } from "lucide-react";
 import { useCart } from "../../context/CartContext";
 import Swal from "sweetalert2";
 
-
 export default function CartCheckout() {
   const navigate = useNavigate();
   const { cartItems, cartTotal, clearCart } = useCart();
   const API_URL = import.meta.env.VITE_API_URL;
 
-  // State management
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-
-
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -65,7 +60,6 @@ export default function CartCheckout() {
     });
   };
 
-
   const handleSubmitOrder = async (e) => {
     e.preventDefault();
     if (cartItems.length === 0) return;
@@ -83,132 +77,85 @@ export default function CartCheckout() {
         },
       });
 
-      for (const item of cartItems) {
-        // CASE A: Digital Products (Social Link, Menu, Review)
-        if (["social_link", "menu", "review"].includes(item.productType)) {
-          // 1. Purchase digital asset
-          const purchaseRes = await fetch(`${API_URL}/api/user-products/purchase`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              productId: item.productId || item.id,
-              quantity: 1,
-              isPaid: true,
-            }),
-          });
-          
-          if (purchaseRes.ok) {
-            const purchaseData = await purchaseRes.json();
-            const userProductId = purchaseData.data.id;
+      // ✅ CREATE ONE ORDER WITH ALL ITEMS
+      const orderPayload = {
+        items: cartItems.map(item => ({
+          productId: item.id,
+          productName: item.name,
+          productType: item.productType,
+          productCategory: item.category,
+          quantity: item.quantity || 1,
+          price: item.price || 0,
+          image: item.image,
+          // Setup data for digital products
+          setupData: (["social_link", "menu", "review"].includes(item.productType)) ? {
+            nickname: item.setupNickname || item.name,
+            url: item.setupUrl || null,
+            platform: item.platform || null,
+          } : null,
+          // Profile data for physical cards
+          profileId: item.profileId || null,
+          cardDesign: item.design || { color: "#0066ff", template: "default" },
+        })),
+        customerInfo: {
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          email: formData.email,
+          phone: formData.phone,
+        },
+        shippingInfo: {
+          address: formData.address,
+          city: formData.city,
+          country: formData.country,
+          notes: formData.notes,
+        },
+        paymentMethod: "cash_on_delivery",
+        totalAmount: cartTotal,
+      };
 
-            // 2. Setup (If link exists)
-            if (item.setupUrl) {
-              await fetch(`${API_URL}/api/user-products/${userProductId}/setup`, {
-                method: "PUT",
-                headers: {
-                  "Content-Type": "application/json",
-                  Authorization: `Bearer ${token}`,
-                },
-                body: JSON.stringify({
-                  nickname: item.setupNickname || item.name,
-                  profileData: {
-                    platform: item.platform || null,
-                    url: item.setupUrl,
-                    googleReviewUrl: item.productType === 'review' ? item.setupUrl : undefined,
-                  },
-                  setupComplete: true,
-                }),
-              });
-            }
-          }
+      console.log("📦 Submitting unified order:", orderPayload);
 
-          // 3. Create an "Order" entry so it shows in My Orders
-          // We use the same fields as the working profile order, but adapted
-          await fetch(`${API_URL}/api/orders`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              // Many backends require these fields
-              customerInfo: {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                phone: formData.phone,
-              },
-              shippingInfo: {
-                address: formData.address,
-                city: formData.city,
-                country: formData.country,
-                notes: formData.notes,
-              },
-              paymentMethod: "cash_on_delivery",
-              totalAmount: item.price || 0,
-              // Match backend expectations for product identification
-              productId: item.productId || item.id,
-              productName: item.name,
-              orderType: 'digital_activation'
-            }),
-          });
-        } 
-        
-        // CASE B: Physical NFC Cards / Profiles
-        else {
-          await fetch(`${API_URL}/api/orders`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify({
-              // Mandatory fields for profile-based cards
-              profileId: item.profileId || (item.productType === 'profile' || item.type === 'profile' ? item.id : null),
-              customerInfo: {
-                firstName: formData.firstName,
-                lastName: formData.lastName,
-                email: formData.email,
-                phone: formData.phone,
-              },
-              shippingInfo: {
-                address: formData.address,
-                city: formData.city,
-                country: formData.country,
-                notes: formData.notes,
-              },
-              cardDesign: item.design || { color: "#0066ff", template: "default" },
-              paymentMethod: "cash_on_delivery",
-              totalAmount: item.price || 15.0,
-            }),
-          });
-        }
+      const response = await fetch(`${API_URL}/api/orders/create`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderPayload),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to create order");
       }
 
       Swal.fire({
         icon: "success",
-        title: "Order Processed!",
-        text: "Your items have been ordered and activations are complete.",
+        title: "Order Placed Successfully!",
+        html: `
+          <p class="mb-2">Order #${data.orderNumber || data.data?.orderNumber}</p>
+          <p class="text-sm text-gray-600">Your products have been ordered and digital items are being activated.</p>
+        `,
         confirmButtonColor: "#0066ff",
       }).then(() => {
         clearCart();
-        navigate("/dashboard");
+        navigate("/dashboard/orders");
       });
 
     } catch (error) {
-      console.error("Order submission error:", error);
+      console.error("❌ Order submission error:", error);
       Swal.fire({
         icon: "error",
         title: "Order Failed",
-        text: "One or more items could not be processed. Please check My Orders.",
+        text: error.message || "Failed to process your order. Please try again.",
+        confirmButtonColor: "#0066ff",
       });
     } finally {
       setSubmitting(false);
     }
   };
+
   if (loading) {
     return <LoadingSpinner fullPage text="Loading checkout..." />;
   }
@@ -216,7 +163,7 @@ export default function CartCheckout() {
   return (
     <div className="min-h-screen bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
-        {/* Breadcrumbs / Header */}
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
           <div>
             <button
@@ -264,20 +211,26 @@ export default function CartCheckout() {
                        </div>
                        <div className="flex-1 min-w-0">
                           <h4 className="font-bold text-gray-900 group-hover:text-brand-primary transition-colors truncate">{item.name}</h4>
-                          <p className="text-sm text-gray-400 font-medium truncate mb-2">{item.setupNickname || "NFC Activation"}</p>
+                          <p className="text-sm text-gray-400 font-medium truncate mb-2">
+                            {item.setupNickname || item.productType?.replace('_', ' ')}
+                          </p>
                           <div className="flex items-center gap-2">
-                             <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-50 text-green-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-100">
-                                <CheckCircle2 size={12} />
-                                Configured
-                             </div>
                              {item.setupUrl && (
-                                <p className="text-[10px] text-gray-400 truncate max-w-[150px] font-mono">{item.setupUrl}</p>
+                               <div className="flex items-center gap-1.5 px-2 py-0.5 bg-green-50 text-green-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-green-100">
+                                  <CheckCircle2 size={12} />
+                                  Configured
+                               </div>
+                             )}
+                             {item.setupUrl && (
+                                <p className="text-[10px] text-gray-400 truncate max-w-[200px] font-mono">{item.setupUrl}</p>
                              )}
                           </div>
                        </div>
                        <div className="text-right">
-                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Total</p>
-                          <p className="text-lg font-black text-brand-primary">{item.price || 'Free'}</p>
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">Qty: {item.quantity}</p>
+                          <p className="text-lg font-black text-brand-primary">
+                            {item.price === 0 ? 'Free' : `${item.price} JOD`}
+                          </p>
                        </div>
                     </div>
                   ))}
@@ -316,11 +269,11 @@ export default function CartCheckout() {
                    {submitting ? (
                      <>
                         <Loader2 className="animate-spin w-8 h-8" />
-                        Finalizing Order...
+                        Processing Order...
                      </>
                    ) : (
                      <>
-                        Complete Purchase & Activate
+                        Complete Purchase
                         <ArrowRight className="w-8 h-8 group-hover:translate-x-2 transition-transform" />
                      </>
                    )}
@@ -332,15 +285,19 @@ export default function CartCheckout() {
             </form>
           </div>
 
-          {/* Sidebar / Sidebar Summary */}
+          {/* Sidebar Summary */}
           <div className="lg:col-span-4">
              <div className="sticky top-24 space-y-8">
                 <div className="bg-brand-dark text-white rounded-[2.5rem] p-8 shadow-2xl">
                    <h3 className="text-2xl font-black mb-8">Order Summary</h3>
                    <div className="space-y-6">
                       <div className="flex justify-between items-center pb-6 border-b border-white/10">
-                         <span className="text-white/60 font-bold uppercase tracking-widest text-xs">Subtotal</span>
-                         <span className="text-xl font-black">{cartTotal || 'Free'}</span>
+                         <span className="text-white/60 font-bold uppercase tracking-widest text-xs">
+                           Items ({cartItems.length})
+                         </span>
+                         <span className="text-xl font-black">
+                           {cartTotal === 0 ? 'Free' : `${cartTotal.toFixed(2)} JOD`}
+                         </span>
                       </div>
                       <div className="flex justify-between items-center pb-6 border-b border-white/10">
                          <span className="text-white/60 font-bold uppercase tracking-widest text-xs">Shipping</span>
@@ -349,7 +306,7 @@ export default function CartCheckout() {
                       <div className="flex justify-between items-center pt-2">
                          <span className="text-white font-black uppercase tracking-[0.2em] text-sm">Grand Total</span>
                          <span className="text-4xl font-black bg-gradient-to-br from-white to-gray-400 bg-clip-text text-transparent">
-                            {cartTotal || 'Free'}
+                            {cartTotal === 0 ? 'Free' : `${cartTotal.toFixed(2)} JOD`}
                          </span>
                       </div>
                    </div>
@@ -360,7 +317,7 @@ export default function CartCheckout() {
                             <CheckCircle2 size={20} className="text-brand-primary" />
                          </div>
                          <p className="text-xs text-white/60 leading-relaxed">
-                            Your products will be activated immediately and your items will be shipped within 2-3 business days.
+                            Digital products will be activated immediately. Physical items ship within 2-3 business days.
                          </p>
                       </div>
                    </div>

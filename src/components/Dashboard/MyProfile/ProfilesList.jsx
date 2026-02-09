@@ -27,6 +27,7 @@ export default function ProfilesList({
   onShare,
   onCopyLink,
   onToggleStatus,
+  onOrderCard,
 }) {
   const [openMenu, setOpenMenu] = React.useState(null);
 
@@ -202,7 +203,7 @@ export default function ProfilesList({
               </div>
 
               {/* Action Buttons */}
-              <div className="grid gap-2 grid-cols-5">
+              <div className="grid gap-2 grid-cols-6">
                 <Link
                   to={config.editLink}
                   className="group/btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 hover:scale-105 transition-all font-semibold text-sm"
@@ -210,6 +211,17 @@ export default function ProfilesList({
                   <Edit className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
                   Edit
                 </Link>
+
+  {/* ✅ NEW: Order Card Button */}
+  {(item.type === "profile" || item.type === "menu") && (
+    <button
+      onClick={() => onOrderCard(item)}
+      className="group/btn flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-accent to-orange-500 text-white hover:shadow-lg hover:scale-105 transition-all font-semibold text-sm"
+    >
+      <ShoppingCart className="w-4 h-4 group-hover/btn:scale-110 transition-transform" />
+      Order
+    </button>
+  )}
 
                 {config.viewLink ? (
                   <a
@@ -334,6 +346,16 @@ export default function ProfilesList({
                 <Link to={config.editLink} className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all font-semibold text-sm">
                   <Edit className="w-4 h-4" />Edit
                 </Link>
+                  {/* ✅ NEW: Order Card Button for Mobile */}
+  {(item.type === "profile" || item.type === "menu") && (
+    <button
+      onClick={() => onOrderCard(item)}
+      className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-brand-accent to-orange-500 text-white hover:shadow-lg transition-all font-semibold text-sm"
+    >
+      <ShoppingCart className="w-4 h-4" />
+      Order
+    </button>
+  )}
 
                 {config.viewLink ? (
                   <a href={config.viewLink} target="_blank" rel="noopener noreferrer" className="flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl bg-gradient-to-r from-brand-primary to-blue-600 text-white hover:shadow-lg transition-all font-semibold text-sm">

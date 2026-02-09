@@ -209,7 +209,7 @@ const AppContent = () => {
           <Route path="settings" element={<Settings />} />
           <Route path="cart" element={<CartPage />} />
           <Route path="order-card" element={<CartCheckout />} />
-          <Route path="my-orders" element={<MyOrders />} />
+         <Route path="orders" element={<MyOrders />} />
           <Route path="contacts" element={<Contacts />} />
         </Route>
         <Route path="*" element={<NotFound />} />

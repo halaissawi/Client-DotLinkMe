@@ -102,7 +102,7 @@ export default function DashboardLayout() {
       badge: cartCount > 0 ? cartCount : null,
     },
     {
-      path: "/dashboard/my-orders",
+      path: "/dashboard/orders",
       icon: <ClipboardList className="w-5 h-5" />,
       label: "My Orders",
     },

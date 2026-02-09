@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
+import { Save, X, Check, AlertTriangle } from "lucide-react";
 import EditProfileHeader from "../../components/Dashboard/EditProfile/EditProfileHeader";
 import EditProfileTabs from "../../components/Dashboard/EditProfile/EditProfileTabs";
 import BasicInfoForm from "../../components/Dashboard/EditProfile/BasicInfoForm";
@@ -10,8 +11,7 @@ import SettingsTab from "../../components/Dashboard/EditProfile/SettingsTab";
 import ProfileSidebar from "../../components/Dashboard/EditProfile/ProfileSidebar";
 import MenuEditorTab from "../../components/Dashboard/EditProfile/MenuEditorTab";
 import LoadingSpinner from "../../components/shared/LoadingSpinner";
-import SocialLinkModal from "../../components/SocialLinkModal"; // ✅ Renamed from AddSocialLinkModal
-import { X } from "lucide-react";
+import SocialLinkModal from "../../components/SocialLinkModal";
 
 export default function EditProfile() {
   const { type = "profile", id } = useParams();
@@ -19,10 +19,12 @@ export default function EditProfile() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState(null);
+  const [originalProfile, setOriginalProfile] = useState(null);
   const [socialLinks, setSocialLinks] = useState([]);
   const [activeTab, setActiveTab] = useState("basic");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingLink, setEditingLink] = useState(null);
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const API_URL = import.meta.env.VITE_API_URL;
 
   const isAccessory = 
@@ -43,8 +45,37 @@ export default function EditProfile() {
     }
   }, [id, type]);
 
+  // Warn before leaving with unsaved changes
+  useEffect(() => {
+    const handleBeforeUnload = (e) => {
+      if (hasUnsavedChanges) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  }, [hasUnsavedChanges]);
+
+  // Keyboard shortcuts (Ctrl+S to save)
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+        e.preventDefault();
+        if (hasUnsavedChanges) {
+          handleSaveChanges();
+        }
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [hasUnsavedChanges, profile]);
+
   const fetchData = async () => {
     try {
+      setLoading(true);
       const token = localStorage.getItem("token");
       const endpoint = type === "profile" 
         ? `${API_URL}/api/profiles/${id}`
@@ -54,14 +85,38 @@ export default function EditProfile() {
         headers: { Authorization: `Bearer ${token}` },
       });
 
+      if (!response.ok) {
+        if (response.status === 404) {
+          Swal.fire({
+            icon: "error",
+            title: "Not Found",
+            text: "Profile doesn't exist or has been deleted",
+            confirmButtonColor: "#0066ff",
+          }).then(() => navigate("/dashboard/profiles"));
+          return;
+        }
+        
+        if (response.status === 403) {
+          Swal.fire({
+            icon: "error",
+            title: "Access Denied",
+            text: "You don't have permission to edit this profile",
+            confirmButtonColor: "#0066ff",
+          }).then(() => navigate("/dashboard/profiles"));
+          return;
+        }
+        
+        throw new Error("Failed to load profile");
+      }
+
       const data = await response.json();
       
+      let profileData;
       if (type === "profile") {
-        setProfile(data.data);
+        profileData = data.data;
       } else {
-        // Transform UserProduct to Profile format for common UI compatibility
         const up = data.data;
-        setProfile({
+        profileData = {
           ...up,
           id: up.id,
           name: up.nickname || up.product?.name,
@@ -71,19 +126,32 @@ export default function EditProfile() {
           avatarUrl: up.image || up.product?.image || null,
           color: up.profileData?.color || "#060640",
           template: up.profileData?.template || "default",
+          // Sync page design helpers for products
+          pageTemplate: up.profileData?.template || "default",
+          pageColor: up.profileData?.color || "#060640",
+          
           type: "user-product",
           productType: up.productType,
           platform: up.platform || up.product?.platform,
-        });
+        };
       }
+      
+      setProfile(profileData);
+      setOriginalProfile(JSON.parse(JSON.stringify(profileData)));
+      setHasUnsavedChanges(false);
     } catch (error) {
       console.error("Error fetching data:", error);
+      Swal.fire({
+        icon: "error",
+        title: "Error",
+        text: error.message || "Failed to load profile",
+        confirmButtonColor: "#0066ff",
+      });
+      navigate("/dashboard/profiles");
     } finally {
       setLoading(false);
     }
   };
-
-
 
   const fetchSocialLinks = async () => {
     try {
@@ -102,8 +170,47 @@ export default function EditProfile() {
     }
   };
 
-  const handleUpdate = async (e) => {
-    e.preventDefault();
+  // Track profile changes
+  const updateProfile = (updates) => {
+    setHasUnsavedChanges(true);
+    setProfile(prev => ({
+      ...prev,
+      ...updates,
+      profileData: {
+        ...(prev.profileData || {}),
+        ...(updates.profileData || {})
+      }
+    }));
+  };
+
+  // Unified save function
+  const handleSaveChanges = async () => {
+    // Validation
+    if (!profile.name?.trim()) {
+      Swal.fire({
+        icon: "error",
+        title: "Missing Required Field",
+        text: "Name cannot be empty",
+        confirmButtonColor: "#0066ff",
+      });
+      return;
+    }
+
+    // Additional validation for menu products
+    if (profile.productType === "menu" && activeTab === "menu") {
+      if (!profile.profileData?.categories || profile.profileData.categories.length === 0) {
+        const result = await Swal.fire({
+          icon: "warning",
+          title: "No Menu Items",
+          text: "Your menu has no categories. Save anyway?",
+          showCancelButton: true,
+          confirmButtonText: "Yes, save anyway",
+          confirmButtonColor: "#0066ff",
+        });
+        if (!result.isConfirmed) return;
+      }
+    }
+
     setSaving(true);
 
     try {
@@ -116,6 +223,22 @@ export default function EditProfile() {
         formData.append("bio", profile.bio || "");
         formData.append("color", profile.color);
         formData.append("template", profile.template);
+        
+        // Page Design
+        if (profile.pageTemplate) formData.append("pageTemplate", profile.pageTemplate);
+        if (profile.pageColor) formData.append("pageColor", profile.pageColor);
+
+        // Design mode handling
+        if (profile.designMode) {
+          formData.append("designMode", profile.designMode);
+        }
+        
+        if (profile.designMode === "ai" && profile.aiBackground) {
+          formData.append("aiBackground", profile.aiBackground);
+          formData.append("aiPrompt", profile.aiPrompt || "");
+        } else if (profile.customDesignUrl) {
+          formData.append("customDesignUrl", profile.customDesignUrl);
+        }
 
         if (profile.avatarFile) formData.append("avatar", profile.avatarFile);
         if (!profile.avatarUrl && !profile.avatarFile) formData.append("removeAvatar", "true");
@@ -127,17 +250,41 @@ export default function EditProfile() {
         });
 
         const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to update profile");
+        }
+
+        // Explicitly update Page Design settings using PATCH
+        // This ensures compatibility if the PUT endpoint doesn't handle these specific fields
+        if (profile.pageTemplate || profile.pageColor) {
+          await fetch(`${API_URL}/api/profiles/${id}`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify({
+              pageTemplate: profile.pageTemplate,
+              pageColor: profile.pageColor
+            }),
+          });
+        }
+        
         if (data.success) {
+          setHasUnsavedChanges(false);
+          setOriginalProfile(JSON.parse(JSON.stringify(profile)));
+          
           Swal.fire({
             icon: "success",
-            title: "Updated",
+            title: "Saved!",
             text: "Profile updated successfully!",
-            timer: 2000,
+            timer: 1500,
             showConfirmButton: false,
           }).then(() => fetchData());
         }
       } else {
-        // For User Products (Social, Menu, Review)
+        // For User Products
         const updateBody = {
           nickname: profile.name,
           profileData: {
@@ -146,12 +293,13 @@ export default function EditProfile() {
             platform: profile.platform,
             businessName: profile.productType === "review" ? profile.title : undefined,
             desc: profile.bio || "",
+            // Use pageTemplate/pageColor for products as the main template/color
+            color: profile.pageColor || profile.color,
+            template: profile.pageTemplate || profile.template,
           },
           setupComplete: true
         };
 
-        // If it's a specific product, we might need to nest data differently
-        // but the /setup endpoint is usually the way
         const response = await fetch(`${API_URL}/api/user-products/${id}/setup`, {
           method: "PUT",
           headers: {
@@ -162,95 +310,52 @@ export default function EditProfile() {
         });
 
         const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || "Failed to update");
+        }
+        
         if (data.success) {
+          setHasUnsavedChanges(false);
+          setOriginalProfile(JSON.parse(JSON.stringify(profile)));
+          
           Swal.fire({
             icon: "success",
             title: "Saved!",
             text: "Product settings updated successfully.",
-            timer: 2000,
+            timer: 1500,
             showConfirmButton: false,
           }).then(() => fetchData());
         }
       }
     } catch (error) {
       console.error("Error updating:", error);
-      Swal.fire({ icon: "error", title: "Failed", text: "Error saving changes" });
+      Swal.fire({ 
+        icon: "error", 
+        title: "Failed", 
+        text: error.message || "Error saving changes",
+        confirmButtonColor: "#0066ff",
+      });
     } finally {
       setSaving(false);
     }
   };
 
-  const handleUpdateDesign = async (e) => {
-    e.preventDefault();
-    if (type !== "profile") return handleUpdate(e);
-    setSaving(true);
-
-    try {
-      const token = localStorage.getItem("token");
-
-      const updateData = {
-        color: profile.color,
-        template: profile.template,
-        designMode: profile.designMode || "manual",
-      };
-
-      if (profile.designMode === "ai" && profile.aiBackground) {
-        updateData.aiBackground = profile.aiBackground;
-        updateData.aiPrompt = profile.aiPrompt || "";
-        updateData.customDesignUrl = null;
-      } else if (profile.customDesignUrl) {
-        updateData.customDesignUrl = profile.customDesignUrl;
-        updateData.aiBackground = null;
-        updateData.aiPrompt = null;
-      } else {
-        updateData.customDesignUrl = null;
-        updateData.aiBackground = null;
-        updateData.aiPrompt = null;
+  const handleDiscardChanges = () => {
+    Swal.fire({
+      icon: "warning",
+      title: "Discard Changes?",
+      text: "All unsaved changes will be lost",
+      showCancelButton: true,
+      confirmButtonText: "Yes, discard",
+      confirmButtonColor: "#dc2626",
+      cancelButtonText: "Cancel",
+    }).then((result) => {
+      if (result.isConfirmed) {
+        setProfile(JSON.parse(JSON.stringify(originalProfile)));
+        setHasUnsavedChanges(false);
       }
-
-      const response = await fetch(`${API_URL}/api/profiles/${id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(updateData),
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        Swal.fire({
-          icon: "success",
-          title: "Design Updated",
-          text: "Card design updated successfully!",
-          confirmButtonColor: "#060640",
-        }).then(() => {
-          fetchProfile();
-        });
-      } else {
-        const errorMessage = data.error
-          ? data.error.replace(/^Validation error:\s*/i, "")
-          : data.message || "Error updating design";
-
-        Swal.fire({
-          icon: "error",
-          title: "Update Failed",
-          text: errorMessage,
-          confirmButtonColor: "#060640",
-        });
-      }
-    } catch (error) {
-      console.error("Error updating design:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Update Failed",
-        text: "Error updating design",
-        confirmButtonColor: "#060640",
-      });
-    } finally {
-      setSaving(false);
-    }
+    });
   };
 
   const handleImageChange = (e) => {
@@ -258,8 +363,9 @@ export default function EditProfile() {
     if (!file) return;
 
     const url = URL.createObjectURL(file);
-    setProfile({ ...profile, avatarUrl: url, avatarFile: file });
+    updateProfile({ avatarUrl: url, avatarFile: file });
   };
+
   const handleImageRemove = () => {
     Swal.fire({
       title: "Remove Profile Image?",
@@ -272,7 +378,7 @@ export default function EditProfile() {
       cancelButtonText: "Cancel",
     }).then((result) => {
       if (result.isConfirmed) {
-        setProfile({ ...profile, avatarUrl: null, avatarFile: null });
+        updateProfile({ avatarUrl: null, avatarFile: null });
       }
     });
   };
@@ -293,18 +399,18 @@ export default function EditProfile() {
         return `https://twitter.com/${username}`;
       case "github":
         return `https://github.com/${username}`;
-      case "facebook": // ✅ ADD THIS
-        return `https://facebook.com/${username}`; // ✅ ADD THIS
+      case "facebook":
+        return `https://facebook.com/${username}`;
       case "website":
         return `https://${username}`;
       default:
         return username;
     }
   };
+
   const handleAddSocialLink = async (platform, url) => {
     try {
       const token = localStorage.getItem("token");
-
       const finalUrl = buildFinalLink(platform, url);
 
       const response = await fetch(`${API_URL}/api/social-links`, {
@@ -340,11 +446,9 @@ export default function EditProfile() {
     }
   };
 
-  // ✅ NEW: Handle editing social link
   const handleEditSocialLink = async (linkId, platform, url) => {
     try {
       const token = localStorage.getItem("token");
-
       const finalUrl = buildFinalLink(platform, url);
 
       const response = await fetch(`${API_URL}/api/social-links/${linkId}`, {
@@ -353,9 +457,7 @@ export default function EditProfile() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          url: finalUrl,
-        }),
+        body: JSON.stringify({ url: finalUrl }),
       });
 
       if (response.ok) {
@@ -380,19 +482,16 @@ export default function EditProfile() {
     }
   };
 
-  // ✅ NEW: Open modal for editing
   const handleOpenEditModal = (link) => {
     setEditingLink(link);
     setIsModalOpen(true);
   };
 
-  // ✅ NEW: Open modal for adding
   const handleOpenAddModal = () => {
     setEditingLink(null);
     setIsModalOpen(true);
   };
 
-  // ✅ NEW: Close modal and reset editing state
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingLink(null);
@@ -456,32 +555,30 @@ export default function EditProfile() {
     }
   };
 
-  const copyToClipboard = (text) => {
-    navigator.clipboard
-      .writeText(text)
-      .then(() => {
-        Swal.fire({
-          icon: "success",
-          title: "Copied!",
-          text: "Link copied to clipboard!",
-          timer: 2000,
-          showConfirmButton: false,
-          toast: true,
-          position: "top-end",
-        });
-      })
-      .catch((err) => {
-        console.error("Failed to copy: ", err);
-        Swal.fire({
-          icon: "error",
-          title: "Oops!",
-          text: "Failed to copy link.",
-          timer: 2000,
-          showConfirmButton: false,
-          toast: true,
-          position: "top-end",
-        });
+  const copyToClipboard = async (text) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      Swal.fire({
+        icon: "success",
+        title: "Copied!",
+        text: "Link copied to clipboard!",
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
       });
+    } catch (err) {
+      console.error("Failed to copy: ", err);
+      Swal.fire({
+        icon: "error",
+        title: "Oops!",
+        text: "Failed to copy link.",
+        timer: 2000,
+        showConfirmButton: false,
+        toast: true,
+        position: "top-end",
+      });
+    }
   };
 
   if (loading) {
@@ -492,7 +589,7 @@ export default function EditProfile() {
     return (
       <div className="text-center py-12">
         <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <X className="w-12 h-12 text-gray-400" />
+          <AlertTriangle className="w-12 h-12 text-gray-400" />
         </div>
         <p className="text-xl font-semibold text-gray-900 mb-2">
           Profile not found
@@ -519,6 +616,59 @@ export default function EditProfile() {
           onCopyLink={copyToClipboard}
         />
 
+        {/* Action Bar with Save Status */}
+        <div className="flex items-center justify-between px-4 sm:px-0 gap-4">
+          {/* Save Status Indicator */}
+          <div className="flex items-center gap-3">
+            {hasUnsavedChanges ? (
+              <span className="text-sm text-amber-600 font-medium flex items-center gap-2">
+                <span className="w-2 h-2 bg-amber-500 rounded-full animate-pulse" />
+                Unsaved changes
+              </span>
+            ) : (
+              <span className="text-sm text-green-600 font-medium flex items-center gap-2">
+                <Check className="w-4 h-4" />
+                All changes saved
+              </span>
+            )}
+            
+            <p className="text-xs text-gray-500 hidden md:block">
+              💡 Press <kbd className="px-2 py-0.5 bg-gray-100 rounded border text-[10px]">Ctrl+S</kbd> to save
+            </p>
+          </div>
+
+          {/* Action Buttons */}
+          <div className="flex items-center gap-2">
+            {hasUnsavedChanges && (
+              <button
+                onClick={handleDiscardChanges}
+                className="px-4 py-2.5 rounded-xl border-2 border-gray-300 text-gray-700 font-bold hover:bg-gray-50 transition-all text-sm flex items-center gap-2"
+              >
+                <X className="w-4 h-4" />
+                <span className="hidden sm:inline">Discard</span>
+              </button>
+            )}
+            
+            <button
+              onClick={handleSaveChanges}
+              disabled={saving || !hasUnsavedChanges}
+              className="px-6 py-2.5 rounded-xl bg-brand-primary text-white font-bold shadow-lg shadow-brand-primary/20 hover:scale-[1.02] transition-all flex items-center gap-2 text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <Save className="w-4 h-4" /> 
+                  Save Changes
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
         <EditProfileTabs
           activeTab={activeTab}
           setActiveTab={setActiveTab}
@@ -535,9 +685,9 @@ export default function EditProfile() {
             {activeTab === "basic" && (
               <BasicInfoForm
                 profile={profile}
-                setProfile={setProfile}
+                setProfile={updateProfile}
                 saving={saving}
-                onSubmit={handleUpdate}
+                onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }}
                 onImageChange={handleImageChange}
                 onImageRemove={handleImageRemove}
                 type={type}
@@ -547,9 +697,9 @@ export default function EditProfile() {
             {activeTab === "design" && (
               <DesignEditorTab
                 profile={profile}
-                setProfile={setProfile}
+                setProfile={updateProfile}
                 saving={saving}
-                onSubmit={handleUpdateDesign}
+                onSubmit={(e) => { e.preventDefault(); handleSaveChanges(); }}
                 type={type}
                 isAccessory={isAccessory}
               />
@@ -568,7 +718,7 @@ export default function EditProfile() {
             {activeTab === "menu" && (
               <MenuEditorTab
                 profile={profile}
-                setProfile={setProfile}
+                setProfile={updateProfile}
               />
             )}
 
@@ -576,9 +726,7 @@ export default function EditProfile() {
               <SettingsTab
                 profile={profile}
                 onCopyLink={copyToClipboard}
-                onAccountDeleted={() => {
-                  navigate("/");
-                }}
+                onAccountDeleted={() => navigate("/")}
               />
             )}
           </div>

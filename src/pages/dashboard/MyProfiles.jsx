@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import Swal from "sweetalert2";
+import { useCart } from "../../context/CartContext";
+import { toast } from "react-hot-toast";
 import ProfilesHeader from "../../components/Dashboard/MyProfile/ProfilesHeader";
 import ProfilesStats from "../../components/Dashboard/MyProfile/ProfilesStats";
 import ProfilesFilters from "../../components/Dashboard/MyProfile/ProfilesFilters";
@@ -9,11 +11,18 @@ import ProfilesList from "../../components/Dashboard/MyProfile/ProfilesList";
 import LoadingSpinner from "../../components/shared/LoadingSpinner";
 
 export default function MyProfiles() {
+  const { addToCart } = useCart();
   const [allProducts, setAllProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState("all");
   const [viewMode, setViewMode] = useState("grid");
   const [showQR, setShowQR] = useState(null);
+  
+  // ✅ NEW: Order modal state
+  const [orderModal, setOrderModal] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [orderQuantity, setOrderQuantity] = useState(1);
+  
   const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
@@ -47,7 +56,7 @@ export default function MyProfiles() {
       // Transform profiles to unified format
       const transformedProfiles = profiles.map((profile) => ({
         ...profile,
-        id: profile.id, // Keep as number/string for compatibility
+        id: profile.id,
         unifiedId: `profile-${profile.id}`,
         type: "profile",
         slug: profile.slug,
@@ -66,7 +75,7 @@ export default function MyProfiles() {
         unifiedId: `product-${up.id}`,
         type: "user-product",
         name: up.nickname || up.product?.name || "Unnamed Product",
-        profileType: up.productType, // For filtering
+        profileType: up.productType,
         platform: up.platform || up.product?.platform,
         image: up.product?.image?.startsWith('http') || up.product?.image?.startsWith('/') 
           ? up.product.image 
@@ -98,6 +107,76 @@ export default function MyProfiles() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // ✅ NEW: Handle Order Card Click
+  const handleOrderCard = (item) => {
+    setSelectedItem(item);
+    setOrderQuantity(1);
+    setOrderModal(true);
+  };
+
+  // ✅ NEW: Confirm Order and Add to Cart
+  const handleConfirmOrder = () => {
+    if (!selectedItem) return;
+
+    const isProfile = selectedItem.type === "profile";
+    const isMenu = selectedItem.type === "menu";
+    
+    // Determine product details
+    const productName = isProfile 
+      ? `${selectedItem.name} - NFC Card`
+      : isMenu
+        ? `${selectedItem.restaurantName} - Menu NFC`
+        : `${selectedItem.name} - NFC Card`;
+
+    const productPrice = isMenu ? 20.0 : 15.0; // Menu cards: 20 JOD, Profile cards: 15 JOD
+    
+    const productImage = isProfile
+      ? (selectedItem.avatarUrl || selectedItem.product?.image || "/products/standardCard.png")
+      : isMenu
+        ? (selectedItem.logo || "/products/menuNfcCard.avif")
+        : "/products/standardCard.png";
+
+    // Create cart item
+    const cartItem = {
+      id: `${selectedItem.type}-${selectedItem.id}`,
+      profileId: isProfile ? selectedItem.id : null,
+      menuId: isMenu ? selectedItem.id : null,
+      name: productName,
+      productType: isProfile ? "profile" : "menu",
+      category: isProfile ? "Cards" : "Menus",
+      price: productPrice,
+      image: productImage,
+      quantity: orderQuantity,
+      design: isProfile ? {
+        color: selectedItem.color,
+        template: selectedItem.template,
+        designMode: selectedItem.designMode,
+        aiBackground: selectedItem.aiBackground,
+      } : {
+        theme: selectedItem.theme,
+      }
+    };
+
+    // Add to cart
+    addToCart(cartItem);
+
+    // Close modal
+    setOrderModal(false);
+    setSelectedItem(null);
+
+    // Show success toast
+    toast.success(
+      <div className="flex flex-col">
+        <span className="font-bold">{productName}</span>
+        <span className="text-sm">Added to cart!</span>
+      </div>,
+      {
+        duration: 3000,
+        icon: "🛒",
+      }
+    );
   };
 
   const handleToggleStatus = async (item) => {
@@ -165,7 +244,6 @@ export default function MyProfiles() {
 
       if (!response.ok) {
         if (isProfile && data.hasOrders) {
-          // Keep existing logic for profile with orders
           await Swal.fire({
             icon: "error",
             title: "Cannot Delete Profile",
@@ -299,12 +377,10 @@ export default function MyProfiles() {
     if (filter === "active") return item.isActive;
     if (filter === "inactive") return !item.isActive;
     
-    // Exact product type matches
     if (filter === "social_link") return item.productType === "social_link";
     if (filter === "menu") return item.productType === "menu" || item.type === "menu";
     if (filter === "review") return item.productType === "review";
     
-    // Profile type matches
     if (filter === "personal") return item.type === "profile" && item.profileType === "personal";
     if (filter === "business") return item.type === "profile" && item.profileType === "business";
     
@@ -318,9 +394,7 @@ export default function MyProfiles() {
   return (
     <div className="space-y-6">
       <ProfilesHeader />
-
       <ProfilesStats profiles={allProducts} />
-
       <ProfilesFilters
         filter={filter}
         setFilter={setFilter}
@@ -391,6 +465,7 @@ export default function MyProfiles() {
           onCopyLink={handleCopyLink}
           onToggleStatus={handleToggleStatus}
           onDelete={handleDeleteItem}
+          onOrderCard={handleOrderCard} // ✅ NEW
         />
       ) : (
         <ProfilesList
@@ -400,7 +475,124 @@ export default function MyProfiles() {
           onShare={handleShare}
           onCopyLink={handleCopyLink}
           onToggleStatus={handleToggleStatus}
+          onOrderCard={handleOrderCard} // ✅ NEW
         />
+      )}
+
+      {/* ✅ NEW: Order Confirmation Modal */}
+      {orderModal && selectedItem && (
+        <div 
+          className="fixed inset-0 bg-black/60 backdrop-blur-md z-[9999] flex items-center justify-center p-4"
+          onClick={() => setOrderModal(false)}
+        >
+          <div 
+            className="bg-white rounded-3xl p-8 shadow-2xl max-w-md w-full transform animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex flex-col items-center gap-6">
+              {/* Header */}
+              <div className="text-center">
+                <h3 className="text-2xl font-bold text-gray-900">
+                  Order Physical Card
+                </h3>
+                <p className="text-sm text-gray-500 mt-1">
+                  Add NFC card to your cart
+                </p>
+              </div>
+
+              {/* Card Preview */}
+              <div className="w-full">
+                <div className="bg-gradient-to-br from-brand-primary/5 to-blue-50 rounded-2xl p-6 border-2 border-brand-primary/10">
+                  <div className="flex items-center gap-4">
+                    <img
+                      src={
+                        selectedItem.type === "profile"
+                          ? (selectedItem.avatarUrl || selectedItem.product?.image || "/products/standardCard.png")
+                          : selectedItem.type === "menu"
+                            ? (selectedItem.logo || "/products/menuNfcCard.avif")
+                            : "/products/standardCard.png"
+                      }
+                      alt={selectedItem.name}
+                      className="w-20 h-20 object-cover rounded-xl ring-2 ring-brand-primary/20"
+                    />
+                    <div className="flex-1">
+                      <h4 className="font-bold text-gray-900">
+                        {selectedItem.name || selectedItem.restaurantName}
+                      </h4>
+                      <p className="text-sm text-gray-600">
+                        {selectedItem.type === "profile" ? "Profile Card" : "Menu Card"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Quantity Selector */}
+              <div className="w-full">
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Quantity
+                </label>
+                <div className="flex items-center justify-center gap-4">
+                  <button
+                    onClick={() => setOrderQuantity(Math.max(1, orderQuantity - 1))}
+                    className="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xl transition-all"
+                  >
+                    −
+                  </button>
+                  <div className="w-20 h-12 rounded-xl bg-gray-50 flex items-center justify-center">
+                    <span className="text-2xl font-bold text-gray-900">{orderQuantity}</span>
+                  </div>
+                  <button
+                    onClick={() => setOrderQuantity(orderQuantity + 1)}
+                    className="w-12 h-12 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold text-xl transition-all"
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Price Summary */}
+              <div className="w-full bg-gray-50 rounded-2xl p-4 space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Price per card:</span>
+                  <span className="font-semibold text-gray-900">
+                    {selectedItem.type === "menu" ? "20.00" : "15.00"} JOD
+                  </span>
+                </div>
+                <div className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600">Quantity:</span>
+                  <span className="font-semibold text-gray-900">{orderQuantity}</span>
+                </div>
+                <div className="h-px bg-gray-200 my-2"></div>
+                <div className="flex items-center justify-between">
+                  <span className="font-bold text-gray-900">Total:</span>
+                  <span className="text-2xl font-bold text-brand-primary">
+                    {(orderQuantity * (selectedItem.type === "menu" ? 20 : 15)).toFixed(2)} JOD
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="w-full flex gap-3">
+                <button
+                  onClick={() => setOrderModal(false)}
+                  className="flex-1 py-3.5 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmOrder}
+                  className="flex-1 py-3.5 bg-gradient-to-r from-brand-primary to-blue-600 text-white rounded-xl font-bold hover:shadow-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                  </svg>
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

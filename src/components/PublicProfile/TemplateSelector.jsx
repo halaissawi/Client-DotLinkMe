@@ -11,14 +11,6 @@ export default function TemplateSelector({
 }) {
   const [activeTab, setActiveTab] = useState("template");
 
-  // Template state
-  const [tempTemplate, setTempTemplate] = useState(selectedTemplate);
-  const [hasTemplateChanges, setHasTemplateChanges] = useState(false);
-
-  // Color state
-  const [tempColor, setTempColor] = useState(selectedColor);
-  const [hasColorChanges, setHasColorChanges] = useState(false);
-
   // Predefined color palette
   const colorPalette = [
     { name: "Gold", hex: "#FFD700" },
@@ -35,52 +27,14 @@ export default function TemplateSelector({
     { name: "Emerald", hex: "#059669" },
   ];
 
-  // Handle template selection (temporary, not saved yet)
+  // Handle template selection - immediately update
   const handleTemplateSelect = (templateId) => {
-    setTempTemplate(templateId);
-    setHasTemplateChanges(templateId !== selectedTemplate);
+    onTemplateChange(templateId);
   };
 
-  // Apply template changes
-  const handleApplyTemplate = () => {
-    onTemplateChange(tempTemplate);
-    setHasTemplateChanges(false);
-  };
-
-  // Reset to original template
-  const handleCancelTemplate = () => {
-    setTempTemplate(selectedTemplate);
-    setHasTemplateChanges(false);
-  };
-
-  // Handle color selection (temporary, not saved yet)
+  // Handle color selection - immediately update
   const handleColorSelect = (color) => {
-    setTempColor(color);
-    setHasColorChanges(color !== selectedColor);
-  };
-
-  // Apply color changes
-  const handleApplyColor = () => {
-    onColorChange(tempColor);
-    setHasColorChanges(false);
-  };
-
-  // Reset to original color
-  const handleCancelColor = () => {
-    setTempColor(selectedColor);
-    setHasColorChanges(false);
-  };
-
-  // Handle tab switch - sync temp values when switching
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-    if (tab === "template") {
-      setTempTemplate(selectedTemplate);
-      setHasTemplateChanges(false);
-    } else if (tab === "color") {
-      setTempColor(selectedColor);
-      setHasColorChanges(false);
-    }
+    onColorChange(color);
   };
 
   return (
@@ -92,7 +46,7 @@ export default function TemplateSelector({
       {/* Tabs */}
       <div className="flex gap-2 mb-6 border-b border-gray-200">
         <button
-          onClick={() => handleTabChange("template")}
+          onClick={() => setActiveTab("template")}
           className={`px-4 py-2 font-medium transition-colors relative ${
             activeTab === "template"
               ? "text-blue-600"
@@ -105,7 +59,7 @@ export default function TemplateSelector({
           )}
         </button>
         <button
-          onClick={() => handleTabChange("color")}
+          onClick={() => setActiveTab("color")}
           className={`px-4 py-2 font-medium transition-colors relative ${
             activeTab === "color"
               ? "text-blue-600"
@@ -128,7 +82,7 @@ export default function TemplateSelector({
                 key={template.id}
                 onClick={() => handleTemplateSelect(template.id)}
                 className={`relative p-4 rounded-xl border-2 transition-all hover:shadow-lg ${
-                  tempTemplate === template.id
+                  selectedTemplate === template.id
                     ? "border-blue-600 bg-blue-50"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
@@ -148,7 +102,7 @@ export default function TemplateSelector({
                 <p className="text-xs text-gray-600">{template.description}</p>
 
                 {/* Selected Check */}
-                {tempTemplate === template.id && (
+                {selectedTemplate === template.id && (
                   <div className="absolute top-2 right-2 w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center">
                     <Check className="w-4 h-4 text-white" />
                   </div>
@@ -157,27 +111,11 @@ export default function TemplateSelector({
             ))}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={handleApplyTemplate}
-              disabled={!hasTemplateChanges}
-              className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                hasTemplateChanges
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              Apply Template
-            </button>
-            {hasTemplateChanges && (
-              <button
-                onClick={handleCancelTemplate}
-                className="px-6 py-3 rounded-lg font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
-              >
-                Cancel
-              </button>
-            )}
+          {/* Info Text */}
+          <div className="p-4 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-900">
+              <span className="font-semibold">💡 Tip:</span> Changes are tracked automatically. Click 'Save Changes' at the top of the page to apply your template.
+            </p>
           </div>
         </div>
       )}
@@ -196,14 +134,14 @@ export default function TemplateSelector({
                 key={color.hex}
                 onClick={() => handleColorSelect(color.hex)}
                 className={`relative w-full aspect-square rounded-xl transition-all hover:scale-110 ${
-                  tempColor === color.hex
+                  selectedColor === color.hex
                     ? "ring-4 ring-offset-2 ring-blue-600"
                     : "hover:ring-2 hover:ring-offset-2 hover:ring-gray-300"
                 }`}
                 style={{ backgroundColor: color.hex }}
                 title={color.name}
               >
-                {tempColor === color.hex && (
+                {selectedColor === color.hex && (
                   <div className="absolute inset-0 flex items-center justify-center">
                     <Check
                       className="w-5 h-5"
@@ -225,14 +163,14 @@ export default function TemplateSelector({
             <div className="flex gap-3 items-center">
               <input
                 type="color"
-                value={tempColor || "#0066FF"}
+                value={selectedColor || "#0066FF"}
                 onChange={(e) => handleColorSelect(e.target.value)}
                 className="w-16 h-16 rounded-lg cursor-pointer border-2 border-gray-300"
               />
               <div className="flex-1">
                 <input
                   type="text"
-                  value={tempColor || "#0066FF"}
+                  value={selectedColor || "#0066FF"}
                   onChange={(e) =>
                     handleColorSelect(e.target.value.toUpperCase())
                   }
@@ -246,39 +184,14 @@ export default function TemplateSelector({
             </div>
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex gap-3">
-            <button
-              onClick={handleApplyColor}
-              disabled={!hasColorChanges}
-              className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-all ${
-                hasColorChanges
-                  ? "bg-blue-600 text-white hover:bg-blue-700"
-                  : "bg-gray-200 text-gray-400 cursor-not-allowed"
-              }`}
-            >
-              Apply Color
-            </button>
-            {hasColorChanges && (
-              <button
-                onClick={handleCancelColor}
-                className="px-6 py-3 rounded-lg font-semibold border-2 border-gray-300 text-gray-700 hover:bg-gray-50 transition-all"
-              >
-                Cancel
-              </button>
-            )}
+          {/* Info Text */}
+          <div className="p-4 bg-blue-50 rounded-lg">
+            <p className="text-sm text-blue-900">
+              <span className="font-semibold">💡 Tip:</span> Changes are tracked automatically. Click 'Save Changes' at the top of the page to apply your color.
+            </p>
           </div>
         </div>
       )}
-
-      {/* Preview Info */}
-      <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-        <p className="text-sm text-blue-900">
-          <span className="font-semibold">💡 Tip:</span> Preview your changes,
-          then click 'Apply {activeTab === "template" ? "Template" : "Color"}'
-          to save.
-        </p>
-      </div>
     </div>
   );
 }

@@ -51,6 +51,7 @@ export default function ProfilesGrid({
   onCopyLink,
   onToggleStatus,
   onDelete,
+  onOrderCard,
 }) {
   const getProductConfig = (item) => {
     if (item.type === "profile") {
@@ -251,6 +252,16 @@ export default function ProfilesGrid({
                 <Edit className="w-4 h-4" />
                 Edit
               </Link>
+              {/* ✅ NEW: Order Card Button - Only show for profiles and menus */}
+{(item.type === "profile" || item.type === "menu") && (
+  <button
+    onClick={() => onOrderCard(item)}
+    className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-brand-accent to-orange-500 text-white hover:shadow-lg transition-all font-medium text-sm"
+  >
+    <ShoppingCart className="w-4 h-4" />
+    Order Card
+  </button>
+)}
 
               {config.viewLink ? (
                 <a

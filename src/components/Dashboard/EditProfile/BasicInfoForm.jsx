@@ -5,7 +5,6 @@ import {
   User,
   Building,
   Upload,
-  Save,
   Image as ImageIcon,
   X,
 } from "lucide-react";
@@ -14,7 +13,6 @@ export default function BasicInfoForm({
   profile,
   setProfile,
   saving,
-  onSubmit,
   onImageChange,
   onImageRemove,
   type = "profile"
@@ -121,8 +119,7 @@ export default function BasicInfoForm({
 
   return (
     <>
-      <form
-        onSubmit={onSubmit}
+      <div
         className="bg-white border border-gray-200 rounded-2xl p-8 space-y-6"
         style={{
           boxShadow:
@@ -213,7 +210,7 @@ export default function BasicInfoForm({
             </label>
             <input
               type="text"
-              value={profile.name}
+              value={profile.name || ""}
               onChange={(e) => setProfile({ ...profile, name: e.target.value })}
               className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all font-medium"
               placeholder={isProfile ? "Enter name" : "e.g. My Instagram Card"}
@@ -277,27 +274,13 @@ export default function BasicInfoForm({
           )}
         </div>
 
-        {/* Save Button */}
+        {/* Info Text */}
         <div className="pt-4 border-t border-gray-200">
-          <button
-            type="submit"
-            disabled={saving}
-            className="btn-accent w-full py-4 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 text-lg font-semibold"
-          >
-            {saving ? (
-              <>
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-                Saving Changes...
-              </>
-            ) : (
-              <>
-                <Save className="w-5 h-5" />
-                Save Changes
-              </>
-            )}
-          </button>
+          <p className="text-xs text-gray-500">
+            💡 Click "Save Changes" at the top of the page to save your updates
+          </p>
         </div>
-      </form>
+      </div>
 
       {cropModal.open && (
         <div className="fixed inset-0 bg-black bg-opacity-75 z-50 flex items-center justify-center p-4">
